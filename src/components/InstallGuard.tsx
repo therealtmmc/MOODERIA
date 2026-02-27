@@ -44,8 +44,8 @@ export function InstallGuard({ children }: { children: ReactNode }) {
   return (
     <div className="fixed inset-0 z-[60] bg-[#f2f2f2] flex flex-col items-center justify-center p-8 text-center">
       <div className="bg-white p-8 rounded-3xl shadow-xl border-b-8 border-gray-200 max-w-sm w-full">
-        <div className="w-20 h-20 bg-[#46178f] rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
-          <span className="text-4xl">✨</span>
+        <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+          <img src="/logo.png" alt="Mooderia Logo" className="w-full h-full drop-shadow-lg" />
         </div>
         
         <h1 className="text-2xl font-black text-[#46178f] mb-4">Install Mooderia</h1>

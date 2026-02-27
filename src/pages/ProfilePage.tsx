@@ -17,7 +17,7 @@ export default function ProfilePage() {
         {/* Passport Header */}
         <div className="bg-[#46178f] p-4 flex items-center justify-between border-b-4 border-[#eb6123]">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🛂</span>
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 bg-white rounded-full p-1" />
             <span className="font-black text-white uppercase tracking-widest text-sm">Mooderia Passport</span>
           </div>
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -28,8 +28,8 @@ export default function ProfilePage() {
         {/* Passport Body */}
         <div className="p-6 relative">
           {/* Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-            <span className="text-9xl">✨</span>
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+            <img src="/logo.png" alt="Watermark" className="w-48 h-48 grayscale" />
           </div>
 
           <div className="flex gap-6">

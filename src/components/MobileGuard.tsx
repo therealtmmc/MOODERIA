@@ -20,6 +20,7 @@ export function MobileGuard({ children }: { children: ReactNode }) {
   if (!isMobile) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#46178f] text-white p-8 text-center z-50">
+        <img src="/logo.png" alt="Mooderia Logo" className="w-32 h-32 mb-6 drop-shadow-xl" />
         <h1 className="text-4xl font-black mb-4 drop-shadow-lg">Mooderia</h1>
         <p className="text-xl font-bold bg-white/20 p-6 rounded-2xl backdrop-blur-sm border-4 border-white/30 shadow-xl">
           This app is available on mobile only! 📱

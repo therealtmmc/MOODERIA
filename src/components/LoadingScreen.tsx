@@ -15,9 +15,9 @@ export function LoadingScreen() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-          className="text-6xl inline-block"
+          className="inline-block"
         >
-          ✨
+          <img src="/logo.png" alt="Mooderia Logo" className="w-24 h-24 drop-shadow-lg" />
         </motion.div>
       </motion.div>
       <motion.p

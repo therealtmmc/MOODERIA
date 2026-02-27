@@ -1,0 +1,16 @@
+{
+  "name": "Mooderia",
+  "short_name": "Mooderia",
+  "description": "A cartoonish mobile-only tracking app for mood, routines, events, and health.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2f2f2",
+  "theme_color": "#46178f",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -45,8 +45,8 @@ export default function OnboardingPage() {
 
         <div className="p-8 space-y-6">
           <div className="text-center mb-6">
-            <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 border-4 border-white shadow-lg flex items-center justify-center text-4xl">
-              👤
+            <div className="w-24 h-24 bg-white rounded-full mx-auto mb-4 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
+              <img src="/logo.png" alt="Mooderia Logo" className="w-full h-full object-cover" />
             </div>
             <p className="text-gray-500 font-bold text-sm">Upload Photo (Optional)</p>
           </div>
