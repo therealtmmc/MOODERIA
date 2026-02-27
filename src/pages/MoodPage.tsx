@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
-import { Smile, Book, HelpCircle, X } from "lucide-react";
+import { Smile, Book, HelpCircle, X, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/Calendar";
 import { motion, AnimatePresence } from "motion/react";
@@ -103,61 +103,132 @@ export default function MoodPage() {
         </button>
       </div>
 
-      {/* Diary Modal */}
+      {/* Diary Modal (Book Version) */}
       <AnimatePresence>
         {showDiary && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#1368ce] flex flex-col max-h-[80vh]"
+              initial={{ scale: 0.9, opacity: 0, rotateY: 90 }}
+              animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+              exit={{ scale: 0.9, opacity: 0, rotateY: -90 }}
+              transition={{ type: "spring", damping: 20 }}
+              className="bg-[#fdfbf7] w-full max-w-md h-[85vh] rounded-r-3xl rounded-l-md shadow-2xl overflow-hidden flex flex-col relative border-r-[12px] border-b-[12px] border-[#d4c5b0]"
+              style={{
+                boxShadow: "inset 20px 0 50px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.3)",
+              }}
             >
-              <div className="bg-[#1368ce] p-4 flex justify-between items-center shrink-0">
-                <h3 className="text-white font-black text-xl">My Diary</h3>
-                <button onClick={() => setShowDiary(false)} className="text-white/80 hover:text-white">
-                  <X className="w-6 h-6" />
+              {/* Book Spine Effect */}
+              <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[#5c4033] to-[#8b5a2b] z-20 shadow-xl" />
+              
+              {/* Header */}
+              <div className="pl-10 pr-6 py-6 border-b-2 border-[#e6e2d8] flex justify-between items-center bg-[#fdfbf7]">
+                <div>
+                  <h3 className="font-serif font-black text-3xl text-[#4a4a4a] italic">My Journal</h3>
+                  <p className="font-serif text-[#8a8a8a] text-sm italic">Mooderia Chronicles</p>
+                </div>
+                <button 
+                  onClick={() => setShowDiary(false)} 
+                  className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-400" />
                 </button>
               </div>
-              
-              <div className="p-4 overflow-y-auto flex-1 space-y-4">
-                {/* New Entry Section */}
-                <div className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100">
-                  <h4 className="font-bold text-[#1368ce] mb-2 text-sm uppercase">Today's Entry</h4>
-                  <textarea
-                    value={diaryEntry}
-                    onChange={(e) => setDiaryEntry(e.target.value)}
-                    className="w-full h-32 p-3 bg-white rounded-xl border-2 border-blue-200 focus:border-[#1368ce] focus:outline-none resize-none font-medium text-gray-700 text-sm"
-                    placeholder="Dear Diary..."
-                  />
-                  <button
-                    onClick={handleSaveDiary}
-                    className="w-full mt-3 bg-[#1368ce] text-white py-2 rounded-xl font-black shadow-sm active:scale-95 transition-transform text-sm"
-                  >
-                    Save Entry
-                  </button>
+
+              <div className="flex-1 overflow-y-auto pl-10 pr-6 py-6 space-y-8 custom-scrollbar bg-[#fdfbf7]">
+                
+                {/* Today's Entry Page */}
+                <div className="relative">
+                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-red-100/50" />
+                  <h4 className="font-serif font-bold text-[#46178f] mb-4 text-lg border-b border-gray-200 pb-2 flex items-center gap-2">
+                    <span>✍️</span> Today's Entry
+                  </h4>
+                  
+                  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative group">
+                    {/* Lines effect */}
+                    <div className="absolute inset-0 pointer-events-none opacity-10" 
+                         style={{ backgroundImage: "linear-gradient(#000000 1px, transparent 1px)", backgroundSize: "100% 24px" }} 
+                    />
+                    
+                    <textarea
+                      value={diaryEntry}
+                      onChange={(e) => setDiaryEntry(e.target.value)}
+                      className="w-full h-40 bg-transparent focus:outline-none resize-none font-serif text-gray-700 text-lg leading-[24px]"
+                      placeholder="Dear Diary, today I felt..."
+                    />
+                  </div>
+                  
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={handleSaveDiary}
+                      className="bg-[#46178f] text-white px-6 py-2 rounded-full font-serif font-bold shadow-md hover:bg-[#35116e] transition-colors flex items-center gap-2"
+                    >
+                      <span>Save to Journal</span>
+                      <Book className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* History Timeline */}
-                <div>
-                  <h4 className="font-bold text-gray-400 mb-3 text-xs uppercase tracking-wider text-center">History Timeline</h4>
-                  <div className="space-y-3">
+                {/* Past Entries */}
+                <div className="pt-8">
+                  <div className="flex justify-between items-end mb-6 border-b-2 border-gray-800 pb-2">
+                    <h4 className="font-serif font-black text-2xl text-gray-800">Past Entries</h4>
+                    {state.moods.some(m => m.note) && (
+                      <button 
+                        onClick={() => {
+                          if(confirm("Burn all diary pages? This cannot be undone.")) {
+                            dispatch({ type: "CLEAR_ALL_DIARY" });
+                          }
+                        }}
+                        className="text-red-500 text-xs font-bold uppercase tracking-wider hover:underline"
+                      >
+                        Burn All Pages 🔥
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-8">
                     {state.moods
                       .filter(m => m.note)
                       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                       .map((entry) => (
-                      <div key={entry.date} className="bg-gray-50 p-4 rounded-2xl border-l-4 border-[#1368ce] shadow-sm">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-black text-gray-700 text-sm">{format(new Date(entry.date), "MMM d, yyyy")}</span>
-                          <span className={cn("text-xs font-bold px-2 py-1 rounded-full text-white", MOOD_COLORS[entry.mood])}>
-                            {entry.mood}
-                          </span>
+                      <div key={entry.date} className="relative pl-4 group">
+                        {/* Vertical line */}
+                        <div className="absolute left-0 top-2 bottom-0 w-1 bg-gray-200 rounded-full group-hover:bg-[#46178f] transition-colors" />
+                        
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className="font-serif font-bold text-gray-800 text-lg block">
+                              {format(new Date(entry.date), "MMMM do, yyyy")}
+                            </span>
+                            <span className={cn("inline-block text-[10px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-wider mt-1", MOOD_COLORS[entry.mood])}>
+                              Felt {entry.mood}
+                            </span>
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              if(confirm("Tear out this page?")) {
+                                dispatch({ type: "DELETE_DIARY", payload: entry.date });
+                              }
+                            }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 rounded-full text-red-400"
+                            title="Delete Entry"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{entry.note}</p>
+                        
+                        <p className="font-serif text-gray-600 text-lg leading-relaxed whitespace-pre-wrap italic">
+                          "{entry.note}"
+                        </p>
                       </div>
                     ))}
+                    
                     {state.moods.filter(m => m.note).length === 0 && (
-                      <p className="text-center text-gray-400 text-sm italic py-4">No diary entries yet.</p>
+                      <div className="text-center py-12 opacity-50">
+                        <Book className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                        <p className="font-serif text-gray-400 italic">The pages are empty...</p>
+                      </div>
                     )}
                   </div>
                 </div>

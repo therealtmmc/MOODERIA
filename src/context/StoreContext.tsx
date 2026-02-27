@@ -70,6 +70,8 @@ type Action =
   | { type: "LOG_WALK"; payload: WalkLog }
   | { type: "RESET_STREAK" }
   | { type: "INCREMENT_STREAK" }
+  | { type: "DELETE_DIARY"; payload: string } // payload is date
+  | { type: "CLEAR_ALL_DIARY" }
   | { type: "LOAD_STATE"; payload: AppState };
 
 const initialState: AppState = {
@@ -127,6 +129,18 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, streak: 0 };
     case "INCREMENT_STREAK":
       return { ...state, streak: state.streak + 1 };
+    case "DELETE_DIARY":
+      return {
+        ...state,
+        moods: state.moods.map((m) =>
+          m.date === action.payload ? { ...m, note: "" } : m
+        ),
+      };
+    case "CLEAR_ALL_DIARY":
+      return {
+        ...state,
+        moods: state.moods.map((m) => ({ ...m, note: "" })),
+      };
     case "LOAD_STATE":
       return action.payload;
     default:
