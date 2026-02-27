@@ -94,12 +94,23 @@ export default function EventsPage() {
                   </span>
                 </div>
               </div>
-              <button
-                onClick={() => dispatch({ type: "DELETE_EVENT", payload: event.id })}
-                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+              <div className="flex gap-2">
+                <a
+                  href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.date.replace(/-/g, "")}T${event.time.replace(/:/g, "")}00/${event.date.replace(/-/g, "")}T${event.time.replace(/:/g, "")}00&details=${encodeURIComponent(event.description || "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Add to Google Calendar"
+                >
+                  <CalendarIcon className="w-5 h-5" />
+                </a>
+                <button
+                  onClick={() => dispatch({ type: "DELETE_EVENT", payload: event.id })}
+                  className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </motion.div>
           ))
         )}
