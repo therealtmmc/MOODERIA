@@ -111,27 +111,56 @@ export default function MoodPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#1368ce]"
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#1368ce] flex flex-col max-h-[80vh]"
             >
-              <div className="bg-[#1368ce] p-4 flex justify-between items-center">
-                <h3 className="text-white font-black text-xl">Dear Diary...</h3>
+              <div className="bg-[#1368ce] p-4 flex justify-between items-center shrink-0">
+                <h3 className="text-white font-black text-xl">My Diary</h3>
                 <button onClick={() => setShowDiary(false)} className="text-white/80 hover:text-white">
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <div className="p-4">
-                <textarea
-                  value={diaryEntry}
-                  onChange={(e) => setDiaryEntry(e.target.value)}
-                  className="w-full h-40 p-4 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#1368ce] focus:outline-none resize-none font-medium text-gray-700"
-                  placeholder="Write about your day..."
-                />
-                <button
-                  onClick={handleSaveDiary}
-                  className="w-full mt-4 bg-[#1368ce] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform"
-                >
-                  Save Entry
-                </button>
+              
+              <div className="p-4 overflow-y-auto flex-1 space-y-4">
+                {/* New Entry Section */}
+                <div className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100">
+                  <h4 className="font-bold text-[#1368ce] mb-2 text-sm uppercase">Today's Entry</h4>
+                  <textarea
+                    value={diaryEntry}
+                    onChange={(e) => setDiaryEntry(e.target.value)}
+                    className="w-full h-32 p-3 bg-white rounded-xl border-2 border-blue-200 focus:border-[#1368ce] focus:outline-none resize-none font-medium text-gray-700 text-sm"
+                    placeholder="Dear Diary..."
+                  />
+                  <button
+                    onClick={handleSaveDiary}
+                    className="w-full mt-3 bg-[#1368ce] text-white py-2 rounded-xl font-black shadow-sm active:scale-95 transition-transform text-sm"
+                  >
+                    Save Entry
+                  </button>
+                </div>
+
+                {/* History Timeline */}
+                <div>
+                  <h4 className="font-bold text-gray-400 mb-3 text-xs uppercase tracking-wider text-center">History Timeline</h4>
+                  <div className="space-y-3">
+                    {state.moods
+                      .filter(m => m.note)
+                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                      .map((entry) => (
+                      <div key={entry.date} className="bg-gray-50 p-4 rounded-2xl border-l-4 border-[#1368ce] shadow-sm">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-black text-gray-700 text-sm">{format(new Date(entry.date), "MMM d, yyyy")}</span>
+                          <span className={cn("text-xs font-bold px-2 py-1 rounded-full text-white", MOOD_COLORS[entry.mood])}>
+                            {entry.mood}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{entry.note}</p>
+                      </div>
+                    ))}
+                    {state.moods.filter(m => m.note).length === 0 && (
+                      <p className="text-center text-gray-400 text-sm italic py-4">No diary entries yet.</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>

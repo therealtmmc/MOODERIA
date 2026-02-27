@@ -44,6 +44,7 @@ export type UserProfile = {
   citizenship: string;
   joinedDate: string;
   passportNumber: string; // Random generated ID
+  photo?: string; // Base64 string
 };
 
 export type AppState = {

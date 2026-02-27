@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
 import { motion } from "motion/react";
@@ -10,6 +10,18 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [citizenship, setCitizenship] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = () => {
     if (!name || !citizenship) return;
@@ -21,6 +33,7 @@ export default function OnboardingPage() {
         citizenship,
         joinedDate: format(new Date(), "MMM d, yyyy"),
         passportNumber: Math.random().toString(36).substr(2, 9).toUpperCase(),
+        photo: photo || undefined,
       },
     });
     
@@ -45,10 +58,20 @@ export default function OnboardingPage() {
 
         <div className="p-8 space-y-6">
           <div className="text-center mb-6">
-            <div className="w-24 h-24 bg-white rounded-full mx-auto mb-4 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden">
-              <img src="/logo.png" alt="Mooderia Logo" className="w-full h-full object-cover" />
-            </div>
-            <p className="text-gray-500 font-bold text-sm">Upload Photo (Optional)</p>
+            <label className="relative inline-block cursor-pointer group">
+              <div className="w-24 h-24 bg-white rounded-full mx-auto mb-4 border-4 border-white shadow-lg flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+                {photo ? (
+                  <img src={photo} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <img src="/logo.png" alt="Mooderia Logo" className="w-full h-full object-cover opacity-50" />
+                )}
+              </div>
+              <div className="absolute bottom-4 right-0 bg-[#46178f] text-white p-2 rounded-full shadow-md">
+                 <span className="text-xs font-bold">📷</span>
+              </div>
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+            </label>
+            <p className="text-gray-500 font-bold text-sm">Tap to Upload Photo</p>
           </div>
 
           <div>

@@ -33,8 +33,12 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex gap-6">
-            <div className="w-24 h-32 bg-gray-200 rounded-lg border-2 border-gray-300 shadow-inner flex items-center justify-center shrink-0 overflow-hidden">
-               <User className="w-12 h-12 text-gray-400" />
+            <div className="w-24 h-32 bg-gray-200 rounded-lg border-2 border-gray-300 shadow-inner flex items-center justify-center shrink-0 overflow-hidden relative">
+               {userProfile.photo ? (
+                 <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
+               ) : (
+                 <User className="w-12 h-12 text-gray-400" />
+               )}
             </div>
             
             <div className="space-y-4 flex-1">
@@ -90,6 +94,13 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <button 
+        onClick={() => window.location.reload()}
+        className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-transform"
+      >
+        Check for Updates 🔄
+      </button>
     </div>
   );
 }
