@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Share, MoreVertical, Smartphone } from "lucide-react";
 
-export function InstallGuard({ children }: { children: React.ReactNode }) {
+export function InstallGuard({ children }: { children: ReactNode }) {
   const [isStandalone, setIsStandalone] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
