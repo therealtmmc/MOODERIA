@@ -1,0 +1,8 @@
+{
+  "name": "Mooderia",
+  "description": "A cartoonish mobile-only tracking app for mood, routines, events, and health.",
+  "requestFramePermissions": [
+    "geolocation",
+    "notifications"
+  ]
+}
