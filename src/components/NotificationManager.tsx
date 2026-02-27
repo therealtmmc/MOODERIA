@@ -26,7 +26,7 @@ export function NotificationManager() {
       state.routines.forEach((routine) => {
         if (
           routine.active &&
-          routine.time === currentTime &&
+          routine.startTime === currentTime &&
           routine.days.includes(currentDay)
         ) {
           sendNotification("Routine Reminder", `It's time for: ${routine.name} ✨`);

@@ -10,9 +10,12 @@ export type MoodEntry = {
 export type Routine = {
   id: string;
   name: string;
-  time: string; // HH:mm
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
   days: string[]; // ["Mon", "Tue", ...]
   active: boolean;
+  lastCompletedDate?: string; // YYYY-MM-DD
+  streak: number;
 };
 
 export type Event = {
@@ -64,6 +67,7 @@ type Action =
   | { type: "ADD_ROUTINE"; payload: Routine }
   | { type: "TOGGLE_ROUTINE"; payload: string }
   | { type: "DELETE_ROUTINE"; payload: string }
+  | { type: "COMPLETE_ROUTINE"; payload: { id: string; date: string } }
   | { type: "ADD_EVENT"; payload: Event }
   | { type: "DELETE_EVENT"; payload: string }
   | { type: "LOG_WORKOUT"; payload: WorkoutLog }
@@ -113,6 +117,30 @@ function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         routines: state.routines.filter((r) => r.id !== action.payload),
+      };
+    case "COMPLETE_ROUTINE":
+      return {
+        ...state,
+        routines: state.routines.map((r) => {
+          if (r.id === action.payload.id) {
+            // Check if completed today already
+            if (r.lastCompletedDate === action.payload.date) return r;
+            
+            // Check if completed within 5 mins of start time (logic handled in UI, here we just update)
+            // Actually, streak logic is complex. 
+            // If completed today, increment streak.
+            // If missed yesterday, reset streak? 
+            // The user said: "if they dont done the routine at 5 mins above the set time the streak will minus one streak"
+            // This implies a penalty.
+            // For now, let's just increment streak here. The penalty logic might need a periodic check or check on load.
+            return {
+              ...r,
+              lastCompletedDate: action.payload.date,
+              streak: (r.streak || 0) + 1,
+            };
+          }
+          return r;
+        }),
       };
     case "ADD_EVENT":
       return { ...state, events: [...state.events, action.payload] };
