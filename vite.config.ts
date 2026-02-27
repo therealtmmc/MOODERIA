@@ -12,7 +12,7 @@ export default defineConfig(({mode}) => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.svg'],
+        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'logo.png'],
         manifest: {
           name: 'Mooderia',
           short_name: 'Mooderia',
@@ -23,9 +23,9 @@ export default defineConfig(({mode}) => {
           start_url: '/',
           icons: [
             {
-              src: 'logo.svg',
+              src: 'logo.png',
               sizes: '512x512',
-              type: 'image/svg+xml',
+              type: 'image/png',
               purpose: 'any maskable'
             }
           ]
