@@ -23,27 +23,25 @@ export default function MoodPage() {
   const [showOracle, setShowOracle] = useState(false);
   const [oracleAnswer, setOracleAnswer] = useState<string | null>(null);
   const [diaryEntry, setDiaryEntry] = useState("");
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   const today = format(new Date(), "yyyy-MM-dd");
   const todayMood = state.moods.find((m) => m.date === today);
 
   const handleSaveDiary = () => {
-    if (todayMood) {
-      // Update existing mood with note
-      // Since we don't have an UPDATE action, we'll remove and re-add (hacky but works for MVP)
-      // Actually, let's just add a new entry for today which overwrites or we can filter.
-      // Better: Add UPDATE_MOOD action. But for now, let's just assume we can't edit past moods easily without ID.
-      // Let's just find the index and update in a new action or just modify the state directly in a real app.
-      // For this MVP, I'll add a specific action to StoreContext later if needed.
-      // For now, I will just console log.
-      // Wait, I need to save it.
-      // Let's add a simple "UPDATE_DIARY" action to StoreContext.
+    if (!selectedMood && !todayMood) return; // Should be disabled anyway
+
+    const moodToSave = selectedMood || todayMood?.mood;
+    
+    if (moodToSave) {
       dispatch({ 
         type: "ADD_MOOD", 
-        payload: { ...todayMood, note: diaryEntry } 
+        payload: { 
+          date: today,
+          mood: moodToSave,
+          note: diaryEntry 
+        } 
       });
-      // Note: This will duplicate entries if I'm not careful in reducer. 
-      // My reducer just pushes. I should fix the reducer to update if date exists.
     }
     setShowDiary(false);
   };
@@ -84,6 +82,7 @@ export default function MoodPage() {
         <button
           onClick={() => {
             setDiaryEntry(todayMood?.note || "");
+            setSelectedMood(todayMood?.mood || null);
             setShowDiary(true);
           }}
           className="bg-[#1368ce] text-white p-6 rounded-3xl shadow-xl border-b-8 border-[#0e4b96] active:translate-y-2 active:border-b-0 transition-all flex flex-col items-center"
@@ -103,131 +102,124 @@ export default function MoodPage() {
         </button>
       </div>
 
-      {/* Diary Modal (Book Version) */}
+      {/* Diary Modal (Standard Version) */}
       <AnimatePresence>
         {showDiary && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, rotateY: 90 }}
-              animate={{ scale: 1, opacity: 1, rotateY: 0 }}
-              exit={{ scale: 0.9, opacity: 0, rotateY: -90 }}
-              transition={{ type: "spring", damping: 20 }}
-              className="bg-[#fdfbf7] w-full max-w-md h-[85vh] rounded-r-3xl rounded-l-md shadow-2xl overflow-hidden flex flex-col relative border-r-[12px] border-b-[12px] border-[#d4c5b0]"
-              style={{
-                boxShadow: "inset 20px 0 50px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.3)",
-              }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-md h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border-4 border-[#1368ce]"
             >
-              {/* Book Spine Effect */}
-              <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[#5c4033] to-[#8b5a2b] z-20 shadow-xl" />
-              
-              {/* Header */}
-              <div className="pl-10 pr-6 py-6 border-b-2 border-[#e6e2d8] flex justify-between items-center bg-[#fdfbf7]">
-                <div>
-                  <h3 className="font-serif font-black text-3xl text-[#4a4a4a] italic">My Journal</h3>
-                  <p className="font-serif text-[#8a8a8a] text-sm italic">Mooderia Chronicles</p>
-                </div>
-                <button 
-                  onClick={() => setShowDiary(false)} 
-                  className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
-                >
-                  <X className="w-6 h-6 text-gray-400" />
+              <div className="bg-[#1368ce] p-4 flex justify-between items-center shrink-0 shadow-md z-20">
+                <h3 className="text-white font-black text-xl">My Diary</h3>
+                <button onClick={() => setShowDiary(false)} className="text-white/80 hover:text-white">
+                  <X className="w-6 h-6" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto pl-10 pr-6 py-6 space-y-8 custom-scrollbar bg-[#fdfbf7]">
-                
-                {/* Today's Entry Page */}
-                <div className="relative">
-                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-red-100/50" />
-                  <h4 className="font-serif font-bold text-[#46178f] mb-4 text-lg border-b border-gray-200 pb-2 flex items-center gap-2">
+              <div className="flex-1 overflow-y-auto bg-gray-50 relative">
+                {/* New Entry Section */}
+                <div className="p-4 bg-white shadow-sm mb-4">
+                  <h4 className="font-bold text-[#1368ce] mb-3 text-sm uppercase flex items-center gap-2">
                     <span>✍️</span> Today's Entry
                   </h4>
                   
-                  <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative group">
-                    {/* Lines effect */}
-                    <div className="absolute inset-0 pointer-events-none opacity-10" 
-                         style={{ backgroundImage: "linear-gradient(#000000 1px, transparent 1px)", backgroundSize: "100% 24px" }} 
-                    />
-                    
-                    <textarea
-                      value={diaryEntry}
-                      onChange={(e) => setDiaryEntry(e.target.value)}
-                      className="w-full h-40 bg-transparent focus:outline-none resize-none font-serif text-gray-700 text-lg leading-[24px]"
-                      placeholder="Dear Diary, today I felt..."
-                    />
+                  {/* Mood Selector */}
+                  <div className="mb-4">
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">How are you feeling?</label>
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                      {Object.keys(MOOD_COLORS).map((mood) => {
+                        const isSelected = selectedMood === mood;
+                        return (
+                          <button
+                            key={mood}
+                            onClick={() => setSelectedMood(mood)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border-2",
+                              isSelected 
+                                ? `${MOOD_COLORS[mood]} text-white border-transparent scale-105 shadow-md` 
+                                : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
+                            )}
+                          >
+                            {mood}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+
+                  <textarea
+                    value={diaryEntry}
+                    onChange={(e) => setDiaryEntry(e.target.value)}
+                    className="w-full h-32 p-3 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#1368ce] focus:outline-none resize-none font-medium text-gray-700 text-sm mb-3"
+                    placeholder="Write about your day..."
+                  />
                   
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      onClick={handleSaveDiary}
-                      className="bg-[#46178f] text-white px-6 py-2 rounded-full font-serif font-bold shadow-md hover:bg-[#35116e] transition-colors flex items-center gap-2"
-                    >
-                      <span>Save to Journal</span>
-                      <Book className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleSaveDiary}
+                    disabled={!selectedMood}
+                    className="w-full bg-[#1368ce] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed"
+                  >
+                    <span>Publish Entry</span>
+                    <Book className="w-4 h-4" />
+                  </button>
                 </div>
 
                 {/* Past Entries */}
-                <div className="pt-8">
-                  <div className="flex justify-between items-end mb-6 border-b-2 border-gray-800 pb-2">
-                    <h4 className="font-serif font-black text-2xl text-gray-800">Past Entries</h4>
+                <div className="relative">
+                  <div className="sticky top-0 bg-gray-50/95 backdrop-blur-sm p-4 border-b border-gray-200 z-10 flex justify-between items-center shadow-sm">
+                    <h4 className="font-black text-gray-700 text-sm uppercase tracking-wider">Past Entries</h4>
                     {state.moods.some(m => m.note) && (
                       <button 
                         onClick={() => {
-                          if(confirm("Burn all diary pages? This cannot be undone.")) {
+                          if(confirm("Delete all diary entries?")) {
                             dispatch({ type: "CLEAR_ALL_DIARY" });
                           }
                         }}
-                        className="text-red-500 text-xs font-bold uppercase tracking-wider hover:underline"
+                        className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-colors"
+                        title="Clear All"
                       >
-                        Burn All Pages 🔥
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-8">
+                  <div className="p-4 space-y-3 pb-8">
                     {state.moods
                       .filter(m => m.note)
                       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                       .map((entry) => (
-                      <div key={entry.date} className="relative pl-4 group">
-                        {/* Vertical line */}
-                        <div className="absolute left-0 top-2 bottom-0 w-1 bg-gray-200 rounded-full group-hover:bg-[#46178f] transition-colors" />
-                        
+                      <div key={entry.date} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group">
                         <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-serif font-bold text-gray-800 text-lg block">
-                              {format(new Date(entry.date), "MMMM do, yyyy")}
-                            </span>
-                            <span className={cn("inline-block text-[10px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-wider mt-1", MOOD_COLORS[entry.mood])}>
-                              Felt {entry.mood}
-                            </span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("w-3 h-3 rounded-full", MOOD_COLORS[entry.mood])} />
+                            <span className="font-bold text-gray-800 text-sm">{format(new Date(entry.date), "MMM d, yyyy")}</span>
                           </div>
-                          
                           <button
                             onClick={() => {
-                              if(confirm("Tear out this page?")) {
+                              if(confirm("Delete this entry?")) {
                                 dispatch({ type: "DELETE_DIARY", payload: entry.date });
                               }
                             }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-50 rounded-full text-red-400"
-                            title="Delete Entry"
+                            className="text-gray-300 hover:text-red-500 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        
-                        <p className="font-serif text-gray-600 text-lg leading-relaxed whitespace-pre-wrap italic">
-                          "{entry.note}"
-                        </p>
+                        <div className="flex gap-2 mb-2">
+                           <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full text-white uppercase tracking-wider", MOOD_COLORS[entry.mood])}>
+                              {entry.mood}
+                           </span>
+                        </div>
+                        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{entry.note}</p>
                       </div>
                     ))}
                     
                     {state.moods.filter(m => m.note).length === 0 && (
-                      <div className="text-center py-12 opacity-50">
-                        <Book className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                        <p className="font-serif text-gray-400 italic">The pages are empty...</p>
+                      <div className="text-center py-8 opacity-50">
+                        <p className="text-gray-400 text-sm font-bold">No entries yet.</p>
                       </div>
                     )}
                   </div>
