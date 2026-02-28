@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 export default function EventsPage() {
   const { state, dispatch } = useStore();
   const [showAdd, setShowAdd] = useState(false);
+  const [showCalendarReminder, setShowCalendarReminder] = useState(false);
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: "",
     date: format(new Date(), "yyyy-MM-dd"),
@@ -30,6 +31,7 @@ export default function EventsPage() {
       } as Event,
     });
     setShowAdd(false);
+    setShowCalendarReminder(true); // Show reminder
     setNewEvent({
       title: "",
       date: format(new Date(), "yyyy-MM-dd"),
@@ -115,6 +117,49 @@ export default function EventsPage() {
           ))
         )}
       </div>
+
+      {/* Calendar Reminder Popup */}
+      <AnimatePresence>
+        {showCalendarReminder && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#26890c] p-6 text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <CalendarIcon className="w-8 h-8 text-[#26890c]" />
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-black text-gray-800 mb-2">Event Added!</h3>
+                <p className="text-gray-600 font-medium leading-relaxed">
+                  Don't forget to add this to your Google Calendar to get notified!
+                </p>
+              </div>
+
+              <a
+                href="https://calendar.google.com/calendar/u/0/r"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShowCalendarReminder(false)}
+                className="block w-full bg-[#26890c] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2"
+              >
+                <CalendarIcon className="w-5 h-5" />
+                Open Google Calendar
+              </a>
+              
+              <button
+                onClick={() => setShowCalendarReminder(false)}
+                className="text-gray-400 font-bold text-sm hover:text-gray-600"
+              >
+                Close
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Add Event Modal */}
       <AnimatePresence>

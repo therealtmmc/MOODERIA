@@ -200,11 +200,27 @@ export default function RoutinePage() {
                 </p>
               </div>
 
+              <a
+                href="intent://com.android.deskclock.DESKCLOCK#Intent;scheme=android-app;end"
+                onClick={(e) => {
+                   // Fallback for non-Android or if intent fails (though hard to catch on web)
+                   // We just let it try. 
+                   // On iOS this won't work, so we might want a second button or just a generic one.
+                   // Let's try a generic "clock:" scheme as well if this fails? No, can't chain.
+                   // We will just provide the button.
+                   setShowAlarmReminder(false);
+                }}
+                className="block w-full bg-[#eb6123] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2"
+              >
+                <Bell className="w-5 h-5" />
+                Open Alarm App
+              </a>
+              
               <button
                 onClick={() => setShowAlarmReminder(false)}
-                className="w-full bg-[#eb6123] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform"
+                className="text-gray-400 font-bold text-sm hover:text-gray-600"
               >
-                Got it!
+                I'll do it later
               </button>
             </motion.div>
           </div>
