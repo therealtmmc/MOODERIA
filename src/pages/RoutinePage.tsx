@@ -213,7 +213,7 @@ export default function RoutinePage() {
                 className="block w-full bg-[#eb6123] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2"
               >
                 <Bell className="w-5 h-5" />
-                Open Alarm App
+                Set Alarm
               </a>
               
               <button
