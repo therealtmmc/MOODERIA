@@ -12,7 +12,7 @@ const MOODS = [
   { label: "Loved", icon: Heart, color: "bg-pink-400" },
   { label: "Angry", icon: CloudLightning, color: "bg-red-500" },
   { label: "Energetic", icon: Zap, color: "bg-orange-400" },
-  { label: "Tired", icon: Coffee, color: "bg-brown-400" },
+  { label: "Tired", icon: Coffee, color: "bg-stone-500" },
   { label: "Calm", icon: Moon, color: "bg-indigo-400" },
 ];
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useStore, Routine } from "@/context/StoreContext";
-import { Plus, Bell, Trash2, X, Check, Clock, Calendar as CalendarIcon, AlertTriangle, Briefcase, BookOpen, Heart, Coffee, Layers } from "lucide-react";
+import { Plus, Bell, Trash2, X, Check, Clock, Calendar as CalendarIcon, AlertTriangle, Briefcase, BookOpen, Heart, Coffee, Layers, ChefHat, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { format, isAfter, parse, addMinutes } from "date-fns";
@@ -16,9 +16,40 @@ const CATEGORIES = [
   { id: "Other", label: "Other", icon: Layers, color: "bg-gray-100 text-gray-600" },
 ];
 
+const RECIPES = [
+  {
+    name: "Morning Glory ☀️",
+    description: "Start your day with energy and focus.",
+    routines: [
+      { name: "Wake Up", startTime: "06:00", endTime: "06:15", category: "Health" },
+      { name: "Hydrate", startTime: "06:15", endTime: "06:20", category: "Health" },
+      { name: "Exercise", startTime: "06:30", endTime: "07:00", category: "Health" },
+    ]
+  },
+  {
+    name: "Deep Work 🧠",
+    description: "Maximize productivity with focused blocks.",
+    routines: [
+      { name: "Focus Block 1", startTime: "09:00", endTime: "10:30", category: "Work" },
+      { name: "Break", startTime: "10:30", endTime: "10:45", category: "Self-care" },
+      { name: "Focus Block 2", startTime: "10:45", endTime: "12:15", category: "Work" },
+    ]
+  },
+  {
+    name: "Night Owl 🦉",
+    description: "Wind down properly for better sleep.",
+    routines: [
+      { name: "No Screens", startTime: "22:00", endTime: "22:05", category: "Self-care" },
+      { name: "Read", startTime: "22:05", endTime: "22:45", category: "Learning" },
+      { name: "Sleep", startTime: "23:00", endTime: "07:00", category: "Health" },
+    ]
+  }
+];
+
 export default function RoutinePage() {
   const { state, dispatch } = useStore();
   const [showAdd, setShowAdd] = useState(false);
+  const [showRecipes, setShowRecipes] = useState(false);
   const [showAlarmReminder, setShowAlarmReminder] = useState(false);
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null); // For "Done" popup
   const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), "EEE")); // Default to today: "Mon", "Tue"...
@@ -79,6 +110,31 @@ export default function RoutinePage() {
     setNewRoutine({ name: "", startTime: "08:00", endTime: "08:30", days: [], active: true, category: "Other" });
   };
 
+  const handleApplyRecipe = (recipe: typeof RECIPES[0]) => {
+    recipe.routines.forEach(r => {
+      dispatch({
+        type: "ADD_ROUTINE",
+        payload: {
+          id: crypto.randomUUID(),
+          name: r.name,
+          startTime: r.startTime,
+          endTime: r.endTime,
+          days: DAYS, // Apply to all days by default for recipes
+          active: true,
+          streak: 0,
+          category: r.category,
+        } as Routine,
+      });
+    });
+    setShowRecipes(false);
+    setShowAlarmReminder(true);
+    confetti({
+      particleCount: 150,
+      spread: 60,
+      colors: ["#1368ce", "#eb6123"],
+    });
+  };
+
   const toggleDay = (day: string) => {
     const currentDays = newRoutine.days || [];
     if (currentDays.includes(day)) {
@@ -116,12 +172,21 @@ export default function RoutinePage() {
     <div className="p-4 pt-8 pb-24 space-y-6">
       <header className="flex justify-between items-center">
         <h1 className="text-3xl font-black text-[#1368ce]">Routine</h1>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="bg-[#1368ce] text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform border-b-4 border-[#0e4b96] active:border-b-0 active:translate-y-1"
-        >
-          <Plus className="w-6 h-6" />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowRecipes(true)}
+            className="bg-white text-[#1368ce] p-2 rounded-xl shadow-md active:scale-95 transition-transform border-2 border-[#1368ce]"
+            title="Routine Recipes"
+          >
+            <ChefHat className="w-6 h-6" />
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="bg-[#1368ce] text-white p-2 rounded-xl shadow-md active:scale-95 transition-transform border-b-4 border-[#0e4b96] active:border-b-0 active:translate-y-1"
+          >
+            <Plus className="w-6 h-6" />
+          </button>
+        </div>
       </header>
 
       {/* Day Selector & Progress */}
@@ -299,6 +364,61 @@ export default function RoutinePage() {
               >
                 Got it!
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Recipes Modal */}
+      <AnimatePresence>
+        {showRecipes && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#1368ce] max-h-[80vh] flex flex-col"
+            >
+              <div className="bg-[#1368ce] p-4 flex justify-between items-center shrink-0">
+                <h3 className="text-white font-black text-xl flex items-center gap-2">
+                  <ChefHat className="w-6 h-6" /> Routine Recipes
+                </h3>
+                <button onClick={() => setShowRecipes(false)} className="text-white/80 hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="p-4 space-y-4 overflow-y-auto">
+                <p className="text-gray-500 text-sm font-bold">Pick a preset to instantly add routines to your schedule.</p>
+                
+                {RECIPES.map((recipe) => (
+                  <div key={recipe.name} className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 hover:border-[#1368ce] transition-colors group">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-black text-lg text-gray-800">{recipe.name}</h4>
+                        <p className="text-xs text-gray-500 font-medium">{recipe.description}</p>
+                      </div>
+                      <button
+                        onClick={() => handleApplyRecipe(recipe)}
+                        className="bg-[#1368ce] text-white p-2 rounded-lg shadow-sm active:scale-95 transition-transform"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2 mt-3">
+                      {recipe.routines.map((r, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs font-bold text-gray-400 bg-white p-2 rounded-lg border border-gray-100">
+                          <Clock className="w-3 h-3" />
+                          <span>{r.startTime}</span>
+                          <ArrowRight className="w-3 h-3" />
+                          <span>{r.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           </div>
         )}

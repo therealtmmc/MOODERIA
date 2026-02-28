@@ -5,14 +5,33 @@ import { MobileGuard } from "./MobileGuard";
 import { InstallGuard } from "./InstallGuard";
 import { DailyMoodPopup } from "./DailyMoodPopup";
 import { LoadingScreen } from "./LoadingScreen";
+import { BreathingModal } from "./BreathingModal";
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
+import { Wind } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const THEME_COLORS: Record<string, string> = {
+  Happy: "bg-yellow-50",
+  Sad: "bg-blue-50",
+  Neutral: "bg-gray-50",
+  Loved: "bg-pink-50",
+  Angry: "bg-red-50",
+  Energetic: "bg-orange-50",
+  Tired: "bg-stone-50",
+  Calm: "bg-indigo-50",
+};
 
 export function Layout() {
   const { state } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
+  const [isBreathingOpen, setIsBreathingOpen] = useState(false);
+
+  // Determine current theme based on last logged mood
+  const lastMoodEntry = state.moods.find(m => m.date === state.lastMoodDate);
+  const currentTheme = lastMoodEntry ? THEME_COLORS[lastMoodEntry.mood] : "bg-[#f2f2f2]";
 
   // Simulate loading screen on first visit
   useEffect(() => {
@@ -47,14 +66,12 @@ export function Layout() {
         // Check if routine is active, time matches, and day matches
         if (
           routine.active &&
-          routine.time === currentTime &&
+          routine.startTime === currentTime && // Changed from routine.time to routine.startTime based on type definition
           routine.days.includes(currentDay)
         ) {
-          // Check if we already alerted for this routine today/time (simple debounce)
-          // For MVP, just alert. In production, track alerted IDs.
           if (Notification.permission === "granted") {
             new Notification(`Time for ${routine.name}!`, {
-              body: `It's ${routine.time}. Let's do this!`,
+              body: `It's ${routine.startTime}. Let's do this!`,
             });
           }
         }
@@ -74,12 +91,27 @@ export function Layout() {
   return (
     <InstallGuard>
       <MobileGuard>
-        <div className="min-h-screen bg-[#f2f2f2] pb-24 font-sans text-gray-800 overflow-x-hidden">
+        <div className={cn("min-h-screen pb-24 font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
           {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
+          
           <main className="max-w-md mx-auto min-h-screen relative">
             <Outlet />
           </main>
-          {state.userProfile && location.pathname !== "/onboarding" && <BottomNav />}
+          
+          {state.userProfile && location.pathname !== "/onboarding" && (
+            <>
+              <button
+                onClick={() => setIsBreathingOpen(true)}
+                className="fixed bottom-24 right-4 z-40 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-blue-400 hover:bg-blue-50 active:scale-95 transition-all"
+                title="Panic Button (Breathe)"
+              >
+                <Wind className="w-6 h-6" />
+              </button>
+              <BottomNav />
+            </>
+          )}
+
+          <BreathingModal isOpen={isBreathingOpen} onClose={() => setIsBreathingOpen(false)} />
         </div>
       </MobileGuard>
     </InstallGuard>

@@ -8,6 +8,8 @@ export type MoodEntry = {
   image?: string; // Base64 string or URL
   video?: string; // Base64 string or URL
   audio?: string; // Base64 string or URL
+  lockDate?: string; // ISO Date string for Time Capsule
+  isHighlight?: boolean; // "This was a Win"
 };
 
 export type Routine = {
@@ -175,9 +177,7 @@ function reducer(state: AppState, action: Action): AppState {
     case "DELETE_DIARY":
       return {
         ...state,
-        moods: state.moods.map((m) =>
-          m.date === action.payload ? { ...m, note: "" } : m
-        ),
+        moods: state.moods.filter((m) => m.date !== action.payload),
       };
     case "CLEAR_ALL_DIARY":
       return {

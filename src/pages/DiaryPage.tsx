@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
-import { format, subDays, isSameDay, parseISO } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause } from "lucide-react";
+import { format, subDays, isSameDay, parseISO, isAfter } from "date-fns";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -12,7 +12,7 @@ const MOOD_COLORS: Record<string, string> = {
   Loved: "bg-pink-400",
   Angry: "bg-red-500",
   Energetic: "bg-orange-400",
-  Tired: "bg-brown-400",
+  Tired: "bg-stone-500",
   Calm: "bg-indigo-400",
 };
 
@@ -35,10 +35,15 @@ export default function DiaryPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(todayMood?.image || null);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(todayMood?.video || null);
   const [selectedAudio, setSelectedAudio] = useState<string | null>(todayMood?.audio || null);
+  const [lockDate, setLockDate] = useState<string | null>(todayMood?.lockDate || null);
+  const [isHighlight, setIsHighlight] = useState<boolean>(todayMood?.isHighlight || false);
+  
   const [viewMode, setViewMode] = useState<"list" | "gallery">("list");
+  const [filterMode, setFilterMode] = useState<"all" | "wins">("all");
   const [dailyPrompt, setDailyPrompt] = useState("");
   
   const [isRecording, setIsRecording] = useState(false);
+  const [showRecordingPopup, setShowRecordingPopup] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -49,41 +54,45 @@ export default function DiaryPage() {
     setDailyPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
   }, []);
 
-  const toggleRecording = async () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          setSelectedAudio(reader.result as string);
+        };
+        
+        // Stop all tracks to release microphone
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setShowRecordingPopup(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      alert("Could not access microphone. Please ensure you have granted permission.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
       setIsRecording(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          const reader = new FileReader();
-          reader.readAsDataURL(audioBlob);
-          reader.onloadend = () => {
-            setSelectedAudio(reader.result as string);
-          };
-          
-          // Stop all tracks to release microphone
-          stream.getTracks().forEach(track => track.stop());
-        };
-
-        mediaRecorder.start();
-        setIsRecording(true);
-      } catch (error) {
-        console.error("Error accessing microphone:", error);
-        alert("Could not access microphone. Please ensure you have granted permission.");
-      }
+      setShowRecordingPopup(false);
     }
   };
 
@@ -128,7 +137,9 @@ export default function DiaryPage() {
           note: diaryEntry,
           image: selectedImage || undefined,
           video: selectedVideo || undefined,
-          audio: selectedAudio || undefined
+          audio: selectedAudio || undefined,
+          lockDate: lockDate || undefined,
+          isHighlight: isHighlight
         } 
       });
       alert("Diary entry saved!");
@@ -251,20 +262,52 @@ export default function DiaryPage() {
                 <p className="text-sm font-medium text-[#1368ce]">{dailyPrompt}</p>
               </div>
             )}
-            
-            {/* Voice Recording Button */}
+          </div>
+
+          {/* Extra Options: Highlight & Lock */}
+          <div className="flex gap-3 mb-4">
             <button
-              onClick={toggleRecording}
+              onClick={() => setIsHighlight(!isHighlight)}
               className={cn(
-                "absolute bottom-6 right-4 p-2 rounded-full shadow-md transition-all z-20",
-                isRecording 
-                  ? "bg-red-500 text-white animate-pulse" 
-                  : "bg-white text-gray-400 hover:text-[#1368ce]"
+                "flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-2 transition-all",
+                isHighlight
+                  ? "bg-yellow-100 border-yellow-400 text-yellow-700"
+                  : "bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
               )}
-              title={isRecording ? "Stop Recording" : "Start Recording"}
             >
-              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              <Trophy className={cn("w-4 h-4", isHighlight && "fill-yellow-500 text-yellow-500")} />
+              {isHighlight ? "Marked as Win!" : "Mark as Win"}
             </button>
+            
+            <div className="flex-1 relative">
+              <input
+                type="date"
+                min={format(new Date(), "yyyy-MM-dd")}
+                value={lockDate || ""}
+                onChange={(e) => setLockDate(e.target.value || null)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full"
+              />
+              <button
+                className={cn(
+                  "w-full h-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-2 transition-all pointer-events-none",
+                  lockDate
+                    ? "bg-indigo-100 border-indigo-400 text-indigo-700"
+                    : "bg-gray-50 border-gray-200 text-gray-400"
+                )}
+              >
+                {lockDate ? (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    Locked until {format(parseISO(lockDate), "MMM d")}
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="w-4 h-4" />
+                    Lock Memory
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Media Upload */}
@@ -343,6 +386,14 @@ export default function DiaryPage() {
           )}
           
           <button
+            onClick={startRecording}
+            className="w-full mb-3 bg-white border-2 border-[#1368ce] text-[#1368ce] py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-transform flex items-center justify-center gap-2 hover:bg-blue-50"
+          >
+            <Mic className="w-5 h-5" />
+            <span>Record Voice Note</span>
+          </button>
+
+          <button
             onClick={handleSaveDiary}
             disabled={!selectedMood}
             className="w-full bg-[#1368ce] text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed"
@@ -352,6 +403,40 @@ export default function DiaryPage() {
           </button>
         </div>
       </div>
+
+      {/* Recording Popup */}
+      <AnimatePresence>
+        {showRecordingPopup && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-red-500 p-8 text-center space-y-8"
+            >
+              <div>
+                <h3 className="text-2xl font-black text-gray-800 mb-2">Recording...</h3>
+                <p className="text-gray-500 font-bold">Speak clearly into your microphone</p>
+              </div>
+
+              <div className="w-32 h-32 rounded-full bg-red-50 flex items-center justify-center mx-auto relative">
+                <div className="absolute inset-0 rounded-full border-4 border-red-500 animate-ping opacity-20" />
+                <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg animate-pulse">
+                  <Mic className="w-10 h-10" />
+                </div>
+              </div>
+
+              <button
+                onClick={stopRecording}
+                className="w-full bg-red-500 text-white py-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
+              >
+                <MicOff className="w-6 h-6" />
+                Stop Recording
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* On This Day */}
       {onThisDayEntries.length > 0 && (
@@ -389,113 +474,158 @@ export default function DiaryPage() {
       <div className="space-y-4">
         <div className="flex justify-between items-center px-2">
           <h4 className="font-black text-gray-700 text-lg">Past Memories</h4>
-          {state.moods.some(m => m.note || m.image || m.video || m.audio) && (
+          <div className="flex gap-2">
             <button 
-              onClick={() => {
-                if(confirm("Delete all diary entries?")) {
-                  dispatch({ type: "CLEAR_ALL_DIARY" });
-                }
-              }}
-              className="text-red-400 hover:text-red-600 text-xs font-bold bg-red-50 px-3 py-1 rounded-full transition-colors"
+              onClick={() => setFilterMode(filterMode === "all" ? "wins" : "all")}
+              className={cn(
+                "text-xs font-bold px-3 py-1 rounded-full transition-colors flex items-center gap-1",
+                filterMode === "wins" ? "bg-yellow-100 text-yellow-600" : "bg-gray-100 text-gray-400"
+              )}
             >
-              Clear All
+              <Trophy className="w-3 h-3" /> Wins Only
             </button>
-          )}
+            {state.moods.some(m => m.note || m.image || m.video || m.audio) && (
+              <button 
+                onClick={() => {
+                  if(confirm("Delete all diary entries?")) {
+                    dispatch({ type: "CLEAR_ALL_DIARY" });
+                  }
+                }}
+                className="text-red-400 hover:text-red-600 text-xs font-bold bg-red-50 px-3 py-1 rounded-full transition-colors"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
         </div>
 
         {viewMode === "list" ? (
           <div className="space-y-4">
             {state.moods
               .filter(m => m.note || m.image || m.video || m.audio)
+              .filter(m => filterMode === "all" || m.isHighlight)
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((entry) => (
-              <motion.div 
-                key={entry.date} 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-5 rounded-3xl shadow-md border border-gray-100"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm", MOOD_COLORS[entry.mood])}>
-                      {/* You could put an icon here based on mood */}
-                      <div className="w-3 h-3 bg-white rounded-full opacity-50" />
-                    </div>
-                    <div>
-                      <p className="font-black text-gray-800">{format(new Date(entry.date), "MMMM d, yyyy")}</p>
-                      <span className={cn("text-[10px] font-bold uppercase tracking-wider text-gray-400")}>
-                         {entry.mood}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if(confirm("Delete this entry?")) {
-                        dispatch({ type: "DELETE_DIARY", payload: entry.date });
-                      }
-                    }}
-                    className="text-gray-300 hover:text-red-500 transition-colors p-2"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
+              .map((entry) => {
+                const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
                 
-                <div className="grid grid-cols-1 gap-2 mb-4">
-                  {entry.image && (
-                    <div className="rounded-2xl overflow-hidden shadow-sm aspect-video">
-                      <img src={entry.image} alt="Memory" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  {entry.video && (
-                    <div className="rounded-2xl overflow-hidden shadow-sm aspect-video bg-black">
-                      <video src={entry.video} controls className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  {entry.audio && (
-                    <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3 border border-gray-100">
-                      <div className="w-8 h-8 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce] shrink-0">
-                        <Mic className="w-4 h-4" />
+                return (
+                  <motion.div 
+                    key={entry.date} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white p-5 rounded-3xl shadow-md border border-gray-100 relative overflow-hidden"
+                  >
+                    {isLocked && (
+                      <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6">
+                        <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
+                          <Lock className="w-6 h-6 text-indigo-500" />
+                        </div>
+                        <h3 className="font-black text-gray-800 text-lg">Time Capsule</h3>
+                        <p className="text-gray-500 text-sm font-bold mt-1">
+                          Opens on {format(parseISO(entry.lockDate!), "MMMM d, yyyy")}
+                        </p>
                       </div>
-                      <audio src={entry.audio} controls className="w-full h-8" />
-                    </div>
-                  )}
-                </div>
+                    )}
 
-                {entry.note && (
-                  <div className="bg-gray-50 p-4 rounded-2xl">
-                    <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap font-medium">{entry.note}</p>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm", MOOD_COLORS[entry.mood])}>
+                          {entry.isHighlight ? <Trophy className="w-4 h-4" /> : <div className="w-3 h-3 bg-white rounded-full opacity-50" />}
+                        </div>
+                        <div>
+                          <p className="font-black text-gray-800">{format(new Date(entry.date), "MMMM d, yyyy")}</p>
+                          <span className={cn("text-[10px] font-bold uppercase tracking-wider text-gray-400")}>
+                             {entry.mood}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if(confirm("Delete this entry?")) {
+                            dispatch({ type: "DELETE_DIARY", payload: entry.date });
+                          }
+                        }}
+                        className="text-gray-300 hover:text-red-500 transition-colors p-2"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-2 mb-4">
+                      {entry.image && (
+                        <div className="rounded-2xl overflow-hidden shadow-sm aspect-video">
+                          <img src={entry.image} alt="Memory" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      {entry.video && (
+                        <div className="rounded-2xl overflow-hidden shadow-sm aspect-video bg-black">
+                          <video src={entry.video} controls className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      {entry.audio && (
+                        <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3 border border-gray-100">
+                          <div className="w-8 h-8 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce] shrink-0">
+                            <Mic className="w-4 h-4" />
+                          </div>
+                          <audio src={entry.audio} controls className="w-full h-8" />
+                        </div>
+                      )}
+                    </div>
+
+                    {entry.note && (
+                      <div className="bg-gray-50 p-4 rounded-2xl">
+                        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap font-medium">{entry.note}</p>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {state.moods
               .filter(m => m.image || m.video || m.audio)
+              .filter(m => filterMode === "all" || m.isHighlight)
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((entry) => (
-                <motion.div
-                  key={entry.date}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100"
-                >
-                  {entry.image ? (
-                    <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
-                  ) : entry.video ? (
-                    <video src={entry.video} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                      <Mic className="w-12 h-12 text-gray-400" />
+              .map((entry) => {
+                 const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
+                 return (
+                  <motion.div
+                    key={entry.date}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100"
+                  >
+                    {isLocked ? (
+                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center z-10">
+                        <Lock className="w-8 h-8 text-gray-400" />
+                      </div>
+                    ) : (
+                      <>
+                        {entry.image ? (
+                          <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
+                        ) : entry.video ? (
+                          <video src={entry.video} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                            <Mic className="w-12 h-12 text-gray-400" />
+                          </div>
+                        )}
+                      </>
+                    )}
+                    
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3 pointer-events-none">
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <p className="text-white text-xs font-bold">{format(new Date(entry.date), "MMM d")}</p>
+                          <p className="text-white/80 text-[10px] uppercase font-bold">{entry.mood}</p>
+                        </div>
+                        {entry.isHighlight && <Trophy className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
+                      </div>
                     </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
-                    <p className="text-white text-xs font-bold">{format(new Date(entry.date), "MMM d")}</p>
-                    <p className="text-white/80 text-[10px] uppercase font-bold">{entry.mood}</p>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
           </div>
         )}
         
