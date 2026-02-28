@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format, subDays, isSameDay, parseISO } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff } from "lucide-react";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -34,60 +34,56 @@ export default function DiaryPage() {
   const [selectedMood, setSelectedMood] = useState<string | null>(todayMood?.mood || null);
   const [selectedImage, setSelectedImage] = useState<string | null>(todayMood?.image || null);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(todayMood?.video || null);
+  const [selectedAudio, setSelectedAudio] = useState<string | null>(todayMood?.audio || null);
   const [viewMode, setViewMode] = useState<"list" | "gallery">("list");
   const [dailyPrompt, setDailyPrompt] = useState("");
   
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  const textBeforeListening = useRef("");
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDailyPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
-
-    if (typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-
-      recognitionRef.current.onresult = (event: any) => {
-        let finalTranscript = "";
-        let interimTranscript = "";
-
-        for (let i = 0; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
-        
-        const transcript = finalTranscript + interimTranscript;
-        setDiaryEntry(textBeforeListening.current + (textBeforeListening.current && transcript ? " " : "") + transcript);
-      };
-
-      recognitionRef.current.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        setIsListening(false);
-      };
-      
-      recognitionRef.current.onend = () => {
-          setIsListening(false);
-      };
-    }
   }, []);
 
-  const toggleListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
+  const toggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
     } else {
-      textBeforeListening.current = diaryEntry;
-      recognitionRef.current?.start();
-      setIsListening(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = () => {
+            setSelectedAudio(reader.result as string);
+          };
+          
+          // Stop all tracks to release microphone
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+        alert("Could not access microphone. Please ensure you have granted permission.");
+      }
     }
   };
 
@@ -131,7 +127,8 @@ export default function DiaryPage() {
           mood: moodToSave,
           note: diaryEntry,
           image: selectedImage || undefined,
-          video: selectedVideo || undefined
+          video: selectedVideo || undefined,
+          audio: selectedAudio || undefined
         } 
       });
       alert("Diary entry saved!");
@@ -255,18 +252,18 @@ export default function DiaryPage() {
               </div>
             )}
             
-            {/* Voice Input Button */}
+            {/* Voice Recording Button */}
             <button
-              onClick={toggleListening}
+              onClick={toggleRecording}
               className={cn(
                 "absolute bottom-6 right-4 p-2 rounded-full shadow-md transition-all z-20",
-                isListening 
+                isRecording 
                   ? "bg-red-500 text-white animate-pulse" 
                   : "bg-white text-gray-400 hover:text-[#1368ce]"
               )}
-              title={isListening ? "Stop Listening" : "Start Listening"}
+              title={isRecording ? "Stop Recording" : "Start Recording"}
             >
-              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </button>
           </div>
 
@@ -304,8 +301,8 @@ export default function DiaryPage() {
           </div>
 
           {/* Media Previews */}
-          {(selectedImage || selectedVideo) && (
-            <div className="grid grid-cols-2 gap-2 mb-4">
+          {(selectedImage || selectedVideo || selectedAudio) && (
+            <div className="grid grid-cols-1 gap-2 mb-4">
               {selectedImage && (
                 <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 group aspect-video">
                   <img src={selectedImage} alt="Attachment" className="w-full h-full object-cover" />
@@ -323,6 +320,20 @@ export default function DiaryPage() {
                   <button 
                     onClick={() => setSelectedVideo(null)}
                     className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors z-10"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+              {selectedAudio && (
+                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce]">
+                    <Mic className="w-5 h-5" />
+                  </div>
+                  <audio src={selectedAudio} controls className="w-full h-8" />
+                  <button 
+                    onClick={() => setSelectedAudio(null)}
+                    className="bg-gray-200 text-gray-500 p-1 rounded-full hover:bg-red-500 hover:text-white transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -378,7 +389,7 @@ export default function DiaryPage() {
       <div className="space-y-4">
         <div className="flex justify-between items-center px-2">
           <h4 className="font-black text-gray-700 text-lg">Past Memories</h4>
-          {state.moods.some(m => m.note || m.image || m.video) && (
+          {state.moods.some(m => m.note || m.image || m.video || m.audio) && (
             <button 
               onClick={() => {
                 if(confirm("Delete all diary entries?")) {
@@ -395,7 +406,7 @@ export default function DiaryPage() {
         {viewMode === "list" ? (
           <div className="space-y-4">
             {state.moods
-              .filter(m => m.note || m.image || m.video)
+              .filter(m => m.note || m.image || m.video || m.audio)
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .map((entry) => (
               <motion.div 
@@ -429,7 +440,7 @@ export default function DiaryPage() {
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="grid grid-cols-1 gap-2 mb-4">
                   {entry.image && (
                     <div className="rounded-2xl overflow-hidden shadow-sm aspect-video">
                       <img src={entry.image} alt="Memory" className="w-full h-full object-cover" />
@@ -438,6 +449,14 @@ export default function DiaryPage() {
                   {entry.video && (
                     <div className="rounded-2xl overflow-hidden shadow-sm aspect-video bg-black">
                       <video src={entry.video} controls className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  {entry.audio && (
+                    <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3 border border-gray-100">
+                      <div className="w-8 h-8 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce] shrink-0">
+                        <Mic className="w-4 h-4" />
+                      </div>
+                      <audio src={entry.audio} controls className="w-full h-8" />
                     </div>
                   )}
                 </div>
@@ -453,7 +472,7 @@ export default function DiaryPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {state.moods
-              .filter(m => m.image || m.video)
+              .filter(m => m.image || m.video || m.audio)
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .map((entry) => (
                 <motion.div
@@ -464,8 +483,12 @@ export default function DiaryPage() {
                 >
                   {entry.image ? (
                     <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
-                  ) : (
+                  ) : entry.video ? (
                     <video src={entry.video} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <Mic className="w-12 h-12 text-gray-400" />
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
                     <p className="text-white text-xs font-bold">{format(new Date(entry.date), "MMM d")}</p>
@@ -476,7 +499,7 @@ export default function DiaryPage() {
           </div>
         )}
         
-        {state.moods.filter(m => m.note || m.image || m.video).length === 0 && (
+        {state.moods.filter(m => m.note || m.image || m.video || m.audio).length === 0 && (
           <div className="text-center py-12 opacity-50">
             <Book className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-400 font-bold">No memories saved yet.</p>

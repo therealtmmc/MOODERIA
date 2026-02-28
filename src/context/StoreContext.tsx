@@ -7,6 +7,7 @@ export type MoodEntry = {
   note: string;
   image?: string; // Base64 string or URL
   video?: string; // Base64 string or URL
+  audio?: string; // Base64 string or URL
 };
 
 export type Routine = {
