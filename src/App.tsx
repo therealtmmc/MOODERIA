@@ -11,6 +11,7 @@ import RoutinePage from "@/pages/RoutinePage";
 import EventsPage from "@/pages/EventsPage";
 import HealthPage from "@/pages/HealthPage";
 import ProfilePage from "@/pages/ProfilePage";
+import DiaryPage from "@/pages/DiaryPage";
 import OnboardingPage from "@/pages/OnboardingPage";
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="events" element={<EventsPage />} />
             <Route path="health" element={<HealthPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="diary" element={<DiaryPage />} />
             <Route path="onboarding" element={<OnboardingPage />} />
           </Route>
         </Routes>

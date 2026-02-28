@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Dumbbell, Heart, ListTodo, Smile, User } from "lucide-react";
+import { Calendar, Dumbbell, Heart, ListTodo, Smile, User, Book } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { path: "/mood", label: "Mood", icon: Smile, color: "text-[#eb6123]" }, // Orange
+  { path: "/diary", label: "Diary", icon: Book, color: "text-[#1368ce]" }, // Blue
   { path: "/routine", label: "Routine", icon: ListTodo, color: "text-[#1368ce]" }, // Blue
   { path: "/events", label: "Events", icon: Calendar, color: "text-[#26890c]" }, // Green
   { path: "/health", label: "Health", icon: Dumbbell, color: "text-[#e21b3c]" }, // Red

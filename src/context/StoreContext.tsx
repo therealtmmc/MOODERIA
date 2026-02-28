@@ -5,6 +5,7 @@ export type MoodEntry = {
   date: string; // ISO Date string (YYYY-MM-DD)
   mood: string; // e.g., "Happy", "Sad", "Excited"
   note: string;
+  image?: string; // Base64 string or URL
 };
 
 export type Routine = {
