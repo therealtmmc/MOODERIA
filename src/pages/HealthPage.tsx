@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore, WorkoutLog, WalkLog } from "@/context/StoreContext";
-import { Play, MapPin, StopCircle, Timer, Flame, X } from "lucide-react";
+import { Play, MapPin, StopCircle, Timer, Flame, X, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 
@@ -50,12 +50,28 @@ export default function HealthPage() {
   
   // Workout State
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
-  const [activeProgram, setActiveProgram] = useState<typeof WORKOUT_PROGRAMS[0] | null>(null);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [isResting, setIsResting] = useState(false);
+  const [showBuilderModal, setShowBuilderModal] = useState(false); // New Builder Modal
+  
+  // New Flexible Routine State
+  type WorkoutStep = {
+    type: "time" | "reps" | "rest";
+    name: string;
+    duration?: number; // seconds
+    reps?: number;
+  };
+  
+  const [activeRoutine, setActiveRoutine] = useState<WorkoutStep[] | null>(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   
+  // Builder State
+  const [builderSteps, setBuilderSteps] = useState<WorkoutStep[]>([]);
+  const [newStep, setNewStep] = useState<{name: string, type: "time" | "reps", val: string}>({
+    name: "", type: "reps", val: ""
+  });
+  const [restDuration, setRestDuration] = useState("");
+
   // Walk State
   const [isWalking, setIsWalking] = useState(false);
   const [walkTime, setWalkTime] = useState(0);
@@ -64,66 +80,151 @@ export default function HealthPage() {
   const watchIdRef = useRef<number | null>(null);
   const workoutTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Custom Workout Logging State
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [customExercises, setCustomExercises] = useState<{name: string, sets: string, reps: string, weight: string}[]>([
+    { name: "", sets: "", reps: "", weight: "" }
+  ]);
+
+  const handleAddExerciseRow = () => {
+    setCustomExercises([...customExercises, { name: "", sets: "", reps: "", weight: "" }]);
+  };
+
+  const handleExerciseChange = (index: number, field: string, value: string) => {
+    const newExercises = [...customExercises];
+    // @ts-ignore
+    newExercises[index][field] = value;
+    setCustomExercises(newExercises);
+  };
+
+  const handleRemoveExerciseRow = (index: number) => {
+    const newExercises = customExercises.filter((_, i) => i !== index);
+    setCustomExercises(newExercises);
+  };
+
+  const saveCustomWorkout = () => {
+    // Filter out empty rows
+    const validExercises = customExercises.filter(e => e.name && e.sets && e.reps);
+    
+    if (validExercises.length === 0) return;
+
+    const log: WorkoutLog = {
+      id: crypto.randomUUID(),
+      date: format(new Date(), "yyyy-MM-dd"),
+      type: "Custom Workout",
+      difficulty: "Medium",
+      duration: 0, // Not tracked for manual entry
+      reps: validExercises.reduce((acc, curr) => acc + (parseInt(curr.reps) * parseInt(curr.sets)), 0),
+      exercises: validExercises.map(e => ({
+        name: e.name,
+        sets: parseInt(e.sets),
+        reps: parseInt(e.reps),
+        weight: e.weight ? parseFloat(e.weight) : undefined
+      }))
+    };
+
+    dispatch({ type: "LOG_WORKOUT", payload: log });
+    setShowLogModal(false);
+    setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
+    
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: ["#FFD700", "#e21b3c"],
+    });
+  };
+
   // Workout Logic
   const startProgram = (program: typeof WORKOUT_PROGRAMS[0]) => {
-    setActiveProgram(program);
-    setCurrentExerciseIndex(0);
-    setIsResting(false);
-    setTimeLeft(program.exercises[0].duration);
+    // Convert preset program to flexible steps
+    const steps: WorkoutStep[] = [];
+    program.exercises.forEach((ex, idx) => {
+      steps.push({ type: "time", name: ex.name, duration: ex.duration });
+      if (idx < program.exercises.length - 1) {
+        steps.push({ type: "rest", name: "Rest", duration: 15 });
+      }
+    });
+
+    setActiveRoutine(steps);
+    setCurrentStepIndex(0);
+    setTimeLeft(steps[0].duration || 0);
     setIsActive(true);
     setShowWorkoutModal(false);
   };
 
+  const startCustomRoutine = () => {
+    if (builderSteps.length === 0) return;
+    setActiveRoutine([...builderSteps]);
+    setCurrentStepIndex(0);
+    setTimeLeft(builderSteps[0].duration || 0);
+    setIsActive(true);
+    setShowBuilderModal(false);
+  };
+
+  const nextStep = () => {
+    if (!activeRoutine) return;
+    
+    if (currentStepIndex < activeRoutine.length - 1) {
+      const nextIndex = currentStepIndex + 1;
+      setCurrentStepIndex(nextIndex);
+      setTimeLeft(activeRoutine[nextIndex].duration || 0);
+    } else {
+      completeWorkout();
+    }
+  };
+
   const stopWorkout = () => {
     setIsActive(false);
-    setActiveProgram(null);
+    setActiveRoutine(null);
     if (workoutTimerRef.current) clearInterval(workoutTimerRef.current);
   };
 
   useEffect(() => {
-    if (isActive && timeLeft > 0) {
-      workoutTimerRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (isActive && timeLeft === 0) {
-      // Timer finished
-      if (workoutTimerRef.current) clearInterval(workoutTimerRef.current);
-      
-      if (isResting) {
-        // Rest finished, start next exercise
-        if (activeProgram && currentExerciseIndex < activeProgram.exercises.length - 1) {
-          setCurrentExerciseIndex((prev) => prev + 1);
-          setIsResting(false);
-          setTimeLeft(activeProgram.exercises[currentExerciseIndex + 1].duration);
-        } else {
-          // Workout finished!
-          completeWorkout();
-        }
-      } else {
-        // Exercise finished, start rest
-        if (activeProgram && currentExerciseIndex < activeProgram.exercises.length - 1) {
-          setIsResting(true);
-          setTimeLeft(15); // 15s rest
-        } else {
-          completeWorkout();
-        }
+    if (!isActive || !activeRoutine) return;
+
+    const currentStep = activeRoutine[currentStepIndex];
+
+    // Only run timer for time-based steps (time or rest)
+    if (currentStep.type === "time" || currentStep.type === "rest") {
+      if (timeLeft > 0) {
+        workoutTimerRef.current = setInterval(() => {
+          setTimeLeft((prev) => prev - 1);
+        }, 1000);
+      } else if (timeLeft === 0) {
+        if (workoutTimerRef.current) clearInterval(workoutTimerRef.current);
+        nextStep();
       }
+    } else {
+      // For reps, no timer runs automatically, user clicks Next
+      if (workoutTimerRef.current) clearInterval(workoutTimerRef.current);
     }
+
     return () => {
       if (workoutTimerRef.current) clearInterval(workoutTimerRef.current);
     };
-  }, [isActive, timeLeft, isResting, currentExerciseIndex, activeProgram]);
+  }, [isActive, timeLeft, currentStepIndex, activeRoutine]);
 
   const completeWorkout = () => {
-    if (!activeProgram) return;
+    if (!activeRoutine) return;
     
+    // Calculate total duration/reps from the routine
+    const totalDuration = activeRoutine.reduce((acc, step) => acc + (step.duration || 0), 0);
+    const totalReps = activeRoutine.reduce((acc, step) => acc + (step.reps || 0), 0);
+
     const log: WorkoutLog = {
       id: crypto.randomUUID(),
       date: format(new Date(), "yyyy-MM-dd"),
-      type: activeProgram.title,
+      type: "Custom Session",
       difficulty: "Medium",
-      duration: activeProgram.exercises.reduce((acc, ex) => acc + ex.duration, 0),
-      reps: activeProgram.exercises.length,
+      duration: totalDuration,
+      reps: totalReps,
+      exercises: activeRoutine.filter(s => s.type !== "rest").map(s => ({
+        name: s.name,
+        sets: 1,
+        reps: s.reps || 0,
+        duration: s.duration
+      }))
     };
     
     dispatch({ type: "LOG_WORKOUT", payload: log });
@@ -244,11 +345,149 @@ export default function HealthPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Calculate Workout Streak
+  const calculateWorkoutStreak = () => {
+    if (state.workouts.length === 0) return 0;
+    
+    // Get unique dates of workouts, sorted descending
+    const uniqueDates = Array.from(new Set(state.workouts.map(w => w.date)))
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      
+    if (uniqueDates.length === 0) return 0;
+
+    const today = format(new Date(), "yyyy-MM-dd");
+    const yesterday = format(new Date(Date.now() - 86400000), "yyyy-MM-dd");
+    
+    // Check if streak is active (worked out today or yesterday)
+    if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
+      return 0;
+    }
+
+    let streak = 1;
+    let currentDate = new Date(uniqueDates[0]);
+
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prevDate = new Date(uniqueDates[i]);
+      const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+      if (diffDays === 1) {
+        streak++;
+        currentDate = prevDate;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const workoutStreak = calculateWorkoutStreak();
+
+  // Calculate Weekly Stats
+  const calculateWeeklyStats = () => {
+    const now = new Date();
+    const start = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
+    const end = endOfWeek(now, { weekStartsOn: 1 });
+
+    const weeklyLogs = state.workouts.filter(w => {
+      const workoutDate = parseISO(w.date);
+      return isWithinInterval(workoutDate, { start, end });
+    });
+
+    const totalDuration = weeklyLogs.reduce((acc, curr) => acc + curr.duration, 0);
+    const count = weeklyLogs.length;
+    
+    let avgIntensity = "N/A";
+    if (count > 0) {
+      const intensityScore = weeklyLogs.reduce((acc, curr) => {
+        if (curr.difficulty === "Hard") return acc + 3;
+        if (curr.difficulty === "Medium") return acc + 2;
+        return acc + 1; // Easy
+      }, 0) / count;
+
+      if (intensityScore < 1.5) avgIntensity = "Easy";
+      else if (intensityScore < 2.5) avgIntensity = "Medium";
+      else avgIntensity = "Hard";
+    }
+
+    return { totalDuration, count, avgIntensity };
+  };
+
+  const weeklyStats = calculateWeeklyStats();
+
   return (
     <div className="p-4 pt-8 pb-24 space-y-6 relative">
-      <header>
+      <header className="flex justify-between items-center">
         <h1 className="text-3xl font-black text-[#e21b3c]">Health</h1>
+        {workoutStreak > 0 && (
+          <div className="flex items-center gap-1 bg-orange-100 px-3 py-1 rounded-full border-2 border-orange-200">
+            <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-pulse" />
+            <span className="font-black text-orange-600">{workoutStreak} Day Streak</span>
+          </div>
+        )}
       </header>
+
+      {/* Streak Visualizer */}
+      {workoutStreak > 0 && (
+        <div className="bg-gradient-to-r from-orange-500 to-red-600 p-4 rounded-3xl shadow-lg text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+            <Flame className="w-48 h-48" />
+          </div>
+          <h3 className="font-black text-lg mb-2 relative z-10">Workout Streak</h3>
+          <div className="flex flex-wrap gap-2 relative z-10">
+            {Array.from({ length: Math.min(workoutStreak, 14) }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white/20 p-2 rounded-xl backdrop-blur-sm"
+              >
+                <Flame className="w-6 h-6 text-yellow-300 fill-yellow-300 drop-shadow-md" />
+              </motion.div>
+            ))}
+            {workoutStreak > 14 && (
+              <div className="flex items-center justify-center bg-white/20 px-3 rounded-xl font-black text-sm">
+                +{workoutStreak - 14} more
+              </div>
+            )}
+          </div>
+          <p className="text-xs font-bold mt-3 opacity-90 relative z-10">
+            You're on fire! Keep it up! 🔥
+          </p>
+        </div>
+      )}
+
+      {/* Weekly Summary */}
+      <div className="bg-white p-5 rounded-3xl shadow-md border-b-4 border-gray-200">
+        <div className="flex items-center gap-2 mb-4 text-[#e21b3c]">
+          <Calendar className="w-5 h-5" />
+          <h3 className="font-black text-lg uppercase">This Week</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-4 divide-x divide-gray-100">
+          <div className="text-center">
+            <p className="text-xs font-bold text-gray-400 uppercase mb-1">Duration</p>
+            <p className="font-black text-xl text-gray-800">
+              {Math.round(weeklyStats.totalDuration / 60)}<span className="text-sm text-gray-400 ml-1">min</span>
+            </p>
+          </div>
+          <div className="text-center pl-4">
+            <p className="text-xs font-bold text-gray-400 uppercase mb-1">Workouts</p>
+            <p className="font-black text-xl text-gray-800">{weeklyStats.count}</p>
+          </div>
+          <div className="text-center pl-4">
+            <p className="text-xs font-bold text-gray-400 uppercase mb-1">Avg Intensity</p>
+            <p className={cn(
+              "font-black text-lg",
+              weeklyStats.avgIntensity === "Hard" ? "text-red-500" :
+              weeklyStats.avgIntensity === "Medium" ? "text-orange-500" :
+              weeklyStats.avgIntensity === "Easy" ? "text-green-500" : "text-gray-400"
+            )}>
+              {weeklyStats.avgIntensity}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4">
@@ -273,6 +512,24 @@ export default function HealthPage() {
         >
           <span className="font-black text-lg">Start Workout Program</span>
           <Play className="w-6 h-6 fill-current" />
+        </button>
+
+        <button
+          onClick={() => setShowBuilderModal(true)}
+          disabled={isActive || isWalking}
+          className="w-full bg-white text-[#e21b3c] p-4 rounded-2xl shadow-lg border-b-4 border-gray-200 active:translate-y-1 active:border-b-0 transition-all flex items-center justify-between disabled:opacity-50"
+        >
+          <span className="font-black text-lg">Build Custom Routine</span>
+          <span className="text-2xl">🏗️</span>
+        </button>
+
+        <button
+          onClick={() => setShowLogModal(true)}
+          disabled={isActive || isWalking}
+          className="w-full bg-white text-[#e21b3c] p-4 rounded-2xl shadow-lg border-b-4 border-gray-200 active:translate-y-1 active:border-b-0 transition-all flex items-center justify-between disabled:opacity-50"
+        >
+          <span className="font-black text-lg">Log Custom Workout</span>
+          <span className="text-2xl">📝</span>
         </button>
 
         <button
@@ -324,7 +581,7 @@ export default function HealthPage() {
 
       {/* Active Workout Overlay (Full Screen) */}
       <AnimatePresence>
-        {isActive && activeProgram && (
+        {isActive && activeRoutine && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -333,41 +590,293 @@ export default function HealthPage() {
           >
             <div className="text-center space-y-8 w-full max-w-md">
               <div>
-                <h2 className="text-3xl font-black uppercase tracking-wider mb-2">{activeProgram.title}</h2>
+                <h2 className="text-3xl font-black uppercase tracking-wider mb-2">
+                  {activeRoutine[currentStepIndex].type === "rest" ? "Rest Time" : activeRoutine[currentStepIndex].name}
+                </h2>
                 <p className="text-xl font-bold opacity-80">
-                  {isResting ? "REST TIME" : activeProgram.exercises[currentExerciseIndex].name}
+                  {activeRoutine[currentStepIndex].type === "rest" 
+                    ? "Catch your breath!" 
+                    : activeRoutine[currentStepIndex].type === "time" 
+                      ? "Keep going!" 
+                      : "Complete your reps"}
                 </p>
               </div>
 
-              <div className={cn(
-                "w-64 h-64 rounded-full border-8 flex items-center justify-center relative mx-auto transition-colors duration-500",
-                isResting ? "border-blue-400 bg-blue-500/20" : "border-white/30"
-              )}>
-                <div className="absolute inset-0 rounded-full border-8 border-white border-t-transparent animate-spin duration-[3s]" />
-                <span className="text-8xl font-black font-mono">{timeLeft}</span>
-              </div>
+              {/* Timer or Reps Display */}
+              {(activeRoutine[currentStepIndex].type === "time" || activeRoutine[currentStepIndex].type === "rest") ? (
+                <div className={cn(
+                  "w-64 h-64 rounded-full border-8 flex items-center justify-center relative mx-auto transition-colors duration-500",
+                  activeRoutine[currentStepIndex].type === "rest" ? "border-blue-400 bg-blue-500/20" : "border-white/30"
+                )}>
+                  <div className="absolute inset-0 rounded-full border-8 border-white border-t-transparent animate-spin duration-[3s]" />
+                  <span className="text-8xl font-black font-mono">{timeLeft}</span>
+                </div>
+              ) : (
+                <div className="w-64 h-64 rounded-full border-8 border-white/30 flex flex-col items-center justify-center relative mx-auto bg-white/10">
+                  <span className="text-6xl font-black font-mono">{activeRoutine[currentStepIndex].reps}</span>
+                  <span className="text-xl font-bold uppercase mt-2">Reps</span>
+                </div>
+              )}
               
-              <div className="flex justify-center gap-2">
-                {activeProgram.exercises.map((_, idx) => (
+              <div className="flex justify-center gap-2 flex-wrap">
+                {activeRoutine.map((step, idx) => (
                   <div 
                     key={idx} 
                     className={cn(
                       "w-3 h-3 rounded-full transition-colors",
-                      idx === currentExerciseIndex ? "bg-white" : idx < currentExerciseIndex ? "bg-white/50" : "bg-black/20"
+                      idx === currentStepIndex ? "bg-white scale-125" : idx < currentStepIndex ? "bg-white/50" : "bg-black/20"
                     )} 
                   />
                 ))}
               </div>
 
-              <button
-                onClick={stopWorkout}
-                className="bg-white text-[#e21b3c] px-8 py-4 rounded-2xl font-black text-xl shadow-xl active:scale-95 transition-transform flex items-center gap-2 mx-auto"
-              >
-                <StopCircle className="w-6 h-6" />
-                Quit Workout
-              </button>
+              <div className="space-y-4">
+                {/* Next Button for Reps (or manual skip) */}
+                {(activeRoutine[currentStepIndex].type === "reps" || activeRoutine[currentStepIndex].type === "time") && (
+                  <button
+                    onClick={nextStep}
+                    className="w-full bg-white text-[#e21b3c] px-8 py-4 rounded-2xl font-black text-xl shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
+                  >
+                    {activeRoutine[currentStepIndex].type === "reps" ? "Done / Next" : "Skip Timer"}
+                  </button>
+                )}
+
+                <button
+                  onClick={stopWorkout}
+                  className="w-full bg-black/20 text-white px-8 py-4 rounded-2xl font-black text-xl shadow-none hover:bg-black/30 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                >
+                  <StopCircle className="w-6 h-6" />
+                  Quit Workout
+                </button>
+              </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Workout Builder Modal */}
+      <AnimatePresence>
+        {showBuilderModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[85vh] flex flex-col"
+            >
+              <div className="bg-[#e21b3c] p-4 flex justify-between items-center shrink-0">
+                <h3 className="text-white font-black text-xl">Build Routine</h3>
+                <button onClick={() => setShowBuilderModal(false)} className="text-white/80 hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="p-4 overflow-y-auto flex-1 space-y-4">
+                {/* Step List */}
+                {builderSteps.length > 0 ? (
+                  <div className="space-y-2">
+                    {builderSteps.map((step, idx) => (
+                      <div key={idx} className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex justify-between items-center">
+                        <div>
+                          <p className="font-black text-gray-800">{step.name}</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase">
+                            {step.type === "time" ? `${step.duration}s` : step.type === "reps" ? `${step.reps} Reps` : `${step.duration}s Rest`}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => setBuilderSteps(builderSteps.filter((_, i) => i !== idx))}
+                          className="text-red-500 hover:bg-red-50 p-1 rounded-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400 font-bold">
+                    Add exercises to build your routine
+                  </div>
+                )}
+
+                {/* Add Exercise Form */}
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-3">
+                  <p className="text-xs font-bold text-gray-400 uppercase">Add Exercise</p>
+                  <input
+                    type="text"
+                    placeholder="Exercise Name"
+                    value={newStep.name}
+                    onChange={(e) => setNewStep({ ...newStep, name: e.target.value })}
+                    className="w-full p-2 rounded-lg border border-gray-300 font-bold text-sm"
+                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={newStep.type}
+                      // @ts-ignore
+                      onChange={(e) => setNewStep({ ...newStep, type: e.target.value })}
+                      className="p-2 rounded-lg border border-gray-300 font-bold text-sm bg-white"
+                    >
+                      <option value="reps">Reps</option>
+                      <option value="time">Time (s)</option>
+                    </select>
+                    <input
+                      type="number"
+                      placeholder={newStep.type === "reps" ? "Count" : "Seconds"}
+                      value={newStep.val}
+                      onChange={(e) => setNewStep({ ...newStep, val: e.target.value })}
+                      className="w-full p-2 rounded-lg border border-gray-300 font-bold text-sm"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!newStep.name || !newStep.val) return;
+                      setBuilderSteps([...builderSteps, {
+                        type: newStep.type,
+                        name: newStep.name,
+                        duration: newStep.type === "time" ? parseInt(newStep.val) : undefined,
+                        reps: newStep.type === "reps" ? parseInt(newStep.val) : undefined
+                      }]);
+                      setNewStep({ name: "", type: "reps", val: "" });
+                    }}
+                    className="w-full bg-gray-800 text-white py-2 rounded-lg font-bold text-sm"
+                  >
+                    Add Step
+                  </button>
+                </div>
+
+                {/* Add Rest Form */}
+                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200 space-y-3">
+                  <p className="text-xs font-bold text-blue-400 uppercase">Add Rest</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Rest (Seconds)"
+                      value={restDuration}
+                      onChange={(e) => setRestDuration(e.target.value)}
+                      className="w-full p-2 rounded-lg border border-blue-200 font-bold text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!restDuration) return;
+                        setBuilderSteps([...builderSteps, {
+                          type: "rest",
+                          name: "Rest",
+                          duration: parseInt(restDuration)
+                        }]);
+                        setRestDuration("");
+                      }}
+                      className="bg-blue-500 text-white px-4 rounded-lg font-bold text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
+                <button
+                  onClick={startCustomRoutine}
+                  disabled={builderSteps.length === 0}
+                  className="w-full bg-[#e21b3c] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100"
+                >
+                  Start Routine
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Workout Modal */}
+      <AnimatePresence>
+        {showLogModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[85vh] flex flex-col"
+            >
+              <div className="bg-[#e21b3c] p-4 flex justify-between items-center shrink-0">
+                <h3 className="text-white font-black text-xl">Log Workout</h3>
+                <button onClick={() => setShowLogModal(false)} className="text-white/80 hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="p-4 overflow-y-auto flex-1 space-y-4">
+                {customExercises.map((exercise, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-xl border border-gray-200 relative">
+                    {index > 0 && (
+                      <button 
+                        onClick={() => handleRemoveExerciseRow(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                    <div className="mb-2">
+                      <label className="text-xs font-bold text-gray-400 uppercase">Exercise Name</label>
+                      <input
+                        type="text"
+                        value={exercise.name}
+                        onChange={(e) => handleExerciseChange(index, "name", e.target.value)}
+                        placeholder="e.g. Bench Press"
+                        className="w-full p-2 rounded-lg border border-gray-300 font-bold text-gray-700 text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase">Sets</label>
+                        <input
+                          type="number"
+                          value={exercise.sets}
+                          onChange={(e) => handleExerciseChange(index, "sets", e.target.value)}
+                          className="w-full p-2 rounded-lg border border-gray-300 font-bold text-gray-700 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase">Reps</label>
+                        <input
+                          type="number"
+                          value={exercise.reps}
+                          onChange={(e) => handleExerciseChange(index, "reps", e.target.value)}
+                          className="w-full p-2 rounded-lg border border-gray-300 font-bold text-gray-700 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-400 uppercase">Kg/Lbs</label>
+                        <input
+                          type="number"
+                          value={exercise.weight}
+                          onChange={(e) => handleExerciseChange(index, "weight", e.target.value)}
+                          className="w-full p-2 rounded-lg border border-gray-300 font-bold text-gray-700 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button
+                  onClick={handleAddExerciseRow}
+                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-400 font-bold text-sm hover:border-[#e21b3c] hover:text-[#e21b3c] transition-colors"
+                >
+                  + Add Another Exercise
+                </button>
+              </div>
+
+              <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
+                <button
+                  onClick={() => {
+                    saveCustomWorkout();
+                    setShowLogModal(false);
+                  }}
+                  className="w-full bg-[#e21b3c] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform"
+                >
+                  Save Log
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

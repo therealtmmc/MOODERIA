@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
 import { useStore, Routine } from "@/context/StoreContext";
-import { Plus, Bell, Trash2, X, Check, Clock, Calendar as CalendarIcon, AlertTriangle } from "lucide-react";
+import { Plus, Bell, Trash2, X, Check, Clock, Calendar as CalendarIcon, AlertTriangle, Briefcase, BookOpen, Heart, Coffee, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { format, isAfter, parse, addMinutes } from "date-fns";
+import confetti from "canvas-confetti";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const CATEGORIES = [
+  { id: "Health", label: "Health", icon: Heart, color: "bg-red-100 text-red-600" },
+  { id: "Work", label: "Work", icon: Briefcase, color: "bg-blue-100 text-blue-600" },
+  { id: "Learning", label: "Learning", icon: BookOpen, color: "bg-yellow-100 text-yellow-600" },
+  { id: "Self-care", label: "Self-care", icon: Coffee, color: "bg-purple-100 text-purple-600" },
+  { id: "Other", label: "Other", icon: Layers, color: "bg-gray-100 text-gray-600" },
+];
 
 export default function RoutinePage() {
   const { state, dispatch } = useStore();
@@ -13,13 +22,14 @@ export default function RoutinePage() {
   const [showAlarmReminder, setShowAlarmReminder] = useState(false);
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null); // For "Done" popup
   const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), "EEE")); // Default to today: "Mon", "Tue"...
-
+  
   const [newRoutine, setNewRoutine] = useState<Partial<Routine>>({
     name: "",
     startTime: "08:00",
     endTime: "08:30",
     days: [],
     active: true,
+    category: "Other",
   });
 
   // Filter routines for the selected day
@@ -36,6 +46,18 @@ export default function RoutinePage() {
   const todoRoutines = dayRoutines.filter(r => !isDoneToday(r));
   const doneRoutines = dayRoutines.filter(r => isDoneToday(r));
 
+  // Progress Calculation
+  const totalDayRoutines = dayRoutines.length;
+  const completedDayRoutines = doneRoutines.length;
+  const progressPercentage = totalDayRoutines > 0 ? (completedDayRoutines / totalDayRoutines) * 100 : 0;
+
+  // Check for Perfect Day
+  useEffect(() => {
+    if (totalDayRoutines > 0 && completedDayRoutines === totalDayRoutines) {
+       // Could trigger a small confetti here if it just happened
+    }
+  }, [completedDayRoutines, totalDayRoutines]);
+
   const handleAddRoutine = () => {
     if (!newRoutine.name || !newRoutine.startTime || !newRoutine.endTime || newRoutine.days?.length === 0) return;
 
@@ -49,11 +71,12 @@ export default function RoutinePage() {
         days: newRoutine.days || [],
         active: true,
         streak: 0,
+        category: newRoutine.category,
       } as Routine,
     });
     setShowAdd(false);
     setShowAlarmReminder(true); // Show reminder after adding
-    setNewRoutine({ name: "", startTime: "08:00", endTime: "08:30", days: [], active: true });
+    setNewRoutine({ name: "", startTime: "08:00", endTime: "08:30", days: [], active: true, category: "Other" });
   };
 
   const toggleDay = (day: string) => {
@@ -69,20 +92,24 @@ export default function RoutinePage() {
     const now = new Date();
     const today = format(now, "yyyy-MM-dd");
     
-    // Check 5 minute rule
-    const routineTime = parse(routine.startTime, "HH:mm", now);
-    const deadline = addMinutes(routineTime, 5);
-    
-    // If now is after deadline, maybe we should warn? 
-    // But user said "streak will minus one streak".
-    // For now, let's just complete it. The penalty logic is tricky to implement perfectly without a backend job.
-    // We'll just mark it done.
-    
     dispatch({ 
       type: "COMPLETE_ROUTINE", 
       payload: { id: routine.id, date: today } 
     });
     setSelectedRoutine(null);
+    
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#1368ce", "#ffffff"],
+    });
+  };
+
+  const getCategoryIcon = (cat?: string) => {
+    const category = CATEGORIES.find(c => c.id === cat) || CATEGORIES[4];
+    const Icon = category.icon;
+    return <div className={cn("p-2 rounded-full", category.color)}><Icon className="w-4 h-4" /></div>;
   };
 
   return (
@@ -97,22 +124,47 @@ export default function RoutinePage() {
         </button>
       </header>
 
-      {/* Day Selector */}
-      <div className="flex justify-between bg-white p-2 rounded-2xl shadow-sm overflow-x-auto">
-        {DAYS.map((day) => (
-          <button
-            key={day}
-            onClick={() => setSelectedDay(day)}
-            className={cn(
-              "px-3 py-2 rounded-xl text-sm font-black transition-all min-w-[3rem]",
-              selectedDay === day
-                ? "bg-[#1368ce] text-white shadow-md"
-                : "text-gray-400 hover:bg-gray-100"
-            )}
-          >
-            {day}
-          </button>
-        ))}
+      {/* Day Selector & Progress */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm space-y-4">
+        <div className="flex justify-between overflow-x-auto pb-2">
+          {DAYS.map((day) => (
+            <button
+              key={day}
+              onClick={() => setSelectedDay(day)}
+              className={cn(
+                "px-3 py-2 rounded-xl text-sm font-black transition-all min-w-[3rem] flex flex-col items-center gap-1",
+                selectedDay === day
+                  ? "bg-[#1368ce] text-white shadow-md"
+                  : "text-gray-400 hover:bg-gray-100"
+              )}
+            >
+              <span>{day}</span>
+            </button>
+          ))}
+        </div>
+        
+        {/* Horizontal Progress Bar */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-bold text-gray-400 uppercase">
+            <span>Daily Progress</span>
+            <span>{Math.round(progressPercentage)}%</span>
+          </div>
+          <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercentage}%` }}
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                progressPercentage === 100 ? "bg-green-500" : "bg-[#1368ce]"
+              )}
+            />
+          </div>
+          {progressPercentage === 100 && totalDayRoutines > 0 && (
+            <p className="text-center text-xs font-black text-green-600 mt-1 animate-pulse">
+              🎉 Perfect Day! All routines done!
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -138,19 +190,22 @@ export default function RoutinePage() {
                 onClick={() => setSelectedRoutine(routine)}
                 className="bg-white p-4 rounded-2xl shadow-md border-l-8 border-[#1368ce] flex justify-between items-center transition-all cursor-pointer active:scale-[0.98]"
               >
-                <div>
-                  <h3 className="font-black text-lg">{routine.name}</h3>
-                  <div className="flex items-center gap-2 text-sm font-bold text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {routine.startTime} - {routine.endTime}
-                    </span>
-                    <span>•</span>
-                    <span className="text-[#eb6123] flex items-center gap-1">
-                      🔥 {routine.streak || 0}
-                    </span>
+                <div className="flex items-center gap-3">
+                  {getCategoryIcon(routine.category)}
+                  <div>
+                    <h3 className="font-black text-lg">{routine.name}</h3>
+                    <div className="flex items-center gap-2 text-sm font-bold text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {routine.startTime} - {routine.endTime}
+                      </span>
+                      <span>•</span>
+                      <span className="text-[#eb6123] flex items-center gap-1">
+                        🔥 {routine.streak || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -179,19 +234,23 @@ export default function RoutinePage() {
                 layout
                 className="bg-green-50 p-4 rounded-2xl shadow-sm border-l-8 border-green-500 flex justify-between items-center opacity-80"
               >
-                <div>
-                  <h3 className="font-black text-lg text-green-800 flex items-center gap-2 line-through decoration-green-600/50">
-                    {routine.name}
-                    <Check className="w-5 h-5 text-green-600" />
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm font-bold text-green-600/60">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {routine.startTime} - {routine.endTime}
-                    </span>
-                    <span>•</span>
-                    <span className="text-[#eb6123] flex items-center gap-1">
-                      🔥 {routine.streak || 0}
-                    </span>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-green-100 text-green-600">
+                    <Check className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-green-800 flex items-center gap-2 line-through decoration-green-600/50">
+                      {routine.name}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm font-bold text-green-600/60">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {routine.startTime} - {routine.endTime}
+                      </span>
+                      <span>•</span>
+                      <span className="text-[#eb6123] flex items-center gap-1">
+                        🔥 {routine.streak || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -210,45 +269,6 @@ export default function RoutinePage() {
           </div>
         )}
       </div>
-
-      {/* Done Popup (Bottom Sheet style) */}
-      <AnimatePresence>
-        {selectedRoutine && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4 bg-black/50 backdrop-blur-sm">
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              className="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border-t-4 sm:border-4 border-[#1368ce] p-6 space-y-6"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-2xl font-black text-[#1368ce]">{selectedRoutine.name}</h3>
-                  <p className="text-gray-500 font-bold text-sm">
-                    {selectedRoutine.startTime} - {selectedRoutine.endTime}
-                  </p>
-                </div>
-                <button onClick={() => setSelectedRoutine(null)} className="p-1 bg-gray-100 rounded-full">
-                  <X className="w-6 h-6 text-gray-500" />
-                </button>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800 font-medium">
-                <p>Did you complete this routine?</p>
-                <p className="text-xs mt-1 opacity-70">Marking it done within 5 mins of start time keeps your streak!</p>
-              </div>
-
-              <button
-                onClick={() => handleCompleteRoutine(selectedRoutine)}
-                className="w-full bg-[#1368ce] text-white py-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
-              >
-                <Check className="w-6 h-6" />
-                Mark as Done
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Alarm Reminder Popup */}
       <AnimatePresence>
@@ -330,6 +350,22 @@ export default function RoutinePage() {
                       onChange={(e) => setNewRoutine({ ...newRoutine, endTime: e.target.value })}
                       className="w-full p-3 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#1368ce] focus:outline-none font-bold"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-500 mb-1">Category</label>
+                    <select
+                      value={newRoutine.category}
+                      // @ts-ignore
+                      onChange={(e) => setNewRoutine({ ...newRoutine, category: e.target.value })}
+                      className="w-full p-3 bg-gray-50 rounded-xl border-2 border-gray-200 focus:border-[#1368ce] focus:outline-none font-bold text-sm"
+                    >
+                      {CATEGORIES.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.label}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

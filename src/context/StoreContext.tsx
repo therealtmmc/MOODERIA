@@ -6,6 +6,7 @@ export type MoodEntry = {
   mood: string; // e.g., "Happy", "Sad", "Excited"
   note: string;
   image?: string; // Base64 string or URL
+  video?: string; // Base64 string or URL
 };
 
 export type Routine = {
@@ -17,6 +18,8 @@ export type Routine = {
   active: boolean;
   lastCompletedDate?: string; // YYYY-MM-DD
   streak: number;
+  category?: "Health" | "Work" | "Learning" | "Self-care" | "Other";
+  duration?: number; // minutes, for the timer
 };
 
 export type Event = {
@@ -25,15 +28,25 @@ export type Event = {
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   description?: string;
+  type?: "Social" | "Work" | "Urgent" | "Travel" | "Other";
+};
+
+export type ExerciseLog = {
+  name: string;
+  sets: number;
+  reps: number;
+  weight?: number; // in kg or lbs
+  duration?: number; // in seconds
 };
 
 export type WorkoutLog = {
   id: string;
   date: string;
-  type: string; // "Pushups", "Squats"
+  type: string; // "Pushups", "Squats", "Custom"
   duration: number; // seconds
-  reps: number;
+  reps: number; // Total reps if applicable
   difficulty: "Easy" | "Medium" | "Hard";
+  exercises?: ExerciseLog[];
 };
 
 export type WalkLog = {

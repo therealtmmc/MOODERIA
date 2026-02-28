@@ -28,16 +28,10 @@ export function InstallGuard({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("resize", checkStandalone);
   }, []);
 
-  // DEV BYPASS: Allow bypassing if in development environment (iframe)
-  // In a real scenario, we might remove this, but for this preview to be usable
-  // by the user immediately without actually installing, we might need a "Demo Mode"
-  // However, the user explicitly asked "it wont get access here on browser".
-  // So I will hide the bypass behind a "Developer" click area or just make it strict
-  // but provide a button for "Preview Mode" since I cannot actually install it on this iframe.
+  // REMOVED BYPASS: The user explicitly requested to remove the preview in browser.
+  // They must install it or add to home screen.
   
-  const [bypass, setBypass] = useState(false);
-
-  if (isStandalone || bypass) {
+  if (isStandalone) {
     return <>{children}</>;
   }
 
@@ -45,7 +39,8 @@ export function InstallGuard({ children }: { children: ReactNode }) {
     <div className="fixed inset-0 z-[60] bg-[#f2f2f2] flex flex-col items-center justify-center p-8 text-center">
       <div className="bg-white p-8 rounded-3xl shadow-xl border-b-8 border-gray-200 max-w-sm w-full">
         <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-          <img src="/logo.png" alt="Mooderia Logo" className="w-full h-full drop-shadow-lg" />
+          {/* Using a placeholder if logo.png is not available, but user said "DONT DELETE THE LOGO.PNG" so it should be there */}
+          <img src="/logo.png" alt="Mooderia Logo" className="w-full h-full drop-shadow-lg object-contain" />
         </div>
         
         <h1 className="text-2xl font-black text-[#46178f] mb-4">Install Mooderia</h1>
@@ -53,38 +48,20 @@ export function InstallGuard({ children }: { children: ReactNode }) {
           To use Mooderia, you must install it to your home screen. This app is designed to live on your phone!
         </p>
 
-        <div className="bg-gray-50 p-4 rounded-xl border-2 border-gray-100 text-left space-y-4">
-          {isIOS ? (
-            <>
-              <div className="flex items-center gap-3">
-                <span className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center font-black text-gray-600">1</span>
-                <span className="font-bold text-gray-600">Tap the <Share className="inline w-4 h-4" /> Share button</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center font-black text-gray-600">2</span>
-                <span className="font-bold text-gray-600">Select "Add to Home Screen"</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-3">
-                <span className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center font-black text-gray-600">1</span>
-                <span className="font-bold text-gray-600">Tap the <MoreVertical className="inline w-4 h-4" /> Menu button</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="bg-gray-200 w-8 h-8 rounded-full flex items-center justify-center font-black text-gray-600">2</span>
-                <span className="font-bold text-gray-600">Select "Install App" or "Add to Home Screen"</span>
-              </div>
-            </>
-          )}
+        <div className="bg-gray-50 p-4 rounded-xl border-2 border-gray-100 text-left space-y-4 text-sm">
+          <div className="flex items-start gap-3">
+            <span className="bg-gray-200 w-6 h-6 shrink-0 rounded-full flex items-center justify-center font-black text-gray-600 text-xs">1</span>
+            <span className="font-bold text-gray-600">Tap the <Share className="inline w-4 h-4 mx-1" /> or <MoreVertical className="inline w-4 h-4 mx-1" /> button in your browser menu.</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="bg-gray-200 w-6 h-6 shrink-0 rounded-full flex items-center justify-center font-black text-gray-600 text-xs">2</span>
+            <span className="font-bold text-gray-600">Select "Add to Home Screen" or "Install App".</span>
+          </div>
         </div>
-
-        <button 
-          onClick={() => setBypass(true)}
-          className="mt-8 text-xs font-bold text-gray-300 hover:text-gray-400 uppercase tracking-widest"
-        >
-          Preview in Browser (Dev Only)
-        </button>
+        
+        <p className="mt-8 text-xs font-bold text-gray-400 uppercase tracking-widest">
+          Access Restricted on Browser
+        </p>
       </div>
     </div>
   );

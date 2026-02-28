@@ -6,6 +6,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { StoreProvider } from "@/context/StoreContext";
 import { Layout } from "@/components/Layout";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import MoodPage from "@/pages/MoodPage";
 import RoutinePage from "@/pages/RoutinePage";
 import EventsPage from "@/pages/EventsPage";
@@ -19,7 +20,11 @@ export default function App() {
     <StoreProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route path="/" element={
+            <InstallPrompt>
+              <Layout />
+            </InstallPrompt>
+          }>
             <Route index element={<Navigate to="/mood" replace />} />
             <Route path="mood" element={<MoodPage />} />
             <Route path="routine" element={<RoutinePage />} />
