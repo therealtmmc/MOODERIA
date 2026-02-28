@@ -89,6 +89,12 @@ export default function ProfilePage() {
             <span className="font-black text-xl text-[#eb6123]">{state.streak} days</span>
           </div>
           <div className="flex justify-between items-center">
+            <span className="font-bold text-gray-500">Work Streak</span>
+            <span className="font-black text-xl text-[#1368ce]">
+              {state.routines.reduce((acc, curr) => acc + (curr.streak || 0), 0)} 🔥
+            </span>
+          </div>
+          <div className="flex justify-between items-center">
             <span className="font-bold text-gray-500">Workouts Completed</span>
             <span className="font-black text-xl text-[#26890c]">{state.workouts.length}</span>
           </div>

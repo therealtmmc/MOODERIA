@@ -12,7 +12,8 @@ export default function RoutinePage() {
   const [showAdd, setShowAdd] = useState(false);
   const [showAlarmReminder, setShowAlarmReminder] = useState(false);
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null); // For "Done" popup
-  
+  const [selectedDay, setSelectedDay] = useState<string>(format(new Date(), "EEE")); // Default to today: "Mon", "Tue"...
+
   const [newRoutine, setNewRoutine] = useState<Partial<Routine>>({
     name: "",
     startTime: "08:00",
@@ -20,6 +21,20 @@ export default function RoutinePage() {
     days: [],
     active: true,
   });
+
+  // Filter routines for the selected day
+  const dayRoutines = state.routines.filter(r => r.days.includes(selectedDay));
+  
+  // Sort by start time
+  dayRoutines.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  const isDoneToday = (routine: Routine) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    return routine.lastCompletedDate === today;
+  };
+
+  const todoRoutines = dayRoutines.filter(r => !isDoneToday(r));
+  const doneRoutines = dayRoutines.filter(r => isDoneToday(r));
 
   const handleAddRoutine = () => {
     if (!newRoutine.name || !newRoutine.startTime || !newRoutine.endTime || newRoutine.days?.length === 0) return;
@@ -70,11 +85,6 @@ export default function RoutinePage() {
     setSelectedRoutine(null);
   };
 
-  const isDoneToday = (routine: Routine) => {
-    const today = format(new Date(), "yyyy-MM-dd");
-    return routine.lastCompletedDate === today;
-  };
-
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
       <header className="flex justify-between items-center">
@@ -87,30 +97,49 @@ export default function RoutinePage() {
         </button>
       </header>
 
-      <div className="space-y-4">
-        {state.routines.length === 0 ? (
-          <div className="text-center py-12 opacity-50">
-            <p className="text-xl font-bold">No routines yet!</p>
-            <p className="text-sm">Add one to get started.</p>
-          </div>
-        ) : (
-          state.routines.map((routine) => {
-            const done = isDoneToday(routine);
-            return (
+      {/* Day Selector */}
+      <div className="flex justify-between bg-white p-2 rounded-2xl shadow-sm overflow-x-auto">
+        {DAYS.map((day) => (
+          <button
+            key={day}
+            onClick={() => setSelectedDay(day)}
+            className={cn(
+              "px-3 py-2 rounded-xl text-sm font-black transition-all min-w-[3rem]",
+              selectedDay === day
+                ? "bg-[#1368ce] text-white shadow-md"
+                : "text-gray-400 hover:bg-gray-100"
+            )}
+          >
+            {day}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-8">
+        {/* To Do Section */}
+        <div className="space-y-4">
+          <h2 className="font-black text-xl text-gray-700 flex items-center gap-2">
+            To Do <span className="text-sm bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">{todoRoutines.length}</span>
+          </h2>
+          
+          {todoRoutines.length === 0 && doneRoutines.length === 0 ? (
+             <div className="text-center py-8 opacity-50">
+               <p className="font-bold">No routines for {selectedDay}.</p>
+             </div>
+          ) : todoRoutines.length === 0 ? (
+             <div className="text-center py-4 opacity-50">
+               <p className="text-sm font-bold">All caught up!</p>
+             </div>
+          ) : (
+            todoRoutines.map((routine) => (
               <motion.div
                 key={routine.id}
                 layout
-                onClick={() => !done && setSelectedRoutine(routine)}
-                className={cn(
-                  "bg-white p-4 rounded-2xl shadow-md border-l-8 flex justify-between items-center transition-all cursor-pointer active:scale-[0.98]",
-                  done ? "border-green-500 bg-green-50" : "border-[#1368ce]"
-                )}
+                onClick={() => setSelectedRoutine(routine)}
+                className="bg-white p-4 rounded-2xl shadow-md border-l-8 border-[#1368ce] flex justify-between items-center transition-all cursor-pointer active:scale-[0.98]"
               >
                 <div>
-                  <h3 className={cn("font-black text-lg flex items-center gap-2", done && "text-green-700")}>
-                    {routine.name}
-                    {done && <Check className="w-5 h-5 text-green-600" />}
-                  </h3>
+                  <h3 className="font-black text-lg">{routine.name}</h3>
                   <div className="flex items-center gap-2 text-sm font-bold text-gray-400">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {routine.startTime} - {routine.endTime}
@@ -133,8 +162,52 @@ export default function RoutinePage() {
                   </button>
                 </div>
               </motion.div>
-            );
-          })
+            ))
+          )}
+        </div>
+
+        {/* Done Section */}
+        {doneRoutines.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="font-black text-xl text-gray-700 flex items-center gap-2">
+              Work Done <span className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{doneRoutines.length}</span>
+            </h2>
+            
+            {doneRoutines.map((routine) => (
+              <motion.div
+                key={routine.id}
+                layout
+                className="bg-green-50 p-4 rounded-2xl shadow-sm border-l-8 border-green-500 flex justify-between items-center opacity-80"
+              >
+                <div>
+                  <h3 className="font-black text-lg text-green-800 flex items-center gap-2 line-through decoration-green-600/50">
+                    {routine.name}
+                    <Check className="w-5 h-5 text-green-600" />
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm font-bold text-green-600/60">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {routine.startTime} - {routine.endTime}
+                    </span>
+                    <span>•</span>
+                    <span className="text-[#eb6123] flex items-center gap-1">
+                      🔥 {routine.streak || 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dispatch({ type: "DELETE_ROUTINE", payload: routine.id });
+                    }}
+                    className="p-2 text-gray-300 hover:text-red-500 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
 
@@ -200,27 +273,11 @@ export default function RoutinePage() {
                 </p>
               </div>
 
-              <a
-                href="intent://com.android.deskclock.DESKCLOCK#Intent;scheme=android-app;end"
-                onClick={(e) => {
-                   // Fallback for non-Android or if intent fails (though hard to catch on web)
-                   // We just let it try. 
-                   // On iOS this won't work, so we might want a second button or just a generic one.
-                   // Let's try a generic "clock:" scheme as well if this fails? No, can't chain.
-                   // We will just provide the button.
-                   setShowAlarmReminder(false);
-                }}
-                className="block w-full bg-[#eb6123] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2"
-              >
-                <Bell className="w-5 h-5" />
-                Set Alarm
-              </a>
-              
               <button
                 onClick={() => setShowAlarmReminder(false)}
-                className="text-gray-400 font-bold text-sm hover:text-gray-600"
+                className="w-full bg-[#eb6123] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform"
               >
-                I'll do it later
+                Got it!
               </button>
             </motion.div>
           </div>
