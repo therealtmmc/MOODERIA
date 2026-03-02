@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useReducer, ReactNode, Dispatch }
 
 // Types
 export type MoodEntry = {
+  id: string;
   date: string; // ISO Date string (YYYY-MM-DD)
   mood: string; // e.g., "Happy", "Sad", "Excited"
   note: string;
@@ -177,7 +178,7 @@ function reducer(state: AppState, action: Action): AppState {
     case "DELETE_DIARY":
       return {
         ...state,
-        moods: state.moods.filter((m) => m.date !== action.payload),
+        moods: state.moods.filter((m) => m.id !== action.payload),
       };
     case "CLEAR_ALL_DIARY":
       return {
@@ -185,7 +186,12 @@ function reducer(state: AppState, action: Action): AppState {
         moods: state.moods.map((m) => ({ ...m, note: "" })),
       };
     case "LOAD_STATE":
-      return action.payload;
+      // Backfill IDs for old entries
+      const moodsWithIds = action.payload.moods.map(m => ({
+        ...m,
+        id: m.id || crypto.randomUUID()
+      }));
+      return { ...action.payload, moods: moodsWithIds };
     default:
       return state;
   }

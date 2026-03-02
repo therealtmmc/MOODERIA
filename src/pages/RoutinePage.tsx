@@ -230,6 +230,19 @@ export default function RoutinePage() {
             </p>
           )}
         </div>
+        
+        {/* Total Streak Summary */}
+        <div className="bg-[#eb6123]/10 p-4 rounded-2xl border-2 border-[#eb6123]/20 flex items-center justify-between mt-4">
+          <div>
+            <p className="text-xs font-bold text-[#eb6123] uppercase tracking-wider">Total Work Streak</p>
+            <p className="text-2xl font-black text-[#eb6123]">
+              {state.routines.reduce((acc, curr) => acc + (curr.streak || 0), 0)} 🔥
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-[#eb6123] rounded-full flex items-center justify-center text-white shadow-md">
+            <Trophy className="w-6 h-6" />
+          </div>
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -334,6 +347,61 @@ export default function RoutinePage() {
           </div>
         )}
       </div>
+
+      {/* Work Done Popup */}
+      <AnimatePresence>
+        {selectedRoutine && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#1368ce] p-6 space-y-6 relative"
+            >
+              <button 
+                onClick={() => setSelectedRoutine(null)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  {getCategoryIcon(selectedRoutine.category)}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-gray-800">{selectedRoutine.name}</h3>
+                  <p className="text-gray-500 font-bold flex items-center justify-center gap-2 mt-1">
+                    <Clock className="w-4 h-4" />
+                    {selectedRoutine.startTime} - {selectedRoutine.endTime}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-xl text-center border-2 border-gray-100">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Current Streak</p>
+                <p className="text-4xl font-black text-[#eb6123] flex items-center justify-center gap-2">
+                  {selectedRoutine.streak || 0} 🔥
+                </p>
+              </div>
+
+              {!isDoneToday(selectedRoutine) ? (
+                <button
+                  onClick={() => handleCompleteRoutine(selectedRoutine)}
+                  className="w-full bg-[#1368ce] text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-[#0e4b96] active:border-b-0 active:translate-y-1"
+                >
+                  <Check className="w-6 h-6" />
+                  Work Done!
+                </button>
+              ) : (
+                <div className="text-center text-green-600 font-black text-lg bg-green-100 py-3 rounded-xl border-2 border-green-200">
+                  Already Completed Today! ✅
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Alarm Reminder Popup */}
       <AnimatePresence>

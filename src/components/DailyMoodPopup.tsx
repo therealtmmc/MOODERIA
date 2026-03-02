@@ -50,6 +50,7 @@ export function DailyMoodPopup() {
     dispatch({
       type: "ADD_MOOD",
       payload: {
+        id: crypto.randomUUID(),
         date: today,
         mood: moodLabel,
         note: "",

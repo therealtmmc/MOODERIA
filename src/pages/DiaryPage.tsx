@@ -132,6 +132,7 @@ export default function DiaryPage() {
       dispatch({ 
         type: "ADD_MOOD", 
         payload: { 
+          id: crypto.randomUUID(),
           date: today,
           mood: moodToSave,
           note: diaryEntry,
@@ -510,7 +511,7 @@ export default function DiaryPage() {
                 
                 return (
                   <motion.div 
-                    key={entry.date} 
+                    key={entry.id} 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white p-5 rounded-3xl shadow-md border border-gray-100 relative overflow-hidden"
@@ -542,7 +543,7 @@ export default function DiaryPage() {
                       <button
                         onClick={() => {
                           if(confirm("Delete this entry?")) {
-                            dispatch({ type: "DELETE_DIARY", payload: entry.date });
+                            dispatch({ type: "DELETE_DIARY", payload: entry.id });
                           }
                         }}
                         className="text-gray-300 hover:text-red-500 transition-colors p-2"
@@ -591,7 +592,7 @@ export default function DiaryPage() {
                  const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
                  return (
                   <motion.div
-                    key={entry.date}
+                    key={entry.id}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100"
