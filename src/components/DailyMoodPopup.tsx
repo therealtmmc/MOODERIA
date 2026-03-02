@@ -6,14 +6,14 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
 const MOODS = [
-  { label: "Happy", icon: Smile, color: "bg-yellow-400" },
-  { label: "Sad", icon: Frown, color: "bg-blue-400" },
-  { label: "Neutral", icon: Meh, color: "bg-gray-400" },
-  { label: "Loved", icon: Heart, color: "bg-pink-400" },
-  { label: "Angry", icon: CloudLightning, color: "bg-red-500" },
-  { label: "Energetic", icon: Zap, color: "bg-orange-400" },
-  { label: "Tired", icon: Coffee, color: "bg-stone-500" },
-  { label: "Calm", icon: Moon, color: "bg-indigo-400" },
+  { label: "Happy", icon: Smile, color: "bg-yellow-400", contentColor: "text-white" },
+  { label: "Sad", icon: Frown, color: "bg-blue-400", contentColor: "text-white" },
+  { label: "Neutral", icon: Meh, color: "bg-gray-400", contentColor: "text-white" },
+  { label: "Loved", icon: Heart, color: "bg-pink-400", contentColor: "text-white" },
+  { label: "Angry", icon: CloudLightning, color: "bg-red-500", contentColor: "text-white" },
+  { label: "Energetic", icon: Zap, color: "bg-orange-400", contentColor: "text-white" },
+  { label: "Tired", icon: Coffee, color: "bg-white border-2 border-gray-200", contentColor: "text-gray-500" },
+  { label: "Calm", icon: Moon, color: "bg-indigo-400", contentColor: "text-white" },
 ];
 
 export function DailyMoodPopup() {
@@ -84,8 +84,8 @@ export function DailyMoodPopup() {
                     mood.color
                   )}
                 >
-                  <mood.icon className="w-8 h-8 text-white drop-shadow-md mb-2" />
-                  <span className="font-black text-white text-sm uppercase tracking-wide shadow-black drop-shadow-sm">
+                  <mood.icon className={cn("w-8 h-8 drop-shadow-md mb-2", mood.contentColor)} />
+                  <span className={cn("font-black text-sm uppercase tracking-wide shadow-black drop-shadow-sm", mood.contentColor)}>
                     {mood.label}
                   </span>
                 </button>

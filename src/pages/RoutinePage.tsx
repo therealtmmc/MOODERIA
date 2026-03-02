@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useStore, Routine } from "@/context/StoreContext";
-import { Plus, Bell, Trash2, X, Check, Clock, Calendar as CalendarIcon, AlertTriangle, Briefcase, BookOpen, Heart, Coffee, Layers, ChefHat, ArrowRight } from "lucide-react";
+import { Plus, Bell, Trash2, X, Check, Clock, Calendar as CalendarIcon, AlertTriangle, Briefcase, BookOpen, Heart, Coffee, Layers, ChefHat, ArrowRight, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { format, isAfter, parse, addMinutes } from "date-fns";

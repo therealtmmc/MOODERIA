@@ -12,7 +12,7 @@ const MOOD_COLORS: Record<string, string> = {
   Loved: "bg-pink-400",
   Angry: "bg-red-500",
   Energetic: "bg-orange-400",
-  Tired: "bg-stone-500",
+  Tired: "bg-white border border-gray-200 text-gray-500",
   Calm: "bg-indigo-400",
 };
 
@@ -531,7 +531,7 @@ export default function DiaryPage() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-3">
                         <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm", MOOD_COLORS[entry.mood])}>
-                          {entry.isHighlight ? <Trophy className="w-4 h-4" /> : <div className="w-3 h-3 bg-white rounded-full opacity-50" />}
+                          {entry.isHighlight ? <Trophy className="w-4 h-4" /> : <div className={cn("w-3 h-3 rounded-full opacity-50", entry.mood === "Tired" ? "bg-gray-400" : "bg-white")} />}
                         </div>
                         <div>
                           <p className="font-black text-gray-800">{format(new Date(entry.date), "MMMM d, yyyy")}</p>
