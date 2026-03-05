@@ -290,72 +290,92 @@ export default function HealthPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Safe Data Access
+  const workouts = Array.isArray(state.workouts) ? state.workouts : [];
+  const walks = Array.isArray(state.walks) ? state.walks : [];
+  const customRoutines = Array.isArray(state.customRoutines) ? state.customRoutines : [];
+
   // Calculate Workout Streak
   const calculateWorkoutStreak = () => {
-    if (!state.workouts || state.workouts.length === 0) return 0;
-    
-    // Get unique dates of workouts, sorted descending
-    const uniqueDates = Array.from<string>(new Set(state.workouts.map(w => w.date)))
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    try {
+      if (workouts.length === 0) return 0;
       
-    if (uniqueDates.length === 0) return 0;
+      // Get unique dates of workouts, sorted descending
+      const uniqueDates = Array.from<string>(new Set(workouts.map(w => w?.date).filter(Boolean)))
+        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+        
+      if (uniqueDates.length === 0) return 0;
 
-    const today = format(new Date(), "yyyy-MM-dd");
-    const yesterday = format(new Date(Date.now() - 86400000), "yyyy-MM-dd");
-    
-    // Check if streak is active (worked out today or yesterday)
-    if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
+      const today = format(new Date(), "yyyy-MM-dd");
+      const yesterday = format(new Date(Date.now() - 86400000), "yyyy-MM-dd");
+      
+      // Check if streak is active (worked out today or yesterday)
+      if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) {
+        return 0;
+      }
+
+      let streak = 1;
+      let currentDate = new Date(uniqueDates[0]);
+
+      for (let i = 1; i < uniqueDates.length; i++) {
+        const prevDate = new Date(uniqueDates[i]);
+        const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+        if (diffDays === 1) {
+          streak++;
+          currentDate = prevDate;
+        } else {
+          break;
+        }
+      }
+      return streak;
+    } catch (error) {
+      console.error("Error calculating streak:", error);
       return 0;
     }
-
-    let streak = 1;
-    let currentDate = new Date(uniqueDates[0]);
-
-    for (let i = 1; i < uniqueDates.length; i++) {
-      const prevDate = new Date(uniqueDates[i]);
-      const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
-      if (diffDays === 1) {
-        streak++;
-        currentDate = prevDate;
-      } else {
-        break;
-      }
-    }
-    return streak;
   };
 
   const workoutStreak = calculateWorkoutStreak();
 
   // Calculate Weekly Stats
   const calculateWeeklyStats = () => {
-    const now = new Date();
-    const start = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
-    const end = endOfWeek(now, { weekStartsOn: 1 });
+    try {
+      const now = new Date();
+      const start = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
+      const end = endOfWeek(now, { weekStartsOn: 1 });
 
-    const weeklyLogs = (state.workouts || []).filter(w => {
-      const workoutDate = parseISO(w.date);
-      return isWithinInterval(workoutDate, { start, end });
-    });
+      const weeklyLogs = workouts.filter(w => {
+        if (!w || !w.date) return false;
+        try {
+          const workoutDate = parseISO(w.date);
+          return isWithinInterval(workoutDate, { start, end });
+        } catch (e) {
+          return false;
+        }
+      });
 
-    const totalDuration = weeklyLogs.reduce((acc, curr) => acc + curr.duration, 0);
-    const count = weeklyLogs.length;
-    
-    let avgIntensity = "N/A";
-    if (count > 0) {
-      const intensityScore = weeklyLogs.reduce((acc, curr) => {
-        if (curr.difficulty === "Hard") return acc + 3;
-        if (curr.difficulty === "Medium") return acc + 2;
-        return acc + 1; // Easy
-      }, 0) / count;
+      const totalDuration = weeklyLogs.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+      const count = weeklyLogs.length;
+      
+      let avgIntensity = "N/A";
+      if (count > 0) {
+        const intensityScore = weeklyLogs.reduce((acc, curr) => {
+          if (curr.difficulty === "Hard") return acc + 3;
+          if (curr.difficulty === "Medium") return acc + 2;
+          return acc + 1; // Easy
+        }, 0) / count;
 
-      if (intensityScore < 1.5) avgIntensity = "Easy";
-      else if (intensityScore < 2.5) avgIntensity = "Medium";
-      else avgIntensity = "Hard";
+        if (intensityScore < 1.5) avgIntensity = "Easy";
+        else if (intensityScore < 2.5) avgIntensity = "Medium";
+        else avgIntensity = "Hard";
+      }
+
+      return { totalDuration, count, avgIntensity };
+    } catch (error) {
+      console.error("Error calculating weekly stats:", error);
+      return { totalDuration: 0, count: 0, avgIntensity: "N/A" };
     }
-
-    return { totalDuration, count, avgIntensity };
   };
 
   const weeklyStats = calculateWeeklyStats();
@@ -445,12 +465,12 @@ export default function HealthPage() {
         <div className="bg-white p-4 rounded-2xl shadow-md border-b-4 border-gray-200">
           <span className="text-xs font-bold text-gray-400 uppercase">Total Distance</span>
           <p className="text-2xl font-black text-[#e21b3c]">
-            {((state.walks || []).reduce((acc, curr) => acc + curr.distance, 0) / 1000).toFixed(2)} km
+            {(walks.reduce((acc, curr) => acc + (curr.distance || 0), 0) / 1000).toFixed(2)} km
           </p>
         </div>
         <div className="bg-white p-4 rounded-2xl shadow-md border-b-4 border-gray-200">
           <span className="text-xs font-bold text-gray-400 uppercase">Workouts</span>
-          <p className="text-2xl font-black text-[#e21b3c]">{state.workouts?.length || 0}</p>
+          <p className="text-2xl font-black text-[#e21b3c]">{workouts.length}</p>
         </div>
       </div>
 
@@ -475,10 +495,10 @@ export default function HealthPage() {
         </button>
 
         {/* Saved Routines List */}
-        {state.customRoutines?.length > 0 && (
+        {customRoutines.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-bold text-gray-400 uppercase ml-2">Your Saved Routines</p>
-            {state.customRoutines.map((routine) => (
+            {customRoutines.map((routine) => (
               <div key={routine.id} className="flex gap-2">
                 <button
                   onClick={() => startCustomRoutine(routine.steps)}
