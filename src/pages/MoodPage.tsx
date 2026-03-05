@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
-import { Smile, HelpCircle, X } from "lucide-react";
+import { Smile, HelpCircle, X, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/Calendar";
 import { motion, AnimatePresence } from "motion/react";
@@ -72,16 +72,22 @@ export default function MoodPage() {
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
-      <header className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-black text-[#46178f] drop-shadow-sm">Mooderia</h1>
-          <p className="text-gray-500 font-bold">How are you today?</p>
+      {/* Streak Display */}
+      <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden border-b-8 border-red-700">
+        <div className="absolute top-0 right-0 opacity-20 transform translate-x-1/4 -translate-y-1/4">
+          <Flame className="w-48 h-48" />
         </div>
-        <div className="bg-[#eb6123] text-white px-4 py-2 rounded-full font-black shadow-md border-b-4 border-[#c54e16] flex items-center gap-2">
-          <span>🔥</span>
-          <span>{state.streak}</span>
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase opacity-80 mb-1 tracking-widest">Current Streak</p>
+            <h2 className="text-5xl font-black">{state.streak} <span className="text-2xl font-bold opacity-80">Days</span></h2>
+          </div>
+          <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
+             <Flame className="w-10 h-10 text-white animate-pulse" />
+          </div>
         </div>
-      </header>
+      </div>
 
       <div className="bg-white p-4 rounded-3xl shadow-xl border-b-8 border-gray-200">
         <h2 className="text-xl font-black text-gray-700 mb-4 flex items-center gap-2">

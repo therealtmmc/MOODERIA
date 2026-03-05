@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
 
 const WORKOUT_PROGRAMS = [
   {
@@ -51,6 +52,7 @@ export default function HealthPage() {
   // Workout State
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showBuilderModal, setShowBuilderModal] = useState(false); // New Builder Modal
+  const [showSuccess, setShowSuccess] = useState(false);
   
   // New Flexible Routine State
   type WorkoutStep = {
@@ -126,6 +128,7 @@ export default function HealthPage() {
     dispatch({ type: "LOG_WORKOUT", payload: log });
     setShowLogModal(false);
     setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
+    setShowSuccess(true);
     
     confetti({
       particleCount: 150,
@@ -229,6 +232,7 @@ export default function HealthPage() {
     
     dispatch({ type: "LOG_WORKOUT", payload: log });
     stopWorkout();
+    setShowSuccess(true);
     
     confetti({
       particleCount: 150,
@@ -255,6 +259,7 @@ export default function HealthPage() {
       setIsWalking(false);
       setWalkTime(0);
       setWalkDistance(0);
+      setShowSuccess(true);
       confetti({
         particleCount: 100,
         spread: 70,
@@ -350,7 +355,7 @@ export default function HealthPage() {
     if (state.workouts.length === 0) return 0;
     
     // Get unique dates of workouts, sorted descending
-    const uniqueDates = Array.from(new Set(state.workouts.map(w => w.date)))
+    const uniqueDates = Array.from<string>(new Set(state.workouts.map(w => w.date)))
       .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
       
     if (uniqueDates.length === 0) return 0;
@@ -417,6 +422,12 @@ export default function HealthPage() {
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6 relative">
+      <SuccessAnimation 
+        type="workout" 
+        isVisible={showSuccess} 
+        onComplete={() => setShowSuccess(false)} 
+      />
+
       <header className="flex justify-between items-center">
         <h1 className="text-3xl font-black text-[#e21b3c]">Health</h1>
         {workoutStreak > 0 && (

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format, subDays, isSameDay, parseISO, isAfter } from "date-fns";
 import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar } from "lucide-react";
@@ -160,7 +160,7 @@ export default function DiaryPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const sortedMoods = Object.entries(moodCounts).sort((a, b) => b[1] - a[1]);
+  const sortedMoods = Object.entries(moodCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1]);
 
   // On This Day Logic
   const onThisDayEntries = state.moods.filter(m => {
@@ -204,7 +204,7 @@ export default function DiaryPage() {
             <h3 className="font-black text-lg uppercase">Mood Insights (7 Days)</h3>
           </div>
           <div className="flex gap-2 items-end h-24">
-            {sortedMoods.map(([mood, count]) => (
+            {sortedMoods.map(([mood, count]: [string, number]) => (
               <div key={mood} className="flex-1 flex flex-col items-center gap-1 group">
                 <div className="relative w-full flex justify-center">
                   <div 

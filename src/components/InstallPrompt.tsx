@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, Share, PlusSquare, Smartphone, MonitorX } from 'lucide-react';
 
 export function InstallPrompt({ children }: { children: React.ReactNode }) {

@@ -5,6 +5,7 @@ import { Calendar } from "@/components/Calendar";
 import { motion, AnimatePresence } from "motion/react";
 import { format, parseISO, isAfter, startOfDay, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { cn } from "@/lib/utils";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
 
 const EVENT_TYPES = [
   { id: "Social", label: "Social", icon: User, color: "bg-green-100 text-green-600 border-green-500" },
@@ -19,6 +20,7 @@ export default function EventsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [showCalendarReminder, setShowCalendarReminder] = useState(false);
   const [viewMode, setViewMode] = useState<"calendar" | "agenda">("calendar");
+  const [showSuccess, setShowSuccess] = useState(false);
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: "",
     date: format(new Date(), "yyyy-MM-dd"),
@@ -80,6 +82,7 @@ export default function EventsPage() {
     });
     setShowAdd(false);
     setShowCalendarReminder(true); // Show reminder
+    setShowSuccess(true);
     setNewEvent({
       title: "",
       date: format(new Date(), "yyyy-MM-dd"),
@@ -106,6 +109,12 @@ export default function EventsPage() {
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
+      <SuccessAnimation 
+        type="event" 
+        isVisible={showSuccess} 
+        onComplete={() => setShowSuccess(false)} 
+      />
+
       <header className="flex justify-between items-center">
         <h1 className="text-3xl font-black text-[#26890c]">Events</h1>
         <div className="flex gap-2">

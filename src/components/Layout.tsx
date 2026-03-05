@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { BottomNav } from "./BottomNav";
+import { Header } from "./Header";
+import { Sidebar } from "./Sidebar";
 import { MobileGuard } from "./MobileGuard";
 import { InstallGuard } from "./InstallGuard";
 import { DailyMoodPopup } from "./DailyMoodPopup";
 import { LoadingScreen } from "./LoadingScreen";
 import { BreathingModal } from "./BreathingModal";
+import { RankUpModal } from "./RankUpModal";
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
 import { Wind } from "lucide-react";
@@ -28,18 +30,11 @@ export function Layout() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [isBreathingOpen, setIsBreathingOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Determine current theme based on last logged mood
   const lastMoodEntry = state.moods.find(m => m.date === state.lastMoodDate);
   const currentTheme = lastMoodEntry ? THEME_COLORS[lastMoodEntry.mood] : "bg-[#f2f2f2]";
-
-  // Simulate loading screen on first visit
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2500); // 2.5s loading screen
-    return () => clearTimeout(timer);
-  }, []);
 
   // Redirect to Onboarding if no profile
   useEffect(() => {
@@ -84,17 +79,27 @@ export function Layout() {
     return () => clearInterval(interval);
   }, [state.routines]);
 
+  // Simulate loading screen on first visit
+  const handleLoadingComplete = () => {
+    setLoading(false);
+  };
+
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
 
   return (
     <InstallGuard>
       <MobileGuard>
-        <div className={cn("min-h-screen pb-24 font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
+        <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
           {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
+          {state.userProfile && location.pathname !== "/onboarding" && <RankUpModal />}
           
-          <main className="max-w-md mx-auto min-h-screen relative">
+          <main className="max-w-md mx-auto min-h-screen relative pb-24">
+            {state.userProfile && location.pathname !== "/onboarding" && (
+              <Header onMenuClick={() => setIsSidebarOpen(true)} />
+            )}
+
             <Outlet />
           </main>
           
@@ -102,12 +107,12 @@ export function Layout() {
             <>
               <button
                 onClick={() => setIsBreathingOpen(true)}
-                className="fixed bottom-24 right-4 z-40 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-blue-400 hover:bg-blue-50 active:scale-95 transition-all"
+                className="fixed bottom-8 right-4 z-40 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-blue-400 hover:bg-blue-50 active:scale-95 transition-all"
                 title="Panic Button (Breathe)"
               >
                 <Wind className="w-6 h-6" />
               </button>
-              <BottomNav />
+              <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
             </>
           )}
 
