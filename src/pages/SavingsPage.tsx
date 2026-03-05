@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "motion/react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
 
 export default function SavingsPage() {
   const { state, dispatch } = useStore();
   const [showAdd, setShowAdd] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
   const [addAmount, setAddAmount] = useState("");
+  const [successType, setSuccessType] = useState<"savings" | "savings_goal" | null>(null);
 
   const [newGoal, setNewGoal] = useState<{ name: string; target: string; icon: string }>({
     name: "",
@@ -34,6 +36,7 @@ export default function SavingsPage() {
     });
     setShowAdd(false);
     setNewGoal({ name: "", target: "", icon: "💰" });
+    setSuccessType("savings_goal");
   };
 
   const handleAddMoney = () => {
@@ -59,6 +62,8 @@ export default function SavingsPage() {
         origin: { y: 0.6 },
         colors: ["#FFD700", "#26890c"],
       });
+    } else {
+      setSuccessType("savings");
     }
 
     setAddAmount("");
@@ -72,6 +77,11 @@ export default function SavingsPage() {
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
+      <SuccessAnimation 
+        type={successType || "savings"} 
+        isVisible={!!successType} 
+        onComplete={() => setSuccessType(null)} 
+      />
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-black text-[#26890c]">Savings</h1>

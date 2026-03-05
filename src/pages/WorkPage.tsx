@@ -11,7 +11,7 @@ export default function WorkPage() {
   const { state, dispatch } = useStore();
   const [showAdd, setShowAdd] = useState(false);
   const [selectedTask, setSelectedTask] = useState<WorkTask | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [successType, setSuccessType] = useState<"work" | "work_add" | null>(null);
   
   const [newTask, setNewTask] = useState({
     title: "",
@@ -35,12 +35,13 @@ export default function WorkPage() {
     });
     setShowAdd(false);
     setNewTask({ title: "", description: "" });
+    setSuccessType("work_add");
   };
 
   const handleCompleteTask = (id: string) => {
     dispatch({ type: "COMPLETE_WORK_TASK", payload: id });
     setSelectedTask(null);
-    setShowSuccess(true);
+    setSuccessType("work");
     
     confetti({
       particleCount: 150,
@@ -53,9 +54,9 @@ export default function WorkPage() {
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
       <SuccessAnimation 
-        type="work" 
-        isVisible={showSuccess} 
-        onComplete={() => setShowSuccess(false)} 
+        type={successType || "work"} 
+        isVisible={!!successType} 
+        onComplete={() => setSuccessType(null)} 
       />
 
       <header className="flex justify-between items-center">

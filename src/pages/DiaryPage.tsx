@@ -4,6 +4,7 @@ import { format, subDays, isSameDay, parseISO, isAfter } from "date-fns";
 import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
 
 const MOOD_COLORS: Record<string, string> = {
   Happy: "bg-yellow-400",
@@ -37,6 +38,7 @@ export default function DiaryPage() {
   const [selectedAudio, setSelectedAudio] = useState<string | null>(todayMood?.audio || null);
   const [lockDate, setLockDate] = useState<string | null>(todayMood?.lockDate || null);
   const [isHighlight, setIsHighlight] = useState<boolean>(todayMood?.isHighlight || false);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const [viewMode, setViewMode] = useState<"list" | "gallery">("list");
   const [filterMode, setFilterMode] = useState<"all" | "wins">("all");
@@ -143,7 +145,7 @@ export default function DiaryPage() {
           isHighlight: isHighlight
         } 
       });
-      alert("Diary entry saved!");
+      setShowSuccess(true);
     }
   };
 
@@ -175,6 +177,11 @@ export default function DiaryPage() {
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
+      <SuccessAnimation 
+        type="mood" 
+        isVisible={showSuccess} 
+        onComplete={() => setShowSuccess(false)} 
+      />
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-black text-[#1368ce]">Diary</h1>
@@ -583,50 +590,70 @@ export default function DiaryPage() {
               })}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {state.moods
-              .filter(m => m.image || m.video || m.audio)
-              .filter(m => filterMode === "all" || m.isHighlight)
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((entry) => {
-                 const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
-                 return (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100"
-                  >
-                    {isLocked ? (
-                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center z-10">
-                        <Lock className="w-8 h-8 text-gray-400" />
-                      </div>
-                    ) : (
-                      <>
-                        {entry.image ? (
-                          <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
-                        ) : entry.video ? (
-                          <video src={entry.video} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                            <Mic className="w-12 h-12 text-gray-400" />
+          <div className="space-y-8">
+            {Object.entries(
+              state.moods
+                .filter(m => m.image || m.video || m.audio)
+                .filter(m => filterMode === "all" || m.isHighlight)
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .reduce((acc, entry) => {
+                  const dateKey = entry.date;
+                  if (!acc[dateKey]) acc[dateKey] = [];
+                  acc[dateKey].push(entry);
+                  return acc;
+                }, {} as Record<string, typeof state.moods>)
+            ).map(([date, entries]) => (
+              <div key={date}>
+                <div className="flex items-center gap-2 mb-3 ml-1">
+                  <div className="w-2 h-2 rounded-full bg-[#1368ce]" />
+                  <h5 className="font-black text-gray-700 text-sm uppercase tracking-wide">
+                    {format(parseISO(date), "MMMM d, yyyy")}
+                  </h5>
+                  <div className="h-px bg-gray-200 flex-1" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {entries.map((entry) => {
+                     const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
+                     return (
+                      <motion.div
+                        key={entry.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100"
+                      >
+                        {isLocked ? (
+                          <div className="absolute inset-0 bg-gray-200 flex items-center justify-center z-10">
+                            <Lock className="w-8 h-8 text-gray-400" />
                           </div>
+                        ) : (
+                          <>
+                            {entry.image ? (
+                              <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
+                            ) : entry.video ? (
+                              <video src={entry.video} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                <Mic className="w-12 h-12 text-gray-400" />
+                              </div>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3 pointer-events-none">
-                      <div className="flex justify-between items-end">
-                        <div>
-                          <p className="text-white text-xs font-bold">{format(new Date(entry.date), "MMM d")}</p>
-                          <p className="text-white/80 text-[10px] uppercase font-bold">{entry.mood}</p>
+                        
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3 pointer-events-none">
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <p className="text-white text-xs font-bold">{format(new Date(entry.date), "MMM d")}</p>
+                              <p className="text-white/80 text-[10px] uppercase font-bold">{entry.mood}</p>
+                            </div>
+                            {entry.isHighlight && <Trophy className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
+                          </div>
                         </div>
-                        {entry.isHighlight && <Trophy className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
         

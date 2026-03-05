@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Calendar, Dumbbell, Briefcase } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, Calendar, Dumbbell, Briefcase, Smile, PiggyBank, Plus } from "lucide-react";
+import { useEffect } from "react";
 
-type AnimationType = "work" | "event" | "workout";
+type AnimationType = "work" | "work_add" | "event" | "workout" | "mood" | "savings" | "savings_goal";
 
 interface SuccessAnimationProps {
   type: AnimationType;
@@ -18,12 +18,19 @@ const CONFIG = {
     message: "Task Done!",
     borderColor: "border-blue-500"
   },
+  work_add: {
+    icon: Plus,
+    color: "text-blue-500",
+    bg: "bg-blue-100",
+    message: "Task Added!",
+    borderColor: "border-blue-500"
+  },
   event: {
     icon: Calendar,
-    color: "text-green-500",
-    bg: "bg-green-100",
+    color: "text-purple-500",
+    bg: "bg-purple-100",
     message: "Event Added!",
-    borderColor: "border-green-500"
+    borderColor: "border-purple-500"
   },
   workout: {
     icon: Dumbbell,
@@ -31,6 +38,27 @@ const CONFIG = {
     bg: "bg-red-100",
     message: "Workout Logged!",
     borderColor: "border-red-500"
+  },
+  mood: {
+    icon: Smile,
+    color: "text-yellow-500",
+    bg: "bg-yellow-100",
+    message: "Mood Logged!",
+    borderColor: "border-yellow-500"
+  },
+  savings: {
+    icon: PiggyBank,
+    color: "text-emerald-500",
+    bg: "bg-emerald-100",
+    message: "Savings Updated!",
+    borderColor: "border-emerald-500"
+  },
+  savings_goal: {
+    icon: PiggyBank,
+    color: "text-emerald-500",
+    bg: "bg-emerald-100",
+    message: "Goal Added!",
+    borderColor: "border-emerald-500"
   }
 };
 
