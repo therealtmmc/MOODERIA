@@ -328,18 +328,24 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, showRankUpPopup: false };
     case "LOAD_STATE":
       // Backfill IDs for old entries
-      const moodsWithIds = action.payload.moods.map(m => ({
+      const moodsWithIds = (action.payload.moods || []).map((m) => ({
         ...m,
-        id: m.id || crypto.randomUUID()
+        id: m.id || crypto.randomUUID(),
       }));
-      return { 
-        ...action.payload, 
-        moods: moodsWithIds, 
-        savings: action.payload.savings || [],
+      return {
+        ...action.payload,
+        moods: moodsWithIds,
+        routines: action.payload.routines || [],
         workTasks: action.payload.workTasks || [],
+        events: action.payload.events || [],
+        workouts: action.payload.workouts || [],
+        walks: action.payload.walks || [],
+        savings: action.payload.savings || [],
         customRoutines: Array.isArray(action.payload.customRoutines) ? action.payload.customRoutines : [],
         currentRank: action.payload.currentRank || 0,
-        showRankUpPopup: false 
+        showRankUpPopup: false,
+        streak: action.payload.streak || 0,
+        lastMoodDate: action.payload.lastMoodDate || null,
       };
     default:
       return state;

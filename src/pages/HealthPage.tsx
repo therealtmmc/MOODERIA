@@ -292,7 +292,7 @@ export default function HealthPage() {
 
   // Calculate Workout Streak
   const calculateWorkoutStreak = () => {
-    if (state.workouts.length === 0) return 0;
+    if (!state.workouts || state.workouts.length === 0) return 0;
     
     // Get unique dates of workouts, sorted descending
     const uniqueDates = Array.from<string>(new Set(state.workouts.map(w => w.date)))
@@ -334,7 +334,7 @@ export default function HealthPage() {
     const start = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
     const end = endOfWeek(now, { weekStartsOn: 1 });
 
-    const weeklyLogs = state.workouts.filter(w => {
+    const weeklyLogs = (state.workouts || []).filter(w => {
       const workoutDate = parseISO(w.date);
       return isWithinInterval(workoutDate, { start, end });
     });
@@ -445,12 +445,12 @@ export default function HealthPage() {
         <div className="bg-white p-4 rounded-2xl shadow-md border-b-4 border-gray-200">
           <span className="text-xs font-bold text-gray-400 uppercase">Total Distance</span>
           <p className="text-2xl font-black text-[#e21b3c]">
-            {(state.walks.reduce((acc, curr) => acc + curr.distance, 0) / 1000).toFixed(2)} km
+            {((state.walks || []).reduce((acc, curr) => acc + curr.distance, 0) / 1000).toFixed(2)} km
           </p>
         </div>
         <div className="bg-white p-4 rounded-2xl shadow-md border-b-4 border-gray-200">
           <span className="text-xs font-bold text-gray-400 uppercase">Workouts</span>
-          <p className="text-2xl font-black text-[#e21b3c]">{state.workouts.length}</p>
+          <p className="text-2xl font-black text-[#e21b3c]">{state.workouts?.length || 0}</p>
         </div>
       </div>
 
