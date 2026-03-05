@@ -1,25 +1,25 @@
 import { useStore } from "@/context/StoreContext";
-import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check } from "lucide-react";
+import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 const RANKS = [
-  { id: 0, name: "Novice Dreamer", icon: "🌱", color: "text-green-500", bg: "bg-green-100", threshold: 0 },
-  { id: 1, name: "Casual Achiever", icon: "🍂", color: "text-orange-500", bg: "bg-orange-100", threshold: 10 },
-  { id: 2, name: "Consistent Doer", icon: "🪵", color: "text-amber-700", bg: "bg-amber-100", threshold: 20 },
-  { id: 3, name: "Bronze Grinder", icon: "🥉", color: "text-orange-700", bg: "bg-orange-200", threshold: 50 },
-  { id: 4, name: "Silver Striver", icon: "🥈", color: "text-gray-500", bg: "bg-gray-200", threshold: 80 },
-  { id: 5, name: "Gold Go-Getter", icon: "🥇", color: "text-yellow-500", bg: "bg-yellow-100", threshold: 120 },
-  { id: 6, name: "Platinum Pro", icon: "💠", color: "text-cyan-500", bg: "bg-cyan-100", threshold: 160 },
-  { id: 7, name: "Diamond Dynamo", icon: "💎", color: "text-blue-500", bg: "bg-blue-100", threshold: 200 },
-  { id: 8, name: "Master of Moods", icon: "👑", color: "text-purple-500", bg: "bg-purple-100", threshold: 250 },
-  { id: 9, name: "Mooderia Legend", icon: "🌟", color: "text-indigo-500", bg: "bg-indigo-100", threshold: 300 },
-  { id: 10, name: "Ultimate Being", icon: "🌌", color: "text-violet-600", bg: "bg-violet-100", threshold: 350 },
+  { id: 0, name: "Novice Dreamer", icon: "🌱", color: "text-green-500", bg: "bg-green-100", border: "border-green-500", threshold: 0 },
+  { id: 1, name: "Casual Achiever", icon: "🍂", color: "text-orange-500", bg: "bg-orange-100", border: "border-orange-500", threshold: 10 },
+  { id: 2, name: "Consistent Doer", icon: "🪵", color: "text-amber-700", bg: "bg-amber-100", border: "border-amber-700", threshold: 20 },
+  { id: 3, name: "Bronze Grinder", icon: "🥉", color: "text-orange-700", bg: "bg-orange-200", border: "border-orange-700", threshold: 50 },
+  { id: 4, name: "Silver Striver", icon: "🥈", color: "text-gray-500", bg: "bg-gray-200", border: "border-gray-500", threshold: 80 },
+  { id: 5, name: "Gold Go-Getter", icon: "🥇", color: "text-yellow-500", bg: "bg-yellow-100", border: "border-yellow-500", threshold: 120 },
+  { id: 6, name: "Platinum Pro", icon: "💠", color: "text-cyan-500", bg: "bg-cyan-100", border: "border-cyan-500", threshold: 160 },
+  { id: 7, name: "Diamond Dynamo", icon: "💎", color: "text-blue-500", bg: "bg-blue-100", border: "border-blue-500", threshold: 200 },
+  { id: 8, name: "Master of Moods", icon: "👑", color: "text-purple-500", bg: "bg-purple-100", border: "border-purple-500", threshold: 250 },
+  { id: 9, name: "Mooderia Legend", icon: "🌟", color: "text-indigo-500", bg: "bg-indigo-100", border: "border-indigo-500", threshold: 300 },
+  { id: 10, name: "Ultimate Being", icon: "🌌", color: "text-violet-600", bg: "bg-violet-100", border: "border-violet-600", threshold: 350 },
 ];
 
 export default function ProfilePage() {
   const { state } = useStore();
-  const { userProfile, currentRank } = state;
+  const { userProfile, currentRank, streak } = state;
 
   if (!userProfile) return null;
 
@@ -42,48 +42,86 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-black text-[#46178f]">Profile</h1>
       </header>
 
-      {/* Rank Card */}
-      <div className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border-4 border-[#46178f] relative p-6 text-center space-y-4">
-        <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#46178f]/10 to-transparent pointer-events-none" />
+      {/* Merged Rank & Passport Card */}
+      <div className={cn(
+        "bg-white rounded-[2.5rem] shadow-xl overflow-hidden border-4 relative p-6 space-y-6",
+        currentRankData.border || "border-[#46178f]"
+      )}>
+        {/* Background Gradient */}
+        <div className={cn("absolute top-0 left-0 w-full h-32 bg-gradient-to-b opacity-20 pointer-events-none", currentRankData.bg.replace("bg-", "from-").replace("100", "500"), "to-transparent")} />
         
-        <div className="relative">
-          <motion.div 
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl shadow-lg border-4 border-white ${currentRankData.bg}`}
-          >
-            {currentRankData.icon}
-          </motion.div>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#46178f] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
-            Rank {currentRank}
+        {/* Top Section: User Info & Rank Icon */}
+        <div className="flex justify-between items-start relative z-10">
+          <div className="flex gap-4 items-center">
+            {/* User Photo */}
+            <div className="w-20 h-20 bg-gray-200 rounded-2xl border-4 border-white shadow-md overflow-hidden shrink-0">
+               {userProfile.photo ? (
+                 <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
+               ) : (
+                 <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <User className="w-8 h-8 text-gray-400" />
+                 </div>
+               )}
+            </div>
+            
+            {/* User Details */}
+            <div>
+              <h2 className="font-black text-xl text-gray-800 leading-tight">{userProfile.name}</h2>
+              <div className="flex items-center gap-1 text-gray-500 font-bold text-xs uppercase mt-1">
+                <Globe className="w-3 h-3" />
+                {userProfile.citizenship}
+              </div>
+              <div className="mt-2 inline-flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-black border border-orange-200">
+                <Flame className="w-3 h-3 fill-orange-500" />
+                {streak} Day Streak
+              </div>
+            </div>
+          </div>
+
+          {/* Rank Icon */}
+          <div className="flex flex-col items-center">
+            <motion.div 
+              initial={{ scale: 0.8, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className={cn("w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-md border-4 border-white", currentRankData.bg)}
+            >
+              {currentRankData.icon}
+            </motion.div>
+            <span className={cn("text-[10px] font-black uppercase mt-1 text-center max-w-[80px] leading-tight", currentRankData.color)}>
+              {currentRankData.name}
+            </span>
           </div>
         </div>
 
-        <div>
-          <h2 className={`text-2xl font-black ${currentRankData.color}`}>{currentRankData.name}</h2>
-          <p className="text-gray-400 font-bold text-xs uppercase tracking-wide mt-1">Total Tasks Completed: {totalTasks}</p>
+        {/* Progress Section */}
+        <div className="relative z-10 pt-2">
+          <div className="flex justify-between items-end mb-2">
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase">Next Rank Progress</p>
+              <p className="font-black text-2xl text-gray-800">{totalTasks} <span className="text-sm text-gray-400 font-bold">/ {nextRankData ? nextRankData.threshold : "MAX"} XP</span></p>
+            </div>
+            <div className="text-right">
+              <p className="font-black text-lg text-[#46178f]">{Math.round(progress)}%</p>
+            </div>
+          </div>
+          
+          <div className="h-5 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200 relative">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className={cn("h-full rounded-full relative overflow-hidden", currentRankData.bg.replace('bg-', 'bg-').replace('100', '500'))}
+            >
+              <div className="absolute top-0 left-0 w-full h-full bg-white/20 animate-[shimmer_2s_infinite]" />
+            </motion.div>
+          </div>
+          
+          {nextRankData && (
+             <p className="text-center text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-wide">
+               {nextRankData.threshold - totalTasks} more tasks to reach <span className={nextRankData.color}>{nextRankData.name}</span>
+             </p>
+          )}
         </div>
-
-        {/* Progress Bar */}
-        {nextRankData ? (
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-gray-400">
-              <span>{Math.round(progress)}% to Rank {currentRank + 1}</span>
-              <span>{nextRankData.threshold - totalTasks} tasks left</span>
-            </div>
-            <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                className={`h-full rounded-full ${currentRankData.bg.replace('bg-', 'bg-').replace('100', '500')}`}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-3 rounded-xl font-black text-sm shadow-md">
-            MAX RANK ACHIEVED! 🏆
-          </div>
-        )}
       </div>
 
       {/* Stats Grid */}
@@ -158,46 +196,6 @@ export default function ProfilePage() {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      <div className="bg-[#f8f5f2] rounded-3xl shadow-xl overflow-hidden border-2 border-gray-200 relative mt-8">
-        {/* Passport Header */}
-        <div className="bg-[#46178f] p-4 flex items-center justify-between border-b-4 border-[#eb6123]">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-white uppercase tracking-widest text-sm">Mooderia Passport</span>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-white font-black text-xs">M</span>
-          </div>
-        </div>
-
-        {/* Passport Body */}
-        <div className="p-6 relative">
-          <div className="flex gap-6">
-            <div className="w-24 h-32 bg-gray-200 rounded-lg border-2 border-gray-300 shadow-inner flex items-center justify-center shrink-0 overflow-hidden relative">
-               {userProfile.photo ? (
-                 <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
-               ) : (
-                 <User className="w-12 h-12 text-gray-400" />
-               )}
-            </div>
-            
-            <div className="space-y-4 flex-1">
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Name</label>
-                <p className="font-black text-xl text-gray-800 font-mono uppercase leading-tight">{userProfile.name}</p>
-              </div>
-              
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Citizenship</label>
-                <p className="font-black text-lg text-gray-800 font-mono uppercase flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-[#eb6123]" />
-                  {userProfile.citizenship}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
