@@ -475,7 +475,7 @@ export default function HealthPage() {
         </button>
 
         {/* Saved Routines List */}
-        {state.customRoutines.length > 0 && (
+        {state.customRoutines?.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-bold text-gray-400 uppercase ml-2">Your Saved Routines</p>
             {state.customRoutines.map((routine) => (

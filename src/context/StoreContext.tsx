@@ -337,7 +337,7 @@ function reducer(state: AppState, action: Action): AppState {
         moods: moodsWithIds, 
         savings: action.payload.savings || [],
         workTasks: action.payload.workTasks || [],
-        customRoutines: action.payload.customRoutines || [],
+        customRoutines: Array.isArray(action.payload.customRoutines) ? action.payload.customRoutines : [],
         currentRank: action.payload.currentRank || 0,
         showRankUpPopup: false 
       };
