@@ -59,6 +59,7 @@ export type CustomRoutine = {
   id: string;
   name: string;
   steps: WorkoutStep[];
+  difficulty: "Easy" | "Medium" | "Hard";
 };
 
 export type ExerciseLog = {
@@ -129,6 +130,7 @@ type Action =
   | { type: "ADD_SAVINGS_ENTRY"; payload: { id: string; amount: number; date: string } }
   | { type: "DELETE_SAVINGS"; payload: string }
   | { type: "ADD_CUSTOM_ROUTINE"; payload: CustomRoutine }
+  | { type: "EDIT_CUSTOM_ROUTINE"; payload: CustomRoutine }
   | { type: "DELETE_CUSTOM_ROUTINE"; payload: string }
   | { type: "RESET_STREAK" }
   | { type: "INCREMENT_STREAK" }
@@ -305,6 +307,13 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "ADD_CUSTOM_ROUTINE":
       return { ...state, customRoutines: [...state.customRoutines, action.payload] };
+    case "EDIT_CUSTOM_ROUTINE":
+      return {
+        ...state,
+        customRoutines: state.customRoutines.map((r) =>
+          r.id === action.payload.id ? action.payload : r
+        ),
+      };
     case "DELETE_CUSTOM_ROUTINE":
       return {
         ...state,

@@ -70,12 +70,77 @@ export default function HealthPage() {
   // Builder State
   const [builderSteps, setBuilderSteps] = useState<WorkoutStep[]>([]);
   const [routineName, setRoutineName] = useState("");
+  const [routineDifficulty, setRoutineDifficulty] = useState<"Easy" | "Medium" | "Hard">("Medium");
+  const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
+
   const [newStep, setNewStep] = useState<{name: string, type: "time" | "reps", val: string}>({
     name: "", type: "reps", val: ""
   });
   const [restDuration, setRestDuration] = useState("");
 
-  // ... (existing code)
+  // Walk State
+  const [isWalking, setIsWalking] = useState(false);
+  const [walkTime, setWalkTime] = useState(0);
+  const [walkDistance, setWalkDistance] = useState(0); // meters
+  const walkTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const workoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Custom Workout Logging State
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [customExercises, setCustomExercises] = useState<{name: string, sets: string, reps: string, weight: string}[]>([
+    { name: "", sets: "", reps: "", weight: "" }
+  ]);
+
+  const handleAddExerciseRow = () => {
+    setCustomExercises([...customExercises, { name: "", sets: "", reps: "", weight: "" }]);
+  };
+
+  const handleExerciseChange = (index: number, field: string, value: string) => {
+    const newExercises = [...customExercises];
+    // @ts-ignore
+    newExercises[index][field] = value;
+    setCustomExercises(newExercises);
+  };
+
+  const handleRemoveExerciseRow = (index: number) => {
+    const newExercises = customExercises.filter((_, i) => i !== index);
+    setCustomExercises(newExercises);
+  };
+
+  const saveCustomWorkout = () => {
+    // Filter out empty rows
+    const validExercises = customExercises.filter(e => e.name && e.sets && e.reps);
+    
+    if (validExercises.length === 0) return;
+
+    const log: WorkoutLog = {
+      id: crypto.randomUUID(),
+      date: format(new Date(), "yyyy-MM-dd"),
+      type: "Custom Workout",
+      difficulty: "Medium",
+      duration: 0, // Not tracked for manual entry
+      reps: validExercises.reduce((acc, curr) => acc + (parseInt(curr.reps) * parseInt(curr.sets)), 0),
+      exercises: validExercises.map(e => ({
+        name: e.name,
+        sets: parseInt(e.sets),
+        reps: parseInt(e.reps),
+        weight: e.weight ? parseFloat(e.weight) : undefined
+      }))
+    };
+
+    dispatch({ type: "LOG_WORKOUT", payload: log });
+    setShowLogModal(false);
+    setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
+    setShowSuccess(true);
+    
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: ["#FFD700", "#e21b3c"],
+    });
+  };
 
   const startCustomRoutine = (routine?: WorkoutStep[]) => {
     const stepsToRun = routine || builderSteps;
@@ -87,20 +152,50 @@ export default function HealthPage() {
     setShowBuilderModal(false);
   };
 
+  const openBuilderForEdit = (routine: typeof customRoutines[0]) => {
+    setBuilderSteps(routine.steps);
+    setRoutineName(routine.name);
+    setRoutineDifficulty(routine.difficulty || "Medium");
+    setEditingRoutineId(routine.id);
+    setShowBuilderModal(true);
+  };
+
+  const openBuilderNew = () => {
+    setBuilderSteps([]);
+    setRoutineName("");
+    setRoutineDifficulty("Medium");
+    setEditingRoutineId(null);
+    setShowBuilderModal(true);
+  };
+
   const saveCustomRoutine = () => {
     if (!routineName || builderSteps.length === 0) return;
     
-    dispatch({
-      type: "ADD_CUSTOM_ROUTINE",
-      payload: {
-        id: crypto.randomUUID(),
-        name: routineName,
-        steps: builderSteps
-      }
-    });
+    if (editingRoutineId) {
+      dispatch({
+        type: "EDIT_CUSTOM_ROUTINE",
+        payload: {
+          id: editingRoutineId,
+          name: routineName,
+          steps: builderSteps,
+          difficulty: routineDifficulty
+        }
+      });
+    } else {
+      dispatch({
+        type: "ADD_CUSTOM_ROUTINE",
+        payload: {
+          id: crypto.randomUUID(),
+          name: routineName,
+          steps: builderSteps,
+          difficulty: routineDifficulty
+        }
+      });
+    }
     
     setRoutineName("");
     setBuilderSteps([]);
+    setEditingRoutineId(null);
     setShowBuilderModal(false);
     setShowSuccess(true);
   };
@@ -486,7 +581,7 @@ export default function HealthPage() {
         </button>
 
         <button
-          onClick={() => setShowBuilderModal(true)}
+          onClick={openBuilderNew}
           disabled={isActive || isWalking}
           className="w-full bg-white text-[#e21b3c] p-4 rounded-2xl shadow-lg border-b-4 border-gray-200 active:translate-y-1 active:border-b-0 transition-all flex items-center justify-between disabled:opacity-50"
         >
@@ -496,24 +591,50 @@ export default function HealthPage() {
 
         {/* Saved Routines List */}
         {customRoutines.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase ml-2">Your Saved Routines</p>
             {customRoutines.map((routine) => (
-              <div key={routine.id} className="flex gap-2">
-                <button
-                  onClick={() => startCustomRoutine(routine.steps)}
-                  disabled={isActive || isWalking}
-                  className="flex-1 bg-orange-50 text-orange-600 p-4 rounded-2xl shadow-sm border border-orange-100 active:scale-95 transition-all flex items-center justify-between disabled:opacity-50"
-                >
-                  <span className="font-black text-lg">{routine.name}</span>
-                  <Play className="w-5 h-5 fill-current" />
-                </button>
-                <button
-                  onClick={() => dispatch({ type: "DELETE_CUSTOM_ROUTINE", payload: routine.id })}
-                  className="bg-gray-100 text-gray-400 p-4 rounded-2xl active:scale-95 transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+              <div key={routine.id} className="bg-white p-4 rounded-2xl shadow-md border-2 border-gray-100 relative overflow-hidden group">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-black text-lg text-gray-800">{routine.name}</h3>
+                    <span className={cn(
+                      "text-xs font-black uppercase px-2 py-0.5 rounded-full",
+                      routine.difficulty === "Hard" ? "bg-red-100 text-red-600" :
+                      routine.difficulty === "Medium" ? "bg-orange-100 text-orange-600" :
+                      "bg-green-100 text-green-600"
+                    )}>
+                      {routine.difficulty || "Medium"}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openBuilderForEdit(routine)}
+                      className="p-2 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      <span className="text-xs font-bold">Edit</span>
+                    </button>
+                    <button
+                      onClick={() => dispatch({ type: "DELETE_CUSTOM_ROUTINE", payload: routine.id })}
+                      className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-xs font-bold text-gray-400">
+                    {routine.steps.length} Steps • {Math.round(routine.steps.reduce((acc, s) => acc + (s.duration || 0), 0) / 60)} min
+                  </p>
+                  <button
+                    onClick={() => startCustomRoutine(routine.steps)}
+                    disabled={isActive || isWalking}
+                    className="bg-[#e21b3c] text-white px-4 py-2 rounded-xl font-black text-sm shadow-md active:scale-95 transition-transform flex items-center gap-2 disabled:opacity-50"
+                  >
+                    Start <Play className="w-4 h-4 fill-current" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -777,12 +898,25 @@ export default function HealthPage() {
                      onChange={(e) => setRoutineName(e.target.value)}
                      className="w-full p-2 rounded-lg border border-orange-200 font-bold text-sm"
                    />
+                   <div className="flex gap-2 items-center">
+                     <span className="text-xs font-bold text-orange-400 uppercase">Difficulty:</span>
+                     <select
+                       value={routineDifficulty}
+                       // @ts-ignore
+                       onChange={(e) => setRoutineDifficulty(e.target.value)}
+                       className="p-2 rounded-lg border border-orange-200 font-bold text-sm bg-white flex-1"
+                     >
+                       <option value="Easy">Easy</option>
+                       <option value="Medium">Medium</option>
+                       <option value="Hard">Hard</option>
+                     </select>
+                   </div>
                    <button
                      onClick={saveCustomRoutine}
                      disabled={!routineName || builderSteps.length === 0}
                      className="w-full bg-orange-500 text-white py-2 rounded-lg font-bold text-sm disabled:opacity-50"
                    >
-                     Save for Later
+                     {editingRoutineId ? "Update Routine" : "Save for Later"}
                    </button>
                 </div>
               </div>
