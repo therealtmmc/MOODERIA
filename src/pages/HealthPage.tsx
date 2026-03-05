@@ -69,100 +69,40 @@ export default function HealthPage() {
   
   // Builder State
   const [builderSteps, setBuilderSteps] = useState<WorkoutStep[]>([]);
+  const [routineName, setRoutineName] = useState("");
   const [newStep, setNewStep] = useState<{name: string, type: "time" | "reps", val: string}>({
     name: "", type: "reps", val: ""
   });
   const [restDuration, setRestDuration] = useState("");
 
-  // Walk State
-  const [isWalking, setIsWalking] = useState(false);
-  const [walkTime, setWalkTime] = useState(0);
-  const [walkDistance, setWalkDistance] = useState(0); // meters
-  const walkTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const watchIdRef = useRef<number | null>(null);
-  const workoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // ... (existing code)
 
-  // Custom Workout Logging State
-  const [showLogModal, setShowLogModal] = useState(false);
-  const [customExercises, setCustomExercises] = useState<{name: string, sets: string, reps: string, weight: string}[]>([
-    { name: "", sets: "", reps: "", weight: "" }
-  ]);
-
-  const handleAddExerciseRow = () => {
-    setCustomExercises([...customExercises, { name: "", sets: "", reps: "", weight: "" }]);
-  };
-
-  const handleExerciseChange = (index: number, field: string, value: string) => {
-    const newExercises = [...customExercises];
-    // @ts-ignore
-    newExercises[index][field] = value;
-    setCustomExercises(newExercises);
-  };
-
-  const handleRemoveExerciseRow = (index: number) => {
-    const newExercises = customExercises.filter((_, i) => i !== index);
-    setCustomExercises(newExercises);
-  };
-
-  const saveCustomWorkout = () => {
-    // Filter out empty rows
-    const validExercises = customExercises.filter(e => e.name && e.sets && e.reps);
-    
-    if (validExercises.length === 0) return;
-
-    const log: WorkoutLog = {
-      id: crypto.randomUUID(),
-      date: format(new Date(), "yyyy-MM-dd"),
-      type: "Custom Workout",
-      difficulty: "Medium",
-      duration: 0, // Not tracked for manual entry
-      reps: validExercises.reduce((acc, curr) => acc + (parseInt(curr.reps) * parseInt(curr.sets)), 0),
-      exercises: validExercises.map(e => ({
-        name: e.name,
-        sets: parseInt(e.sets),
-        reps: parseInt(e.reps),
-        weight: e.weight ? parseFloat(e.weight) : undefined
-      }))
-    };
-
-    dispatch({ type: "LOG_WORKOUT", payload: log });
-    setShowLogModal(false);
-    setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
-    setShowSuccess(true);
-    
-    confetti({
-      particleCount: 150,
-      spread: 100,
-      origin: { y: 0.6 },
-      colors: ["#FFD700", "#e21b3c"],
-    });
-  };
-
-  // Workout Logic
-  const startProgram = (program: typeof WORKOUT_PROGRAMS[0]) => {
-    // Convert preset program to flexible steps
-    const steps: WorkoutStep[] = [];
-    program.exercises.forEach((ex, idx) => {
-      steps.push({ type: "time", name: ex.name, duration: ex.duration });
-      if (idx < program.exercises.length - 1) {
-        steps.push({ type: "rest", name: "Rest", duration: 15 });
-      }
-    });
-
-    setActiveRoutine(steps);
+  const startCustomRoutine = (routine?: WorkoutStep[]) => {
+    const stepsToRun = routine || builderSteps;
+    if (stepsToRun.length === 0) return;
+    setActiveRoutine([...stepsToRun]);
     setCurrentStepIndex(0);
-    setTimeLeft(steps[0].duration || 0);
-    setIsActive(true);
-    setShowWorkoutModal(false);
-  };
-
-  const startCustomRoutine = () => {
-    if (builderSteps.length === 0) return;
-    setActiveRoutine([...builderSteps]);
-    setCurrentStepIndex(0);
-    setTimeLeft(builderSteps[0].duration || 0);
+    setTimeLeft(stepsToRun[0].duration || 0);
     setIsActive(true);
     setShowBuilderModal(false);
+  };
+
+  const saveCustomRoutine = () => {
+    if (!routineName || builderSteps.length === 0) return;
+    
+    dispatch({
+      type: "ADD_CUSTOM_ROUTINE",
+      payload: {
+        id: crypto.randomUUID(),
+        name: routineName,
+        steps: builderSteps
+      }
+    });
+    
+    setRoutineName("");
+    setBuilderSteps([]);
+    setShowBuilderModal(false);
+    setShowSuccess(true);
   };
 
   const nextStep = () => {
@@ -534,6 +474,31 @@ export default function HealthPage() {
           <span className="text-2xl">🏗️</span>
         </button>
 
+        {/* Saved Routines List */}
+        {state.customRoutines.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold text-gray-400 uppercase ml-2">Your Saved Routines</p>
+            {state.customRoutines.map((routine) => (
+              <div key={routine.id} className="flex gap-2">
+                <button
+                  onClick={() => startCustomRoutine(routine.steps)}
+                  disabled={isActive || isWalking}
+                  className="flex-1 bg-orange-50 text-orange-600 p-4 rounded-2xl shadow-sm border border-orange-100 active:scale-95 transition-all flex items-center justify-between disabled:opacity-50"
+                >
+                  <span className="font-black text-lg">{routine.name}</span>
+                  <Play className="w-5 h-5 fill-current" />
+                </button>
+                <button
+                  onClick={() => dispatch({ type: "DELETE_CUSTOM_ROUTINE", payload: routine.id })}
+                  className="bg-gray-100 text-gray-400 p-4 rounded-2xl active:scale-95 transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <button
           onClick={() => setShowLogModal(true)}
           disabled={isActive || isWalking}
@@ -781,15 +746,34 @@ export default function HealthPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Save Routine Section */}
+                <div className="bg-orange-50 p-3 rounded-xl border border-orange-200 space-y-3">
+                   <p className="text-xs font-bold text-orange-400 uppercase">Save Routine</p>
+                   <input
+                     type="text"
+                     placeholder="Routine Name (e.g. Morning Cardio)"
+                     value={routineName}
+                     onChange={(e) => setRoutineName(e.target.value)}
+                     className="w-full p-2 rounded-lg border border-orange-200 font-bold text-sm"
+                   />
+                   <button
+                     onClick={saveCustomRoutine}
+                     disabled={!routineName || builderSteps.length === 0}
+                     className="w-full bg-orange-500 text-white py-2 rounded-lg font-bold text-sm disabled:opacity-50"
+                   >
+                     Save for Later
+                   </button>
+                </div>
               </div>
 
               <div className="p-4 border-t border-gray-100 bg-gray-50 shrink-0">
                 <button
-                  onClick={startCustomRoutine}
+                  onClick={() => startCustomRoutine()}
                   disabled={builderSteps.length === 0}
                   className="w-full bg-[#e21b3c] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100"
                 >
-                  Start Routine
+                  Start Now (One-time)
                 </button>
               </div>
             </motion.div>

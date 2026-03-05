@@ -48,13 +48,17 @@ export type SavingsGoal = {
   }[];
 };
 
-export type Event = {
+export type WorkoutStep = {
+  type: "time" | "reps" | "rest";
+  name: string;
+  duration?: number; // seconds
+  reps?: number;
+};
+
+export type CustomRoutine = {
   id: string;
-  title: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:mm
-  description?: string;
-  type?: "Social" | "Work" | "Urgent" | "Travel" | "Other";
+  name: string;
+  steps: WorkoutStep[];
 };
 
 export type ExerciseLog = {
@@ -99,6 +103,7 @@ export type AppState = {
   workouts: WorkoutLog[];
   walks: WalkLog[];
   savings: SavingsGoal[];
+  customRoutines: CustomRoutine[];
   streak: number;
   lastMoodDate: string | null;
   currentRank: number;
@@ -123,6 +128,8 @@ type Action =
   | { type: "ADD_SAVINGS"; payload: SavingsGoal }
   | { type: "ADD_SAVINGS_ENTRY"; payload: { id: string; amount: number; date: string } }
   | { type: "DELETE_SAVINGS"; payload: string }
+  | { type: "ADD_CUSTOM_ROUTINE"; payload: CustomRoutine }
+  | { type: "DELETE_CUSTOM_ROUTINE"; payload: string }
   | { type: "RESET_STREAK" }
   | { type: "INCREMENT_STREAK" }
   | { type: "DELETE_DIARY"; payload: string } // payload is date
@@ -139,6 +146,7 @@ const initialState: AppState = {
   workouts: [],
   walks: [],
   savings: [],
+  customRoutines: [],
   streak: 0,
   lastMoodDate: null,
   currentRank: 0,
@@ -295,6 +303,13 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         savings: state.savings.filter((s) => s.id !== action.payload),
       };
+    case "ADD_CUSTOM_ROUTINE":
+      return { ...state, customRoutines: [...state.customRoutines, action.payload] };
+    case "DELETE_CUSTOM_ROUTINE":
+      return {
+        ...state,
+        customRoutines: state.customRoutines.filter((r) => r.id !== action.payload),
+      };
     case "RESET_STREAK":
       return { ...state, streak: 0 };
     case "INCREMENT_STREAK":
@@ -322,6 +337,7 @@ function reducer(state: AppState, action: Action): AppState {
         moods: moodsWithIds, 
         savings: action.payload.savings || [],
         workTasks: action.payload.workTasks || [],
+        customRoutines: action.payload.customRoutines || [],
         currentRank: action.payload.currentRank || 0,
         showRankUpPopup: false 
       };
