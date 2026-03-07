@@ -134,7 +134,7 @@ export default function HealthPage() {
     setShowLogModal(false);
     setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
     setShowSuccess(true);
-    setSuccessStats("+1 Custom Workout Logged");
+    setSuccessStats("Strength +5");
     
     confetti({
       particleCount: 150,
@@ -200,7 +200,7 @@ export default function HealthPage() {
     setEditingRoutineId(null);
     setShowBuilderModal(false);
     setShowSuccess(true);
-    setSuccessStats("+1 Custom Routine Saved");
+    setSuccessStats("Strength +5");
   };
 
   const nextStep = () => {
@@ -271,7 +271,7 @@ export default function HealthPage() {
     dispatch({ type: "LOG_WORKOUT", payload: log });
     stopWorkout();
     setShowSuccess(true);
-    setSuccessStats("+1 Workout Session Completed");
+    setSuccessStats("Strength +5");
     
     confetti({
       particleCount: 150,
@@ -299,7 +299,7 @@ export default function HealthPage() {
       setWalkTime(0);
       setWalkDistance(0);
       setShowSuccess(true);
-      setSuccessStats("+1 Walk Logged");
+      setSuccessStats("Agility +2");
       confetti({
         particleCount: 100,
         spread: 70,

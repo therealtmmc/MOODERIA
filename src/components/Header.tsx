@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Menu, Building2 } from "lucide-react";
+import { Menu, Building2, Award } from "lucide-react";
 import { format } from "date-fns";
+import { useStore } from "@/context/StoreContext";
+import { Billboard } from "./Billboard";
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const [time, setTime] = useState(new Date());
+  const { state } = useStore();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -20,7 +23,13 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
             </div>
             <div>
               <h1 className="font-black text-xl tracking-tighter text-[#46178f] uppercase leading-none">Mooderia</h1>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-full inline-block mt-1">Virtual City</p>
+              <div className="flex items-center gap-1 mt-1">
+                <Award className="w-3 h-3 text-yellow-500" />
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Level {state.currentRank}</p>
+              </div>
+              <div className="w-24 h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
+                <div className="h-full bg-green-500" style={{ width: `${Math.min((state.streak / 30) * 100, 100)}%` }} />
+              </div>
             </div>
           </div>
           
@@ -37,7 +46,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
             <div className="relative z-10 flex flex-col">
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">City Time</span>
               <span className="font-black text-3xl tracking-widest text-green-400 font-mono leading-none drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
-                  {format(time, "HH:mm")}
+                  {format(time, "hh:mm a")}
               </span>
             </div>
             <div className="relative z-10 flex flex-col items-end">
@@ -47,6 +56,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
               </span>
             </div>
         </div>
+        <Billboard />
       </div>
     </div>
   );

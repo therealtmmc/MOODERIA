@@ -108,6 +108,21 @@ export type UserProfile = {
   photo?: string; // Base64 string
 };
 
+export type Task = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
+export type Transaction = {
+  id: string;
+  date: string;
+  amount: number;
+  type: "income" | "expense";
+  category: "Salary" | "Gift" | "Initial Balance" | "Food" | "Transport" | "Bills" | "Savings Deposit" | "Other";
+  note?: string;
+};
+
 export type AppState = {
   userProfile: UserProfile | null;
   moods: MoodEntry[];
@@ -117,12 +132,16 @@ export type AppState = {
   workouts: WorkoutLog[];
   walks: WalkLog[];
   savings: SavingsGoal[];
+  walletBalance: number;
+  transactions: Transaction[];
   customRoutines: CustomRoutine[];
   streak: number;
   lastMoodDate: string | null;
   currentRank: number;
   showRankUpPopup: boolean;
   isNightMode: boolean;
+  cityLevel: number;
+  tasks: Task[];
 };
 
 type Action =
@@ -144,6 +163,7 @@ type Action =
   | { type: "ADD_SAVINGS"; payload: SavingsGoal }
   | { type: "ADD_SAVINGS_ENTRY"; payload: { id: string; amount: number; date: string } }
   | { type: "DELETE_SAVINGS"; payload: string }
+  | { type: "UPDATE_WALLET"; payload: { amount: number; type: "income" | "expense"; category: Transaction["category"]; note?: string } }
   | { type: "ADD_CUSTOM_ROUTINE"; payload: CustomRoutine }
   | { type: "EDIT_CUSTOM_ROUTINE"; payload: CustomRoutine }
   | { type: "DELETE_CUSTOM_ROUTINE"; payload: string }
@@ -153,7 +173,10 @@ type Action =
   | { type: "CLEAR_ALL_DIARY" }
   | { type: "CLOSE_RANK_POPUP" }
   | { type: "SET_THEME"; payload: boolean }
-  | { type: "LOAD_STATE"; payload: AppState };
+  | { type: "LOAD_STATE"; payload: AppState }
+  | { type: "INCREMENT_CITY_LEVEL" }
+  | { type: "ADD_TASK"; payload: Task }
+  | { type: "TOGGLE_TASK"; payload: string };
 
 const initialState: AppState = {
   userProfile: null,
@@ -164,12 +187,16 @@ const initialState: AppState = {
   workouts: [],
   walks: [],
   savings: [],
+  walletBalance: 0,
+  transactions: [],
   customRoutines: [],
   streak: 0,
   lastMoodDate: null,
   currentRank: 0,
   showRankUpPopup: false,
   isNightMode: false,
+  cityLevel: 1,
+  tasks: [],
 };
 
 const StoreContext = createContext<{
@@ -331,6 +358,25 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         savings: state.savings.filter((s) => s.id !== action.payload),
       };
+    case "UPDATE_WALLET":
+      const newBalance = action.payload.type === "income" 
+        ? state.walletBalance + action.payload.amount 
+        : state.walletBalance - action.payload.amount;
+      
+      const newTransaction: Transaction = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        amount: action.payload.amount,
+        type: action.payload.type,
+        category: action.payload.category,
+        note: action.payload.note
+      };
+      
+      return {
+        ...state,
+        walletBalance: newBalance,
+        transactions: [newTransaction, ...state.transactions]
+      };
     case "ADD_CUSTOM_ROUTINE":
       return { ...state, customRoutines: [...state.customRoutines, action.payload] };
     case "EDIT_CUSTOM_ROUTINE":
@@ -363,6 +409,17 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, showRankUpPopup: false };
     case "SET_THEME":
       return { ...state, isNightMode: action.payload };
+    case "INCREMENT_CITY_LEVEL":
+      return { ...state, cityLevel: state.cityLevel + 1 };
+    case "ADD_TASK":
+      return { ...state, tasks: [...state.tasks, action.payload] };
+    case "TOGGLE_TASK":
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.payload ? { ...t, completed: !t.completed } : t
+        ),
+      };
     case "LOAD_STATE":
       // Backfill IDs for old entries
       const moodsWithIds = (action.payload.moods || []).map((m) => ({
@@ -378,12 +435,16 @@ function reducer(state: AppState, action: Action): AppState {
         workouts: action.payload.workouts || [],
         walks: action.payload.walks || [],
         savings: action.payload.savings || [],
+        walletBalance: action.payload.walletBalance || 0,
+        transactions: action.payload.transactions || [],
         customRoutines: Array.isArray(action.payload.customRoutines) ? action.payload.customRoutines : [],
         currentRank: action.payload.currentRank || 0,
         showRankUpPopup: false,
         streak: action.payload.streak || 0,
         lastMoodDate: action.payload.lastMoodDate || null,
         isNightMode: action.payload.isNightMode || false, // Default to false if not in saved state
+        cityLevel: action.payload.cityLevel || 1,
+        tasks: action.payload.tasks || [],
       };
     default:
       return state;

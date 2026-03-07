@@ -74,7 +74,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             
             <div className="mt-8 pt-6 border-t-2 border-gray-100 text-center">
                 <p className="text-gray-400 text-xs font-black uppercase tracking-widest">Mooderia City v2.0</p>
-                <p className="text-gray-300 text-[10px] font-bold mt-1">Virtual Government System</p>
+                <p className="text-gray-300 text-[10px] font-bold mt-1">made with ❤</p>
             </div>
           </motion.div>
         </>

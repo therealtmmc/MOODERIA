@@ -92,7 +92,7 @@ export default function WorkPage() {
         type={successType || "work"} 
         isVisible={!!successType} 
         onComplete={() => setSuccessType(null)} 
-        stats={successType === "work" ? "+10 Productivity" : "+1 Task Added"}
+        stats={successType === "work" ? "Intellect +1" : "Task Added"}
       />
 
       <header className="flex justify-between items-center">

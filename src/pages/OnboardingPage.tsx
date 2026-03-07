@@ -216,7 +216,7 @@ export default function OnboardingPage() {
       </motion.div>
       
       <p className="text-white/40 font-bold text-[10px] mt-8 uppercase tracking-widest">
-        Mooderia Virtual City System
+        made with ❤
       </p>
     </div>
   );

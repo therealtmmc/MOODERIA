@@ -84,7 +84,7 @@ export default function EventsPage() {
     setShowAdd(false);
     setShowCalendarReminder(true); // Show reminder
     setShowSuccess(true);
-    setSuccessStats("+1 Event Added");
+    setSuccessStats("Intellect +5");
     setNewEvent({
       title: "",
       date: format(new Date(), "yyyy-MM-dd"),

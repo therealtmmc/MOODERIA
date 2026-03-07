@@ -1,5 +1,5 @@
 import { useStore } from "@/context/StoreContext";
-import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown } from "lucide-react";
+import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown, DollarSign } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
@@ -38,22 +38,31 @@ export default function ProfilePage() {
     : 100;
 
   // RPG Stats Calculation
-  // Strength: Workouts + Physical Tasks
-  // Intellect: Diary Entries (Reflection) + Reading/Study Tasks
-  // Charisma: Social Events + Moods (Positive)
-  // Vitality: Sleep + Hydration (Mocked for now based on streak)
-  // Agility: Quick Tasks (Routine)
-  
+  // Strength: Workouts (Unchanged)
+  // Intellect: Work Tasks + Events
+  // Vitality: Diary Entries
+  // Agility: Walks
+  // Net Worth: Savings + Wallet
+
   const strength = Math.min(state.workouts.length * 5 + state.workTasks.filter(t => t.title.toLowerCase().includes("workout") || t.title.toLowerCase().includes("gym")).length * 2, 100);
-  const intellect = Math.min(state.moods.length * 3 + state.workTasks.filter(t => t.title.toLowerCase().includes("read") || t.title.toLowerCase().includes("study")).length * 2, 100);
-  const charisma = Math.min(state.events.length * 5 + state.moods.filter(m => ["Happy", "Loved", "Energetic"].includes(m.mood)).length * 2, 100);
-  const vitality = Math.min(streak * 2 + 20, 100); // Base 20 + streak bonus
-  const agility = Math.min(state.workTasks.filter(t => t.isRoutine && t.completed).length * 2, 100);
+  
+  const intellect = Math.min(
+    state.workTasks.filter(t => t.completed).length * 2 + 
+    state.events.length * 5, 
+    100
+  );
+  
+  const vitality = Math.min(state.moods.length * 5, 100);
+  
+  const agility = Math.min(state.walks.length * 5, 100);
+  
+  const totalWealth = (state.walletBalance || 0) + state.savings.reduce((acc, s) => acc + s.currentAmount, 0);
+  // Scale: 10000 = 100 points
+  const netWorthScore = Math.min(totalWealth / 100, 100); 
 
   const statsData = [
     { subject: 'STR', A: strength, fullMark: 100 },
     { subject: 'INT', A: intellect, fullMark: 100 },
-    { subject: 'CHA', A: charisma, fullMark: 100 },
     { subject: 'VIT', A: vitality, fullMark: 100 },
     { subject: 'AGI', A: agility, fullMark: 100 },
   ];
@@ -194,13 +203,6 @@ export default function ProfilePage() {
                 <p className="font-black text-lg text-blue-700">{intellect}</p>
               </div>
            </div>
-           <div className="bg-pink-50 p-3 rounded-2xl border border-pink-100 flex items-center gap-3">
-              <div className="bg-pink-100 p-2 rounded-xl text-pink-600"><Heart className="w-4 h-4" /></div>
-              <div>
-                <p className="text-[10px] font-bold text-pink-400 uppercase">Charisma</p>
-                <p className="font-black text-lg text-pink-700">{charisma}</p>
-              </div>
-           </div>
            <div className="bg-green-50 p-3 rounded-2xl border border-green-100 flex items-center gap-3">
               <div className="bg-green-100 p-2 rounded-xl text-green-600"><Shield className="w-4 h-4" /></div>
               <div>
@@ -208,13 +210,22 @@ export default function ProfilePage() {
                 <p className="font-black text-lg text-green-700">{vitality}</p>
               </div>
            </div>
-           <div className="bg-orange-50 p-3 rounded-2xl border border-orange-100 flex items-center gap-3 col-span-2">
+           <div className="bg-orange-50 p-3 rounded-2xl border border-orange-100 flex items-center gap-3">
               <div className="bg-orange-100 p-2 rounded-xl text-orange-600"><Zap className="w-4 h-4" /></div>
               <div>
                 <p className="text-[10px] font-bold text-orange-400 uppercase">Agility</p>
                 <p className="font-black text-lg text-orange-700">{agility}</p>
               </div>
            </div>
+            <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600"><DollarSign className="w-5 h-5" /></div>
+                <div>
+                    <p className="text-[10px] font-bold text-emerald-400 uppercase">Net Worth</p>
+                    <p className="font-black text-xl text-emerald-700">{userProfile.currency} {totalWealth.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
         </div>
       </div>
 

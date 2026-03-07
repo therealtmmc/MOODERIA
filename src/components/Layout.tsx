@@ -12,17 +12,11 @@ import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
 import { Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const THEME_COLORS: Record<string, string> = {
-  Happy: "bg-yellow-50",
-  Sad: "bg-blue-50",
-  Neutral: "bg-gray-50",
-  Loved: "bg-pink-50",
-  Angry: "bg-red-50",
-  Energetic: "bg-orange-50",
-  Tired: "bg-stone-50",
-  Calm: "bg-indigo-50",
-};
+import { CityBackground } from "./CityBackground";
+import { WeatherOverlay } from "./WeatherOverlay";
+import { CityEventsComponent } from "./CityEventsComponent";
+import { motion, AnimatePresence } from "motion/react";
+import { DISTRICTS } from "@/constants/districts";
 
 export function Layout() {
   const { state } = useStore();
@@ -32,12 +26,16 @@ export function Layout() {
   const [isBreathingOpen, setIsBreathingOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Determine current theme based on last logged mood
-  const lastMoodEntry = state.moods.find(m => m.date === state.lastMoodDate);
-  const moodTheme = lastMoodEntry ? THEME_COLORS[lastMoodEntry.mood] : "bg-[#f2f2f2]";
+  // Determine current theme based on district
+  const district = DISTRICTS[location.pathname];
+  const moodTheme = district ? district.bgColor : "bg-[#f2f2f2]";
   
-  // Override with Night Mode if active
-  const currentTheme = state.isNightMode 
+  // Determine if it's day or night
+  const currentHour = new Date().getHours();
+  const isNightTime = currentHour < 6 || currentHour >= 18;
+  
+  // Override with Night Mode if active, or use time-based theme
+  const currentTheme = state.isNightMode || isNightTime
     ? "bg-slate-950 text-slate-100" 
     : moodTheme;
 
@@ -97,6 +95,9 @@ export function Layout() {
     <InstallGuard>
       <MobileGuard>
         <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
+          <CityBackground isNight={state.isNightMode || isNightTime} />
+          {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay />}
+          {state.userProfile && location.pathname !== "/onboarding" && <CityEventsComponent />}
           {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
           {state.userProfile && location.pathname !== "/onboarding" && <RankUpModal />}
           
@@ -105,7 +106,17 @@ export function Layout() {
               <Header onMenuClick={() => setIsSidebarOpen(true)} />
             )}
 
-            <Outlet />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </main>
           
           {state.userProfile && location.pathname !== "/onboarding" && (

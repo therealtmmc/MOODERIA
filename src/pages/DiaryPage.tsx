@@ -153,7 +153,7 @@ export default function DiaryPage() {
         } 
       });
       setShowSuccess(true);
-      setSuccessStats("+1 Diary Entry Saved");
+      setSuccessStats("Vitality +3");
     }
   };
 
