@@ -102,6 +102,7 @@ export type WalkLog = {
 export type UserProfile = {
   name: string;
   citizenship: string;
+  currency: string;
   joinedDate: string;
   passportNumber: string; // Random generated ID
   photo?: string; // Base64 string
@@ -121,6 +122,7 @@ export type AppState = {
   lastMoodDate: string | null;
   currentRank: number;
   showRankUpPopup: boolean;
+  isNightMode: boolean;
 };
 
 type Action =
@@ -150,6 +152,7 @@ type Action =
   | { type: "DELETE_DIARY"; payload: string } // payload is date
   | { type: "CLEAR_ALL_DIARY" }
   | { type: "CLOSE_RANK_POPUP" }
+  | { type: "SET_THEME"; payload: boolean }
   | { type: "LOAD_STATE"; payload: AppState };
 
 const initialState: AppState = {
@@ -166,6 +169,7 @@ const initialState: AppState = {
   lastMoodDate: null,
   currentRank: 0,
   showRankUpPopup: false,
+  isNightMode: false,
 };
 
 const StoreContext = createContext<{
@@ -357,6 +361,8 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "CLOSE_RANK_POPUP":
       return { ...state, showRankUpPopup: false };
+    case "SET_THEME":
+      return { ...state, isNightMode: action.payload };
     case "LOAD_STATE":
       // Backfill IDs for old entries
       const moodsWithIds = (action.payload.moods || []).map((m) => ({
@@ -377,6 +383,7 @@ function reducer(state: AppState, action: Action): AppState {
         showRankUpPopup: false,
         streak: action.payload.streak || 0,
         lastMoodDate: action.payload.lastMoodDate || null,
+        isNightMode: action.payload.isNightMode || false, // Default to false if not in saved state
       };
     default:
       return state;
@@ -402,6 +409,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem("mooderia-state", JSON.stringify(state));
   }, [state]);
+
+  // Automatic Day/Night Theme Switcher
+  useEffect(() => {
+    const checkTime = () => {
+      const hour = new Date().getHours();
+      const isNight = hour >= 18 || hour < 6; // 6pm to 6am is Night
+      if (isNight !== state.isNightMode) {
+        dispatch({ type: "SET_THEME", payload: isNight });
+      }
+    };
+
+    checkTime(); // Initial check
+    const interval = setInterval(checkTime, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [state.isNightMode]);
 
   return (
     <StoreContext.Provider value={{ state, dispatch }}>

@@ -15,6 +15,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import DiaryPage from "@/pages/DiaryPage";
 import SavingsPage from "@/pages/SavingsPage";
 import OnboardingPage from "@/pages/OnboardingPage";
+import GlobalPage from "@/pages/GlobalPage";
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="profile" element={<ProfilePage />} />
             <Route path="diary" element={<DiaryPage />} />
             <Route path="savings" element={<SavingsPage />} />
+            <Route path="global" element={<GlobalPage />} />
             <Route path="onboarding" element={<OnboardingPage />} />
           </Route>
         </Routes>

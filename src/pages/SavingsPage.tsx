@@ -84,8 +84,8 @@ export default function SavingsPage() {
       />
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-[#26890c]">Savings</h1>
-          <p className="text-gray-500 font-bold">Track your goals</p>
+          <h1 className="text-3xl font-black text-[#d4af37]">City Bank</h1>
+          <p className="text-gray-500 font-bold">Treasury & Assets</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}

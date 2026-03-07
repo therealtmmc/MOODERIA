@@ -116,7 +116,10 @@ export default function EventsPage() {
       />
 
       <header className="flex justify-between items-center">
-        <h1 className="text-3xl font-black text-[#26890c]">Events</h1>
+        <div>
+          <h1 className="text-3xl font-black text-[#26890c]">Public Square</h1>
+          <p className="text-gray-500 font-bold">City Events & Gatherings</p>
+        </div>
         <div className="flex gap-2">
           <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-100 flex">
             <button

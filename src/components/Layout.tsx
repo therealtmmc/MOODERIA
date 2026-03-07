@@ -34,7 +34,12 @@ export function Layout() {
 
   // Determine current theme based on last logged mood
   const lastMoodEntry = state.moods.find(m => m.date === state.lastMoodDate);
-  const currentTheme = lastMoodEntry ? THEME_COLORS[lastMoodEntry.mood] : "bg-[#f2f2f2]";
+  const moodTheme = lastMoodEntry ? THEME_COLORS[lastMoodEntry.mood] : "bg-[#f2f2f2]";
+  
+  // Override with Night Mode if active
+  const currentTheme = state.isNightMode 
+    ? "bg-slate-950 text-slate-100" 
+    : moodTheme;
 
   // Redirect to Onboarding if no profile
   useEffect(() => {

@@ -61,8 +61,8 @@ export default function ProfilePage() {
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
       <header>
-        <h1 className="text-3xl font-black text-[#46178f]">Character Sheet</h1>
-        <p className="text-gray-500 font-bold">Your RPG Stats</p>
+        <h1 className="text-3xl font-black text-[#46178f]">Citizen ID</h1>
+        <p className="text-gray-500 font-bold">Official Mooderia Records</p>
       </header>
 
       {/* Merged Rank & Passport Card */}
@@ -221,7 +221,7 @@ export default function ProfilePage() {
       {/* Inventory / Achievements (Placeholder for future RPG expansion) */}
       <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6">
         <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
-          <Briefcase className="w-5 h-5 text-amber-600" /> Inventory & Badges
+          <Briefcase className="w-5 h-5 text-amber-600" /> Citizen Assets
         </h3>
         <div className="grid grid-cols-4 gap-2">
            {Array.from({ length: 4 }).map((_, i) => (

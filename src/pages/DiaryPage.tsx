@@ -210,8 +210,8 @@ export default function DiaryPage() {
       />
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-[#1368ce]">Diary</h1>
-          <p className="text-gray-500 font-bold">Capture your memories</p>
+          <h1 className="text-3xl font-black text-[#1368ce]">City Archives</h1>
+          <p className="text-gray-500 font-bold">Personal Records & Memories</p>
         </div>
         <div className="flex gap-2">
           <button

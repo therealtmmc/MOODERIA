@@ -96,8 +96,8 @@ export default function WorkPage() {
 
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-[#1368ce]">Work</h1>
-          <p className="text-gray-500 font-bold">Get things done</p>
+          <h1 className="text-3xl font-black text-[#1368ce]">Dept. of Labor</h1>
+          <p className="text-gray-500 font-bold">Official Duties & Tasks</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}

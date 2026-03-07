@@ -72,6 +72,11 @@ export default function MoodPage() {
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
+      <header>
+        <h1 className="text-3xl font-black text-[#eb6123]">Mood Station</h1>
+        <p className="text-gray-500 font-bold">Daily Check-in</p>
+      </header>
+
       {/* Streak Display */}
       <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden border-b-8 border-red-700">
         <div className="absolute top-0 right-0 opacity-20 transform translate-x-1/4 -translate-y-1/4">
