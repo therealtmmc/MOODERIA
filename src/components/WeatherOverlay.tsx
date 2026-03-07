@@ -9,7 +9,6 @@ export function WeatherOverlay() {
     switch (mood) {
       case "Sad": return "🌧️"; // Rain
       case "Energetic": return "☀️"; // Sun
-      case "Calm": return "☁️"; // Clouds
       default: return "";
     }
   };

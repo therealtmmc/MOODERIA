@@ -10,15 +10,6 @@ export function CityBackground({ isNight }: { isNight: boolean }) {
         isNight ? "bg-indigo-950" : "bg-sky-300"
       )} />
 
-      {/* Moving Clouds */}
-      <motion.div
-        className="absolute top-20 left-0 text-9xl opacity-40"
-        animate={{ x: [-200, 1000] }}
-        transition={{ repeat: Infinity, duration: 60, ease: "linear" }}
-      >
-        ☁️☁️☁️
-      </motion.div>
-
       {/* Sun/Moon - Cartoon style */}
       <motion.div
         className={cn(

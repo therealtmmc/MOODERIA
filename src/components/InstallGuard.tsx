@@ -38,7 +38,6 @@ export function InstallGuard({ children }: { children: ReactNode }) {
       {/* Background Decorations */}
       <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
         <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full mix-blend-overlay animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-48 h-48 bg-white rounded-full mix-blend-overlay animate-bounce duration-[3000ms]" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border-[20px] border-white/10 rounded-full" />
       </div>
 
