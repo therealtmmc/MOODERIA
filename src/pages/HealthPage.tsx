@@ -1049,7 +1049,15 @@ export default function HealthPage() {
                 {WORKOUT_PROGRAMS.map((program) => (
                   <button
                     key={program.id}
-                    onClick={() => startProgram(program)}
+                    onClick={() => {
+                       const routineSteps: WorkoutStep[] = program.exercises.map(e => ({
+                         type: "time",
+                         name: e.name,
+                         duration: e.duration,
+                       }));
+                       startCustomRoutine(routineSteps);
+                       setShowWorkoutModal(false);
+                    }}
                     className="w-full bg-gray-50 hover:bg-gray-100 p-4 rounded-2xl border-2 border-gray-200 text-left transition-colors flex items-center gap-4 group"
                   >
                     <div className={cn("w-16 h-16 rounded-xl flex items-center justify-center text-2xl shadow-sm", program.color)}>

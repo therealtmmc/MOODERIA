@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
-import { format, subDays, isSameDay, parseISO, isAfter } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar } from "lucide-react";
+import { format, subDays, isSameDay, parseISO, isAfter, addMonths, addYears, addDays } from "date-fns";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
@@ -46,6 +46,12 @@ export default function DiaryPage() {
   
   const [isRecording, setIsRecording] = useState(false);
   const [showRecordingPopup, setShowRecordingPopup] = useState(false);
+  
+  // Future Letter State
+  const [showFutureLetterModal, setShowFutureLetterModal] = useState(false);
+  const [futureLetterText, setFutureLetterText] = useState("");
+  const [futureLetterDate, setFutureLetterDate] = useState(format(addMonths(new Date(), 6), "yyyy-MM-dd"));
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -149,6 +155,26 @@ export default function DiaryPage() {
     }
   };
 
+  const handleSaveFutureLetter = () => {
+    if (!futureLetterText || !futureLetterDate) return;
+
+    dispatch({ 
+      type: "ADD_MOOD", 
+      payload: { 
+        id: crypto.randomUUID(),
+        date: today, // Created today
+        mood: "Neutral", // Default mood for letters
+        note: futureLetterText,
+        lockDate: futureLetterDate,
+        isHighlight: false
+      } 
+    });
+    
+    setShowFutureLetterModal(false);
+    setFutureLetterText("");
+    setShowSuccess(true);
+  };
+
   // Mood Insights Calculation (Last 7 Days)
   const last7DaysMoods = state.moods
     .filter(m => {
@@ -187,21 +213,113 @@ export default function DiaryPage() {
           <h1 className="text-3xl font-black text-[#1368ce]">Diary</h1>
           <p className="text-gray-500 font-bold">Capture your memories</p>
         </div>
-        <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-100 flex">
+        <div className="flex gap-2">
           <button
-            onClick={() => setViewMode("list")}
-            className={cn("p-2 rounded-lg transition-colors", viewMode === "list" ? "bg-[#1368ce] text-white" : "text-gray-400")}
+            onClick={() => setShowFutureLetterModal(true)}
+            className="bg-indigo-100 text-indigo-600 p-2 rounded-xl shadow-sm border border-indigo-200 active:scale-95 transition-transform"
           >
-            <List className="w-5 h-5" />
+            <Mail className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => setViewMode("gallery")}
-            className={cn("p-2 rounded-lg transition-colors", viewMode === "gallery" ? "bg-[#1368ce] text-white" : "text-gray-400")}
-          >
-            <Grid className="w-5 h-5" />
-          </button>
+          <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-100 flex">
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn("p-2 rounded-lg transition-colors", viewMode === "list" ? "bg-[#1368ce] text-white" : "text-gray-400")}
+            >
+              <List className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode("gallery")}
+              className={cn("p-2 rounded-lg transition-colors", viewMode === "gallery" ? "bg-[#1368ce] text-white" : "text-gray-400")}
+            >
+              <Grid className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Future Letter Modal */}
+      <AnimatePresence>
+        {showFutureLetterModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-[#fdfbf7] w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden border-4 border-[#8b5cf6] flex flex-col max-h-[80vh]"
+            >
+              <div className="bg-[#8b5cf6] p-6 flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-8 h-8 text-white" />
+                  <div>
+                    <h3 className="text-white font-black text-xl leading-tight">Future Letter</h3>
+                    <p className="text-white/80 text-xs font-bold">Write to your future self</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowFutureLetterModal(false)} className="text-white/80 hover:text-white bg-white/10 p-2 rounded-full">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Open Date</label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      min={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+                      value={futureLetterDate}
+                      onChange={(e) => setFutureLetterDate(e.target.value)}
+                      className="w-full p-3 bg-white rounded-xl border-2 border-gray-200 focus:border-[#8b5cf6] focus:outline-none font-bold text-gray-700"
+                    />
+                    <Clock className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                  <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
+                    <button 
+                      onClick={() => setFutureLetterDate(format(addMonths(new Date(), 6), "yyyy-MM-dd"))}
+                      className="text-[10px] font-bold bg-purple-50 text-purple-600 px-3 py-1 rounded-full whitespace-nowrap"
+                    >
+                      +6 Months
+                    </button>
+                    <button 
+                      onClick={() => setFutureLetterDate(format(addYears(new Date(), 1), "yyyy-MM-dd"))}
+                      className="text-[10px] font-bold bg-purple-50 text-purple-600 px-3 py-1 rounded-full whitespace-nowrap"
+                    >
+                      +1 Year
+                    </button>
+                    <button 
+                      onClick={() => setFutureLetterDate(format(addYears(new Date(), 5), "yyyy-MM-dd"))}
+                      className="text-[10px] font-bold bg-purple-50 text-purple-600 px-3 py-1 rounded-full whitespace-nowrap"
+                    >
+                      +5 Years
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Your Message</label>
+                  <textarea
+                    value={futureLetterText}
+                    onChange={(e) => setFutureLetterText(e.target.value)}
+                    className="w-full h-48 p-4 bg-white rounded-xl border-2 border-gray-200 focus:border-[#8b5cf6] focus:outline-none resize-none font-medium text-gray-700 leading-relaxed"
+                    placeholder="Dear Future Me, I hope you have achieved..."
+                  />
+                </div>
+              </div>
+
+              <div className="p-6 bg-white border-t border-gray-100 shrink-0">
+                <button
+                  onClick={handleSaveFutureLetter}
+                  disabled={!futureLetterText}
+                  className="w-full bg-[#8b5cf6] text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-[#7c3aed] active:border-b-0 active:translate-y-1 disabled:opacity-50"
+                >
+                  <Lock className="w-5 h-5" />
+                  Seal Time Capsule
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Mood Insights */}
       {last7DaysMoods.length > 0 && (
@@ -612,7 +730,7 @@ export default function DiaryPage() {
                   <div className="h-px bg-gray-200 flex-1" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  {entries.map((entry) => {
+                  {(entries as typeof state.moods).map((entry) => {
                      const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
                      return (
                       <motion.div
@@ -629,13 +747,13 @@ export default function DiaryPage() {
                           <>
                             {entry.image ? (
                               <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
-                            ) : entry.video ? (
+                            ) : (entry.video ? (
                               <video src={entry.video} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gray-200">
                                 <Mic className="w-12 h-12 text-gray-400" />
                               </div>
-                            )}
+                            ))}
                           </>
                         )}
                         

@@ -33,6 +33,9 @@ export type WorkTask = {
   description: string;
   completed: boolean;
   dateCompleted?: string;
+  date?: string; // YYYY-MM-DD, optional for routine tasks
+  isRoutine?: boolean; // If true, it appears every day
+  isDecree?: boolean; // "Eat The Frog" / Government Announcement
 };
 
 export type SavingsGoal = {
@@ -46,6 +49,15 @@ export type SavingsGoal = {
     date: string;
     amount: number;
   }[];
+};
+
+export type Event = {
+  id: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  type: "Meeting" | "Birthday" | "Holiday" | "Other";
+  description?: string;
 };
 
 export type WorkoutStep = {
@@ -122,6 +134,7 @@ type Action =
   | { type: "ADD_WORK_TASK"; payload: WorkTask }
   | { type: "COMPLETE_WORK_TASK"; payload: string }
   | { type: "DELETE_WORK_TASK"; payload: string }
+  | { type: "TOGGLE_DECREE"; payload: string }
   | { type: "ADD_EVENT"; payload: Event }
   | { type: "DELETE_EVENT"; payload: string }
   | { type: "LOG_WORKOUT"; payload: WorkoutLog }
@@ -264,6 +277,15 @@ function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         workTasks: state.workTasks.filter(t => t.id !== action.payload)
+      };
+    case "TOGGLE_DECREE":
+      return {
+        ...state,
+        workTasks: state.workTasks.map(t => 
+          t.id === action.payload 
+            ? { ...t, isDecree: !t.isDecree } 
+            : { ...t, isDecree: false } // Only one decree allowed at a time
+        )
       };
     case "ADD_EVENT":
       newState = { ...state, events: [...state.events, action.payload] };

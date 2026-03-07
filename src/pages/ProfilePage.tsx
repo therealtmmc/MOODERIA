@@ -1,7 +1,8 @@
 import { useStore } from "@/context/StoreContext";
-import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame } from "lucide-react";
+import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
 
 const RANKS = [
   { id: 0, name: "Novice Dreamer", icon: "🌱", color: "text-green-500", bg: "bg-green-100", border: "border-green-500", threshold: 0 },
@@ -36,10 +37,32 @@ export default function ProfilePage() {
     ? Math.min(((totalTasks - currentRankData.threshold) / (nextRankData.threshold - currentRankData.threshold)) * 100, 100)
     : 100;
 
+  // RPG Stats Calculation
+  // Strength: Workouts + Physical Tasks
+  // Intellect: Diary Entries (Reflection) + Reading/Study Tasks
+  // Charisma: Social Events + Moods (Positive)
+  // Vitality: Sleep + Hydration (Mocked for now based on streak)
+  // Agility: Quick Tasks (Routine)
+  
+  const strength = Math.min(state.workouts.length * 5 + state.workTasks.filter(t => t.title.toLowerCase().includes("workout") || t.title.toLowerCase().includes("gym")).length * 2, 100);
+  const intellect = Math.min(state.moods.length * 3 + state.workTasks.filter(t => t.title.toLowerCase().includes("read") || t.title.toLowerCase().includes("study")).length * 2, 100);
+  const charisma = Math.min(state.events.length * 5 + state.moods.filter(m => ["Happy", "Loved", "Energetic"].includes(m.mood)).length * 2, 100);
+  const vitality = Math.min(streak * 2 + 20, 100); // Base 20 + streak bonus
+  const agility = Math.min(state.workTasks.filter(t => t.isRoutine && t.completed).length * 2, 100);
+
+  const statsData = [
+    { subject: 'STR', A: strength, fullMark: 100 },
+    { subject: 'INT', A: intellect, fullMark: 100 },
+    { subject: 'CHA', A: charisma, fullMark: 100 },
+    { subject: 'VIT', A: vitality, fullMark: 100 },
+    { subject: 'AGI', A: agility, fullMark: 100 },
+  ];
+
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
       <header>
-        <h1 className="text-3xl font-black text-[#46178f]">Profile</h1>
+        <h1 className="text-3xl font-black text-[#46178f]">Character Sheet</h1>
+        <p className="text-gray-500 font-bold">Your RPG Stats</p>
       </header>
 
       {/* Merged Rank & Passport Card */}
@@ -54,26 +77,35 @@ export default function ProfilePage() {
         <div className="flex justify-between items-start relative z-10">
           <div className="flex gap-4 items-center">
             {/* User Photo */}
-            <div className="w-20 h-20 bg-gray-200 rounded-2xl border-4 border-white shadow-md overflow-hidden shrink-0">
+            <div className="w-24 h-24 bg-gray-200 rounded-3xl border-4 border-white shadow-md overflow-hidden shrink-0 relative">
                {userProfile.photo ? (
                  <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
                ) : (
                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <User className="w-8 h-8 text-gray-400" />
+                    <User className="w-10 h-10 text-gray-400" />
                  </div>
                )}
+               <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-sm">
+                 <div className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
+                   <Flame className="w-3 h-3 fill-white" /> {streak}
+                 </div>
+               </div>
             </div>
             
             {/* User Details */}
             <div>
-              <h2 className="font-black text-xl text-gray-800 leading-tight">{userProfile.name}</h2>
+              <h2 className="font-black text-2xl text-gray-800 leading-tight">{userProfile.name}</h2>
               <div className="flex items-center gap-1 text-gray-500 font-bold text-xs uppercase mt-1">
                 <Globe className="w-3 h-3" />
                 {userProfile.citizenship}
               </div>
-              <div className="mt-2 inline-flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full text-xs font-black border border-orange-200">
-                <Flame className="w-3 h-3 fill-orange-500" />
-                {streak} Day Streak
+              <div className="flex gap-2 mt-2">
+                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase border border-blue-200">
+                    Lvl {Math.floor(totalTasks / 10) + 1}
+                 </span>
+                 <span className="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase border border-purple-200">
+                    {currentRankData.name}
+                 </span>
               </div>
             </div>
           </div>
@@ -83,119 +115,123 @@ export default function ProfilePage() {
             <motion.div 
               initial={{ scale: 0.8, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
-              className={cn("w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-md border-4 border-white", currentRankData.bg)}
+              className={cn("w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg border-4 border-white bg-white relative z-10", currentRankData.bg)}
             >
               {currentRankData.icon}
+              <div className="absolute -bottom-2 bg-black text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2 border-white">
+                Rank {currentRank + 1}
+              </div>
             </motion.div>
-            <span className={cn("text-[10px] font-black uppercase mt-1 text-center max-w-[80px] leading-tight", currentRankData.color)}>
-              {currentRankData.name}
-            </span>
           </div>
         </div>
 
-        {/* Progress Section */}
-        <div className="relative z-10 pt-2">
-          <div className="flex justify-between items-end mb-2">
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase">Next Rank Progress</p>
-              <p className="font-black text-2xl text-gray-800">{totalTasks} <span className="text-sm text-gray-400 font-bold">/ {nextRankData ? nextRankData.threshold : "MAX"} XP</span></p>
-            </div>
-            <div className="text-right">
-              <p className="font-black text-lg text-[#46178f]">{Math.round(progress)}%</p>
-            </div>
+        {/* XP Bar */}
+        <div className="relative z-10 pt-4">
+          <div className="flex justify-between items-end mb-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Experience Points</p>
+            <p className="font-black text-sm text-[#46178f]">{totalTasks} <span className="text-gray-300">/ {nextRankData ? nextRankData.threshold : "MAX"} XP</span></p>
           </div>
           
-          <div className="h-5 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200 relative">
+          <div className="h-6 w-full bg-gray-100 rounded-full overflow-hidden border-2 border-gray-200 relative shadow-inner">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className={cn("h-full rounded-full relative overflow-hidden", currentRankData.bg.replace('bg-', 'bg-').replace('100', '500'))}
+              className={cn("h-full rounded-full relative overflow-hidden flex items-center justify-end pr-2", currentRankData.bg.replace('bg-', 'bg-').replace('100', '500'))}
             >
               <div className="absolute top-0 left-0 w-full h-full bg-white/20 animate-[shimmer_2s_infinite]" />
+              <span className="text-[9px] font-black text-white drop-shadow-md">{Math.round(progress)}%</span>
             </motion.div>
           </div>
-          
-          {nextRankData && (
-             <p className="text-center text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-wide">
-               {nextRankData.threshold - totalTasks} more tasks to reach <span className={nextRankData.color}>{nextRankData.name}</span>
-             </p>
-          )}
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2">
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-            <Book className="w-5 h-5" />
-          </div>
-          <div className="text-center">
-            <span className="block font-black text-xl text-gray-800">{state.moods.length}</span>
-            <span className="text-[10px] font-bold text-gray-400 uppercase">Diary Entries</span>
-          </div>
+      {/* Stats Radar Chart */}
+      <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-10">
+          <Crown className="w-32 h-32 text-gray-900" />
         </div>
-        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2">
-          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-            <Briefcase className="w-5 h-5" />
-          </div>
-          <div className="text-center">
-            <span className="block font-black text-xl text-gray-800">{state.workTasks.filter(t => t.completed).length}</span>
-            <span className="text-[10px] font-bold text-gray-400 uppercase">Work Tasks</span>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2">
-          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-            <Calendar className="w-5 h-5" />
-          </div>
-          <div className="text-center">
-            <span className="block font-black text-xl text-gray-800">{state.events.length}</span>
-            <span className="text-[10px] font-bold text-gray-400 uppercase">Events</span>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2">
-          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600">
-            <Dumbbell className="w-5 h-5" />
-          </div>
-          <div className="text-center">
-            <span className="block font-black text-xl text-gray-800">{state.workouts.length}</span>
-            <span className="text-[10px] font-bold text-gray-400 uppercase">Workouts</span>
-          </div>
-        </div>
-      </div>
+        
+        <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2 relative z-10">
+          <Zap className="w-5 h-5 text-yellow-500 fill-yellow-500" /> Ability Scores
+        </h3>
 
-      {/* Rank List */}
-      <div className="bg-white rounded-3xl shadow-lg border-b-4 border-gray-200 overflow-hidden">
-        <div className="p-4 bg-gray-50 border-b border-gray-100">
-          <h3 className="font-black text-gray-700 flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" /> Rank Ladder
-          </h3>
+        <div className="h-64 w-full relative z-10 -ml-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={statsData}>
+              <PolarGrid stroke="#e5e7eb" strokeWidth={2} />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+              <Radar
+                name="Stats"
+                dataKey="A"
+                stroke="#46178f"
+                strokeWidth={3}
+                fill="#8b5cf6"
+                fillOpacity={0.5}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                itemStyle={{ color: '#46178f', fontWeight: 'bold', fontSize: '12px' }}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
-        <div className="divide-y divide-gray-100">
-          {RANKS.map((rank) => {
-            const isUnlocked = currentRank >= rank.id;
-            const isNext = currentRank + 1 === rank.id;
-            
-            return (
-              <div key={rank.id} className={cn("p-4 flex items-center gap-4", !isUnlocked && !isNext && "opacity-40 grayscale")}>
-                <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm border-2 border-white",
-                  rank.bg
-                )}>
-                  {isUnlocked ? rank.icon : <Lock className="w-5 h-5 text-gray-400" />}
-                </div>
-                <div className="flex-1">
-                  <h4 className={cn("font-black text-sm", isUnlocked ? "text-gray-800" : "text-gray-400")}>{rank.name}</h4>
-                  <p className="text-xs font-bold text-gray-400">{rank.threshold} Tasks Required</p>
-                </div>
-                {isUnlocked && (
-                  <div className="bg-green-100 text-green-600 p-1 rounded-full">
-                    <Check className="w-4 h-4" />
-                  </div>
-                )}
+
+        {/* Stat Breakdown */}
+        <div className="grid grid-cols-2 gap-3 mt-2 relative z-10">
+           <div className="bg-red-50 p-3 rounded-2xl border border-red-100 flex items-center gap-3">
+              <div className="bg-red-100 p-2 rounded-xl text-red-600"><Sword className="w-4 h-4" /></div>
+              <div>
+                <p className="text-[10px] font-bold text-red-400 uppercase">Strength</p>
+                <p className="font-black text-lg text-red-700">{strength}</p>
               </div>
-            );
-          })}
+           </div>
+           <div className="bg-blue-50 p-3 rounded-2xl border border-blue-100 flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-xl text-blue-600"><Brain className="w-4 h-4" /></div>
+              <div>
+                <p className="text-[10px] font-bold text-blue-400 uppercase">Intellect</p>
+                <p className="font-black text-lg text-blue-700">{intellect}</p>
+              </div>
+           </div>
+           <div className="bg-pink-50 p-3 rounded-2xl border border-pink-100 flex items-center gap-3">
+              <div className="bg-pink-100 p-2 rounded-xl text-pink-600"><Heart className="w-4 h-4" /></div>
+              <div>
+                <p className="text-[10px] font-bold text-pink-400 uppercase">Charisma</p>
+                <p className="font-black text-lg text-pink-700">{charisma}</p>
+              </div>
+           </div>
+           <div className="bg-green-50 p-3 rounded-2xl border border-green-100 flex items-center gap-3">
+              <div className="bg-green-100 p-2 rounded-xl text-green-600"><Shield className="w-4 h-4" /></div>
+              <div>
+                <p className="text-[10px] font-bold text-green-400 uppercase">Vitality</p>
+                <p className="font-black text-lg text-green-700">{vitality}</p>
+              </div>
+           </div>
+           <div className="bg-orange-50 p-3 rounded-2xl border border-orange-100 flex items-center gap-3 col-span-2">
+              <div className="bg-orange-100 p-2 rounded-xl text-orange-600"><Zap className="w-4 h-4" /></div>
+              <div>
+                <p className="text-[10px] font-bold text-orange-400 uppercase">Agility</p>
+                <p className="font-black text-lg text-orange-700">{agility}</p>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      {/* Inventory / Achievements (Placeholder for future RPG expansion) */}
+      <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6">
+        <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
+          <Briefcase className="w-5 h-5 text-amber-600" /> Inventory & Badges
+        </h3>
+        <div className="grid grid-cols-4 gap-2">
+           {Array.from({ length: 4 }).map((_, i) => (
+             <div key={i} className="aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-gray-300" />
+             </div>
+           ))}
+           <div className="col-span-4 text-center mt-2">
+             <p className="text-xs font-bold text-gray-400">More slots unlock at Level 5</p>
+           </div>
         </div>
       </div>
     </div>
