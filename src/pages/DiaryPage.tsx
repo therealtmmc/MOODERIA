@@ -39,6 +39,7 @@ export default function DiaryPage() {
   const [lockDate, setLockDate] = useState<string | null>(todayMood?.lockDate || null);
   const [isHighlight, setIsHighlight] = useState<boolean>(todayMood?.isHighlight || false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successStats, setSuccessStats] = useState("");
   
   const [viewMode, setViewMode] = useState<"list" | "gallery">("list");
   const [filterMode, setFilterMode] = useState<"all" | "wins">("all");
@@ -152,6 +153,7 @@ export default function DiaryPage() {
         } 
       });
       setShowSuccess(true);
+      setSuccessStats("+1 Diary Entry Saved");
     }
   };
 
@@ -173,6 +175,7 @@ export default function DiaryPage() {
     setShowFutureLetterModal(false);
     setFutureLetterText("");
     setShowSuccess(true);
+    setSuccessStats("+1 Future Letter Sealed");
   };
 
   // Mood Insights Calculation (Last 7 Days)
@@ -206,7 +209,8 @@ export default function DiaryPage() {
       <SuccessAnimation 
         type="mood" 
         isVisible={showSuccess} 
-        onComplete={() => setShowSuccess(false)} 
+        onComplete={() => {setShowSuccess(false); setSuccessStats("");}} 
+        stats={successStats}
       />
       <header className="flex justify-between items-center">
         <div>

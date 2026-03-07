@@ -6,6 +6,7 @@ import { Globe, Banknote, Search, ArrowLeft, Sun, Moon } from "lucide-react";
 import { COUNTRIES, Country } from "@/constants/countries";
 import { COUNTRY_DETAILS } from "@/constants/globalData";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
 
 // Fallback Mock Generator for missing data
 const getExchangeRate = (currencyCode: string, countryName: string) => {
@@ -31,6 +32,7 @@ export default function GlobalPage() {
   const { state } = useStore();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
   // Update time every minute
   useEffect(() => {
@@ -54,6 +56,110 @@ export default function GlobalPage() {
     const hour = parseInt(format(time, "H"));
     return hour < 6 || hour >= 18;
   };
+
+  // Detail View
+  if (selectedCountry) {
+    const countryTime = getCountryTime(selectedCountry.timezone);
+    const isNight = isNightInCountry(selectedCountry.timezone);
+    const countryDetails = COUNTRY_DETAILS[selectedCountry.name] || {
+      currencyRate: 1,
+      landShapeImage: "",
+      basicInfo: {
+        landSizeKm2: 0,
+        population: 0,
+        continent: "Unknown",
+        president: "N/A",
+        languages: "N/A",
+        religion: "N/A",
+        landmark: "N/A",
+        plugType: "N/A",
+        drivingSide: "N/A",
+        emergencyNumber: "N/A",
+        dialCode: "N/A",
+        description: "Information for this country is currently unavailable.",
+        capital: "N/A",
+        gdp: "N/A",
+        gdpPerCapita: "N/A"
+      }
+    };
+
+    return (
+      <AnimatePresence>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="p-4 pt-8 pb-24 space-y-6"
+        >
+          <button 
+            onClick={() => setSelectedCountry(null)}
+            className="flex items-center gap-2 text-gray-500 font-black uppercase text-xs hover:text-[#46178f] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Global Time
+          </button>
+
+          {/* Big Container: Country Detail */}
+          <div className={cn(
+            "rounded-[3rem] shadow-2xl overflow-hidden border-4 transition-all duration-500 relative",
+            isNight ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-blue-100 text-gray-800"
+          )}>
+            {/* Header */}
+            <div className="p-8 pb-0 flex justify-between items-start relative z-10">
+              <div>
+                <div className="text-6xl mb-2">{getFlagEmoji(selectedCountry.code)}</div>
+                <h1 className="text-4xl font-black leading-tight">{selectedCountry.name}</h1>
+              </div>
+              <div className={cn(
+                "px-4 py-2 rounded-2xl flex flex-col items-end",
+                isNight ? "bg-slate-800 text-blue-200" : "bg-blue-50 text-blue-600"
+              )}>
+                {isNight ? <Moon className="w-6 h-6 mb-1" /> : <Sun className="w-6 h-6 mb-1" />}
+                <span className="text-2xl font-black">{format(countryTime, "h:mm a")}</span>
+                <span className="text-[10px] font-bold uppercase">{format(countryTime, "EEE, MMM d")}</span>
+              </div>
+            </div>
+
+            {/* Content Grid */}
+            <div className="p-6 grid gap-6">
+              
+              {/* Basic Info Section */}
+              <div className={cn(
+                "p-5 rounded-3xl border-2 grid grid-cols-2 gap-4",
+                isNight ? "bg-slate-800 border-slate-700" : "bg-gray-50 border-gray-100"
+              )}>
+                <div className="col-span-2 flex justify-between items-center mb-2 border-b border-current/10 pb-2">
+                  <h3 className="font-black text-lg">Traveler's Essentials</h3>
+                </div>
+                <div className="col-span-2 mb-2">
+                  <p className="text-sm italic opacity-80">"{countryDetails.basicInfo.description}"</p>
+                </div>
+                <div>
+                  <p className="text-[10px] opacity-60 uppercase tracking-wider">Capital</p>
+                  <p className="font-black text-sm">{countryDetails.basicInfo.capital}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] opacity-60 uppercase tracking-wider">Population</p>
+                  <p className="font-black text-sm">{countryDetails.basicInfo.population > 0 ? `${(countryDetails.basicInfo.population / 1000000).toFixed(1)}M` : "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] opacity-60 uppercase tracking-wider">GDP</p>
+                  <p className="font-black text-sm">{countryDetails.basicInfo.gdp}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] opacity-60 uppercase tracking-wider">GDP per Capita</p>
+                  <p className="font-black text-sm">{countryDetails.basicInfo.gdpPerCapita}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-[10px] opacity-60 uppercase tracking-wider">Emergency Number</p>
+                  <p className="font-black text-sm">{countryDetails.basicInfo.emergencyNumber}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   // List View
   return (
@@ -89,10 +195,11 @@ export default function GlobalPage() {
           const isNight = isNightInCountry(country.timezone);
           
           return (
-            <div 
+            <button 
               key={country.code} 
+              onClick={() => setSelectedCountry(country)}
               className={cn(
-                "p-4 rounded-3xl shadow-sm border-2 flex items-center justify-between transition-all relative overflow-hidden group",
+                "p-4 rounded-3xl shadow-sm border-2 flex items-center justify-between transition-all relative overflow-hidden group hover:scale-105 active:scale-95",
                 isNight ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-100 text-gray-800'
               )}
             >
@@ -111,7 +218,7 @@ export default function GlobalPage() {
                  <div className={cn("text-2xl font-black", isNight ? 'text-white' : 'text-gray-900')}>{format(time, "h:mm a")}</div>
                  {isNight ? <Moon className="w-6 h-6 text-blue-300" /> : <Sun className="w-6 h-6 text-orange-400" />}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

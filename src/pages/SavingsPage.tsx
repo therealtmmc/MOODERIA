@@ -13,6 +13,7 @@ export default function SavingsPage() {
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
   const [addAmount, setAddAmount] = useState("");
   const [successType, setSuccessType] = useState<"savings" | "savings_goal" | null>(null);
+  const [successStats, setSuccessStats] = useState("");
 
   const [newGoal, setNewGoal] = useState<{ name: string; target: string; icon: string }>({
     name: "",
@@ -37,6 +38,7 @@ export default function SavingsPage() {
     setShowAdd(false);
     setNewGoal({ name: "", target: "", icon: "💰" });
     setSuccessType("savings_goal");
+    setSuccessStats(`Goal "${newGoal.name}" created!`);
   };
 
   const handleAddMoney = () => {
@@ -64,6 +66,7 @@ export default function SavingsPage() {
       });
     } else {
       setSuccessType("savings");
+      setSuccessStats(`$${amount.toLocaleString()} added to ${selectedGoal.name}!`);
     }
 
     setAddAmount("");
@@ -80,7 +83,8 @@ export default function SavingsPage() {
       <SuccessAnimation 
         type={successType || "savings"} 
         isVisible={!!successType} 
-        onComplete={() => setSuccessType(null)} 
+        onComplete={() => {setSuccessType(null); setSuccessStats("");}} 
+        stats={successStats}
       />
       <header className="flex justify-between items-center">
         <div>

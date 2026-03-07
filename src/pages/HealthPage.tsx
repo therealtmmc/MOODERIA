@@ -53,6 +53,7 @@ export default function HealthPage() {
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showBuilderModal, setShowBuilderModal] = useState(false); // New Builder Modal
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successStats, setSuccessStats] = useState("");
   
   // New Flexible Routine State
   type WorkoutStep = {
@@ -133,6 +134,7 @@ export default function HealthPage() {
     setShowLogModal(false);
     setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
     setShowSuccess(true);
+    setSuccessStats("+1 Custom Workout Logged");
     
     confetti({
       particleCount: 150,
@@ -198,6 +200,7 @@ export default function HealthPage() {
     setEditingRoutineId(null);
     setShowBuilderModal(false);
     setShowSuccess(true);
+    setSuccessStats("+1 Custom Routine Saved");
   };
 
   const nextStep = () => {
@@ -268,6 +271,7 @@ export default function HealthPage() {
     dispatch({ type: "LOG_WORKOUT", payload: log });
     stopWorkout();
     setShowSuccess(true);
+    setSuccessStats("+1 Workout Session Completed");
     
     confetti({
       particleCount: 150,
@@ -295,6 +299,7 @@ export default function HealthPage() {
       setWalkTime(0);
       setWalkDistance(0);
       setShowSuccess(true);
+      setSuccessStats("+1 Walk Logged");
       confetti({
         particleCount: 100,
         spread: 70,
@@ -480,7 +485,8 @@ export default function HealthPage() {
       <SuccessAnimation 
         type="workout" 
         isVisible={showSuccess} 
-        onComplete={() => setShowSuccess(false)} 
+        onComplete={() => {setShowSuccess(false); setSuccessStats("");}} 
+        stats={successStats}
       />
 
       <header className="flex justify-between items-center">

@@ -21,6 +21,7 @@ export default function EventsPage() {
   const [showCalendarReminder, setShowCalendarReminder] = useState(false);
   const [viewMode, setViewMode] = useState<"calendar" | "agenda">("calendar");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successStats, setSuccessStats] = useState("");
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: "",
     date: format(new Date(), "yyyy-MM-dd"),
@@ -83,6 +84,7 @@ export default function EventsPage() {
     setShowAdd(false);
     setShowCalendarReminder(true); // Show reminder
     setShowSuccess(true);
+    setSuccessStats("+1 Event Added");
     setNewEvent({
       title: "",
       date: format(new Date(), "yyyy-MM-dd"),
@@ -112,7 +114,8 @@ export default function EventsPage() {
       <SuccessAnimation 
         type="event" 
         isVisible={showSuccess} 
-        onComplete={() => setShowSuccess(false)} 
+        onComplete={() => {setShowSuccess(false); setSuccessStats("");}} 
+        stats={successStats}
       />
 
       <header className="flex justify-between items-center">

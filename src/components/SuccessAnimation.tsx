@@ -8,6 +8,7 @@ interface SuccessAnimationProps {
   type: AnimationType;
   isVisible: boolean;
   onComplete: () => void;
+  stats?: string;
 }
 
 const CONFIG = {
@@ -62,7 +63,7 @@ const CONFIG = {
   }
 };
 
-export function SuccessAnimation({ type, isVisible, onComplete }: SuccessAnimationProps) {
+export function SuccessAnimation({ type, isVisible, onComplete, stats }: SuccessAnimationProps) {
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(onComplete, 2000);
@@ -97,9 +98,12 @@ export function SuccessAnimation({ type, isVisible, onComplete }: SuccessAnimati
               <Check className="w-6 h-6 stroke-[4px]" />
             </motion.div>
 
-            <h3 className={`text-2xl font-black ${config.color} uppercase tracking-wide`}>
-              {config.message}
-            </h3>
+            <div className="text-center">
+              <h3 className={`text-2xl font-black ${config.color} uppercase tracking-wide`}>
+                {config.message}
+              </h3>
+              {stats && <p className="text-sm font-bold text-gray-500 mt-1">{stats}</p>}
+            </div>
           </motion.div>
         </div>
       )}
