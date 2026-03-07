@@ -108,7 +108,7 @@ export default function GlobalPage() {
               </div>
               
               <div className="flex items-center gap-3 relative z-10">
-                 <div className={cn("text-2xl font-black", isNight ? 'text-white' : 'text-gray-900')}>{format(time, "HH:mm")}</div>
+                 <div className={cn("text-2xl font-black", isNight ? 'text-white' : 'text-gray-900')}>{format(time, "h:mm a")}</div>
                  {isNight ? <Moon className="w-6 h-6 text-blue-300" /> : <Sun className="w-6 h-6 text-orange-400" />}
               </div>
             </div>
