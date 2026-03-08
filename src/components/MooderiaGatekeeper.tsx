@@ -28,6 +28,12 @@ const FEATURES = [
     title: 'Central Park',
     subtitle: 'Emotional Sanctuary',
     description: 'The emotional lungs of your city. Log your daily feelings to maintain harmony and use breathing tools to find peace.',
+    details: [
+      'Daily Mood Logging: Track your emotional trends over time.',
+      'Breathing Exercises: Quick sessions to reduce stress and find focus.',
+      'Emotional Garden: Watch your city\'s nature reflect your inner state.',
+      'Wellness Analytics: Gain insights into what drives your happiness.'
+    ],
     icon: TreePine,
     color: 'bg-emerald-500',
     textColor: 'text-emerald-500',
@@ -38,6 +44,12 @@ const FEATURES = [
     title: 'Business District',
     subtitle: 'Command Center',
     description: 'Where city operations happen. Organize your daily routines, execute professional tasks, and level up your citizen status.',
+    details: [
+      'Routine Management: Build and maintain productive city habits.',
+      'Task Delegation: Organize your professional duties with ease.',
+      'Citizen Ranking: Earn prestige as you complete your daily decrees.',
+      'Focus Zones: Dedicated timers for deep urban productivity.'
+    ],
     icon: Briefcase,
     color: 'bg-blue-500',
     textColor: 'text-blue-500',
@@ -48,6 +60,12 @@ const FEATURES = [
     title: 'Financial District',
     subtitle: 'The Treasury',
     description: 'The vault of your future. Secure your budget, set ambitious savings targets, and track your growing wealth with precision.',
+    details: [
+      'Budget Tracking: Real-time monitoring of your city\'s cash flow.',
+      'Savings Goals: Set and visualize your path to urban prosperity.',
+      'Net Worth Monitor: Watch your financial legacy grow over time.',
+      'Expense Categorization: Understand where your city\'s wealth goes.'
+    ],
     icon: PiggyBank,
     color: 'bg-yellow-500',
     textColor: 'text-yellow-600',
@@ -58,6 +76,12 @@ const FEATURES = [
     title: 'Market District',
     subtitle: 'Procurement Hub',
     description: 'Your city supply center. Assign items to your shopping lists, manage essential goods, and track your urban spending.',
+    details: [
+      'Smart Shopping Lists: Organize your procurement by category.',
+      'Unit Conversion: Seamlessly switch between urban measurements.',
+      'Spending History: Review your past market transactions.',
+      'Supply Inventory: Keep track of your city\'s essential stock.'
+    ],
     icon: ShoppingCart,
     color: 'bg-amber-500',
     textColor: 'text-amber-600',
@@ -68,6 +92,12 @@ const FEATURES = [
     title: 'Public Square',
     subtitle: 'Social Heartbeat',
     description: 'Stay informed about city-wide events, community announcements, and social activities happening in your personal city.',
+    details: [
+      'City Calendar: Never miss a major urban event or milestone.',
+      'Public Notices: Stay updated with the latest city decrees.',
+      'Social Feed: Connect with the pulse of your personal community.',
+      'Event Reminders: Get notified before city activities begin.'
+    ],
     icon: Megaphone,
     color: 'bg-orange-500',
     textColor: 'text-orange-500',
@@ -78,6 +108,12 @@ const FEATURES = [
     title: 'The Library',
     subtitle: 'City Archives',
     description: 'The archive of your legacy. Write down daily reflections, store precious memories, and document your city\'s history.',
+    details: [
+      'Daily Journaling: A private space for your urban reflections.',
+      'Memory Vault: Store photos and notes from city milestones.',
+      'Historical Timeline: Review your journey through Mooderia.',
+      'Searchable Archives: Easily find past entries and reflections.'
+    ],
     icon: BookOpen,
     color: 'bg-stone-500',
     textColor: 'text-stone-600',
@@ -88,6 +124,12 @@ const FEATURES = [
     title: 'The Gym',
     subtitle: 'Physical Vigor',
     description: 'The foundation of a strong citizen. Log your workouts, track your daily activity, and ensure your health is in top condition.',
+    details: [
+      'Workout Logging: Record your physical training sessions.',
+      'Activity Tracking: Monitor your daily steps and movement.',
+      'Health Metrics: Keep track of your city\'s vital statistics.',
+      'Fitness Goals: Set and achieve new levels of physical vigor.'
+    ],
     icon: Dumbbell,
     color: 'bg-red-500',
     textColor: 'text-red-500',
@@ -98,6 +140,12 @@ const FEATURES = [
     title: 'Town Hall',
     subtitle: 'Administrative Core',
     description: 'The brain of your city. Manage your citizen identity, customize your profile, and oversee your overall city progress.',
+    details: [
+      'Citizen Profile: Customize your identity in the Republic.',
+      'City Settings: Fine-tune your urban experience.',
+      'Progress Overview: See your overall growth across all districts.',
+      'Account Security: Protect your city\'s data and legacy.'
+    ],
     icon: Building2,
     color: 'bg-purple-500',
     textColor: 'text-purple-500',
@@ -110,8 +158,8 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
   const [isIOS, setIsIOS] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const [checked, setChecked] = useState(false);
-  const [currentFeature, setCurrentFeature] = useState(0);
   const [showGuide, setShowGuide] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
 
   useEffect(() => {
     const checkStatus = () => {
@@ -132,14 +180,6 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
     window.addEventListener('resize', checkStatus);
     return () => window.removeEventListener('resize', checkStatus);
   }, []);
-
-  const nextFeature = () => {
-    setCurrentFeature((prev) => (prev + 1) % FEATURES.length);
-  };
-
-  const prevFeature = () => {
-    setCurrentFeature((prev) => (prev - 1 + FEATURES.length) % FEATURES.length);
-  };
 
   if (!checked) return null;
 
@@ -240,7 +280,8 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: idx * 0.1 }}
-                      className="group bg-white/5 hover:bg-white backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-white/10 hover:border-white transition-all duration-500 shadow-xl"
+                      onClick={() => setSelectedFeature(idx)}
+                      className="group bg-white/5 hover:bg-white backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-white/10 hover:border-white transition-all duration-500 shadow-xl cursor-pointer"
                     >
                       <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                         <div className={cn("w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center justify-center text-white shadow-2xl shrink-0 group-hover:scale-110 transition-transform", feature.color)}>
@@ -362,10 +403,91 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
           <div className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
             <Info className="w-4 h-4 text-purple-300" />
             <p className="text-[10px] sm:text-xs font-bold text-purple-200 uppercase tracking-[0.2em]">
-              Mooderia City Protocol • Optimized for Standalone Mode
+              Republic of Mooderia
             </p>
           </div>
         </div>
+
+        {/* Expanded Knowledge Overlay */}
+        <AnimatePresence>
+          {selectedFeature !== null && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+              onClick={() => setSelectedFeature(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header Section */}
+                <div className={cn("p-8 sm:p-12 text-white relative overflow-hidden", FEATURES[selectedFeature].color)}>
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+                  
+                  <div className="relative z-10 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-white/30">
+                      {React.createElement(FEATURES[selectedFeature].icon, { className: "w-10 h-10 text-white" })}
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-1">
+                        {FEATURES[selectedFeature].subtitle}
+                      </p>
+                      <h3 className="text-4xl sm:text-5xl font-black leading-none">
+                        {FEATURES[selectedFeature].title}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-8 sm:p-12 space-y-8">
+                  <div className="space-y-4">
+                    <h4 className="text-xl font-black text-gray-900 uppercase tracking-tight">District Overview</h4>
+                    <p className="text-gray-500 text-lg font-bold leading-relaxed">
+                      {FEATURES[selectedFeature].description}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-xl font-black text-gray-900 uppercase tracking-tight">Key Functions</h4>
+                    <div className="grid gap-3">
+                      {FEATURES[selectedFeature].details?.map((detail, idx) => (
+                        <div key={idx} className="flex items-start gap-4 group">
+                          <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-1 transition-colors", FEATURES[selectedFeature].color)}>
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          </div>
+                          <p className="text-gray-600 font-bold leading-snug">
+                            {detail}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedFeature(null)}
+                    className={cn("w-full py-6 rounded-[2rem] text-white font-black text-xl shadow-xl transition-transform active:scale-95", FEATURES[selectedFeature].color)}
+                  >
+                    CLOSE ARCHIVES
+                  </button>
+                </div>
+
+                {/* Close Button (Top Corner) */}
+                <button 
+                  onClick={() => setSelectedFeature(null)}
+                  className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/10 flex items-center justify-center text-white hover:bg-black/20 transition-colors z-20"
+                >
+                  <ChevronRight className="w-6 h-6 rotate-90" />
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
