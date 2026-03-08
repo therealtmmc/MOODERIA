@@ -415,14 +415,14 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+              className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-md overflow-y-auto p-4 sm:p-8 flex justify-center items-start sm:items-center no-scrollbar"
               onClick={() => setSelectedFeature(null)}
             >
               <motion.div
                 initial={{ scale: 0.9, y: 20, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
                 exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative"
+                className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative my-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header Section */}
@@ -445,7 +445,7 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
                 </div>
 
                 {/* Content Section */}
-                <div className="p-8 sm:p-12 space-y-8">
+                <div className="p-8 sm:p-12 space-y-8 pb-16 sm:pb-20">
                   <div className="space-y-4">
                     <h4 className="text-xl font-black text-gray-900 uppercase tracking-tight">District Overview</h4>
                     <p className="text-gray-500 text-lg font-bold leading-relaxed">
