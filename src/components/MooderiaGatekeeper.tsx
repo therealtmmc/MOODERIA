@@ -149,226 +149,220 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#46178f] flex flex-col items-center justify-center overflow-hidden font-sans">
+    <div className="fixed inset-0 z-[9999] bg-[#46178f] overflow-y-auto overflow-x-hidden font-sans no-scrollbar">
       {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div 
           animate={{ 
             scale: [1, 1.2, 1],
             rotate: [0, 90, 0],
-            opacity: [0.2, 0.3, 0.2]
+            opacity: [0.1, 0.2, 0.1]
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-10%] right-[-10%] w-[80%] h-[80%] md:w-[60%] md:h-[60%] bg-purple-500/30 rounded-full blur-[120px]" 
+          className="absolute top-[-10%] right-[-10%] w-[100%] h-[100%] md:w-[70%] md:h-[70%] bg-purple-500/20 rounded-full blur-[120px]" 
         />
         <motion.div 
           animate={{ 
             scale: [1.2, 1, 1.2],
             rotate: [0, -90, 0],
-            opacity: [0.2, 0.3, 0.2]
+            opacity: [0.1, 0.2, 0.1]
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] left-[-10%] w-[80%] h-[80%] md:w-[60%] md:h-[60%] bg-blue-500/30 rounded-full blur-[120px]" 
+          className="absolute bottom-[-10%] left-[-10%] w-[100%] h-[100%] md:w-[70%] md:h-[70%] bg-blue-500/20 rounded-full blur-[120px]" 
         />
       </div>
 
-      <div className="w-full max-w-lg h-[100dvh] flex flex-col p-4 sm:p-6 md:p-8 relative z-10">
-        {/* Header */}
-        <motion.div 
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex justify-between items-center mb-4 sm:mb-6"
-        >
-          <div className="flex items-center gap-2 sm:gap-3">
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Main Content Container */}
+        <div className="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto">
+          
+          {/* Left Side: Branding & Welcome (Sticky in landscape) */}
+          <div className="w-full lg:w-1/2 flex flex-col p-6 sm:p-8 md:p-12 lg:sticky lg:top-0 lg:h-screen">
+            {/* Header */}
             <motion.div 
-              whileHover={{ rotate: 15 }}
-              className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-2 border-white/50"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="flex justify-between items-center mb-8 lg:mb-12"
             >
-              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-[#46178f]" />
+              <div className="flex items-center gap-3">
+                <motion.div 
+                  whileHover={{ rotate: 15 }}
+                  className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl border-2 border-white/50"
+                >
+                  <Sparkles className="w-7 h-7 text-[#46178f]" />
+                </motion.div>
+                <div>
+                  <h1 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">Mooderia</h1>
+                  <p className="text-[10px] font-black text-purple-300 uppercase tracking-widest mt-1">The Future of Living</p>
+                </div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-lg">
+                <p className="text-[10px] font-black text-white uppercase tracking-widest">v2.0 Beta</p>
+              </div>
             </motion.div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter leading-none">Mooderia</h1>
-              <p className="text-[8px] sm:text-[10px] font-black text-purple-300 uppercase tracking-widest mt-0.5 sm:mt-1">The Future of Living</p>
+
+            <div className="flex-1 flex flex-col justify-center">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4 mb-8 lg:mb-0"
+              >
+                <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-[0.9] uppercase tracking-tighter">
+                  WELCOME TO <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-300">THE CITY</span>
+                </h2>
+                <p className="text-purple-200 font-bold text-lg sm:text-xl max-w-md">
+                  Experience Mooderia as it was meant to be. A personal sanctuary for your mind, body, and soul.
+                </p>
+              </motion.div>
+
+              {/* Scroll Indicator for mobile */}
+              <div className="lg:hidden mt-8">
+                <div className="flex items-center gap-2 text-white/40 font-black text-[10px] uppercase tracking-[0.2em] mb-4">
+                  <div className="h-px flex-1 bg-white/10" />
+                  <span>Scroll to Explore Districts</span>
+                  <div className="h-px flex-1 bg-white/10" />
+                </div>
+              </div>
             </div>
           </div>
-          <div className="bg-white/10 backdrop-blur-md px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border border-white/20 shadow-lg">
-            <p className="text-[8px] sm:text-[10px] font-black text-white uppercase tracking-widest">v2.0 Beta</p>
-          </div>
-        </motion.div>
 
-        {!showGuide ? (
-          <div className="flex-1 flex flex-col justify-center space-y-6 sm:space-y-8 overflow-y-auto no-scrollbar py-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center space-y-1 sm:space-y-2"
-            >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-none">WELCOME TO THE CITY</h2>
-              <p className="text-purple-200 font-bold text-sm sm:text-base">Experience Mooderia as it was meant to be.</p>
-            </motion.div>
-
-            {/* Feature Showcase Card */}
-            <div className="relative px-2 sm:px-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={FEATURES[currentFeature].id}
-                  initial={{ x: 50, opacity: 0, scale: 0.9 }}
-                  animate={{ x: 0, opacity: 1, scale: 1 }}
-                  exit={{ x: -50, opacity: 0, scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border-4 border-white/20 relative overflow-hidden min-h-[320px] sm:min-h-[380px] flex flex-col justify-center"
-                >
-                  <div className={cn("absolute top-0 right-0 w-32 h-32 sm:w-40 sm:h-40 opacity-10 rounded-full -translate-y-1/2 translate-x-1/2", FEATURES[currentFeature].color)} />
-                  
-                  <div className="relative z-10 space-y-4 sm:space-y-6">
-                    <motion.div 
-                      initial={{ scale: 0, rotate: -45 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      className={cn("w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center text-white shadow-xl", FEATURES[currentFeature].color)}
+          {/* Right Side: Interactive Area (Features list or Install Guide) */}
+          <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-12 flex flex-col">
+            {!showGuide ? (
+              <div className="space-y-6">
+                {/* Vertical Features List - The "Up to Down" arrangement */}
+                <div className="grid gap-4 sm:gap-6">
+                  {FEATURES.map((feature, idx) => (
+                    <motion.div
+                      key={feature.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="group bg-white/5 hover:bg-white backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-white/10 hover:border-white transition-all duration-500 shadow-xl"
                     >
-                      {React.createElement(FEATURES[currentFeature].icon, { className: "w-8 h-8 sm:w-10 sm:h-10" })}
+                      <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                        <div className={cn("w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center justify-center text-white shadow-2xl shrink-0 group-hover:scale-110 transition-transform", feature.color)}>
+                          {React.createElement(feature.icon, { className: "w-8 h-8 sm:w-10 sm:h-10" })}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1 group-hover:opacity-100 opacity-60 transition-opacity", feature.textColor)}>
+                                {feature.subtitle}
+                              </p>
+                              <h3 className="text-2xl sm:text-3xl font-black text-white group-hover:text-gray-900 leading-none transition-colors">
+                                {feature.title}
+                              </h3>
+                            </div>
+                            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white group-hover:text-gray-900 group-hover:border-gray-900 transition-all">
+                              <ChevronRight className="w-5 h-5" />
+                            </div>
+                          </div>
+                          <p className="text-purple-100 group-hover:text-gray-500 font-bold leading-relaxed text-sm sm:text-base transition-colors">
+                            {feature.description}
+                          </p>
+                        </div>
+                      </div>
                     </motion.div>
-                    
-                    <div>
-                      <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1", FEATURES[currentFeature].textColor)}>
-                        {FEATURES[currentFeature].subtitle}
-                      </p>
-                      <h3 className="text-3xl sm:text-4xl font-black text-gray-900 leading-none">
-                        {FEATURES[currentFeature].title}
-                      </h3>
-                    </div>
+                  ))}
+                </div>
 
-                    <p className="text-gray-500 font-bold leading-relaxed text-base sm:text-lg">
-                      {FEATURES[currentFeature].description}
+                {/* Fixed-style Action Button at the bottom of the list */}
+                <div className="sticky bottom-6 mt-12">
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setShowGuide(true);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="w-full bg-white text-[#46178f] py-6 rounded-[2.5rem] font-black text-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-4 group relative overflow-hidden"
+                  >
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-purple-100 to-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
+                    <span className="relative z-10">ENTER MOODERIA</span>
+                    <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform relative z-10" />
+                  </motion.button>
+                </div>
+              </div>
+            ) : (
+              <div className="lg:h-full flex flex-col justify-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-white rounded-[3rem] p-8 sm:p-12 shadow-2xl border-4 border-white/20 text-center space-y-8"
+                >
+                  <div className="w-24 h-24 bg-purple-100 rounded-[2.5rem] flex items-center justify-center mx-auto text-[#46178f] shadow-inner">
+                    <Smartphone className="w-12 h-12" />
+                  </div>
+
+                  <div className="space-y-3">
+                    <h2 className="text-3xl sm:text-4xl font-black text-gray-900 leading-none uppercase tracking-tighter">Installation Required</h2>
+                    <p className="text-lg text-gray-500 font-bold leading-tight">
+                      Mooderia is a Progressive Web App. Add it to your home screen to unlock all city features.
                     </p>
                   </div>
-                </motion.div>
-              </AnimatePresence>
 
-              {/* Navigation Dots */}
-              <div className="flex justify-center gap-2 sm:gap-3 mt-6 sm:mt-8">
-                {FEATURES.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentFeature(idx)}
-                    className={cn(
-                      "h-2 sm:h-3 rounded-full transition-all duration-500",
-                      currentFeature === idx ? "w-8 sm:w-10 bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)]" : "w-2 sm:w-3 bg-white/20"
+                  <div className="bg-gray-50 p-6 sm:p-8 rounded-[2.5rem] border-2 border-gray-100 text-left space-y-6">
+                    <h4 className="font-black text-gray-900 flex items-center gap-2 uppercase tracking-tight text-lg">
+                      <Download className="w-5 h-5 text-purple-600" />
+                      Step-by-Step Guide
+                    </h4>
+
+                    {isIOS ? (
+                      <div className="space-y-6">
+                        <div className="flex items-start gap-5">
+                          <div className="w-10 h-10 bg-white rounded-2xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600">1</div>
+                          <p className="text-base sm:text-lg font-bold text-gray-600 leading-snug">
+                            Tap the <Share className="inline w-5 h-5 mx-1 text-blue-500" /> <strong>Share</strong> icon in your Safari browser.
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-5">
+                          <div className="w-10 h-10 bg-white rounded-2xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600">2</div>
+                          <p className="text-base sm:text-lg font-bold text-gray-600 leading-snug">
+                            Scroll down and select <PlusSquare className="inline w-5 h-5 mx-1 text-gray-700" /> <strong>Add to Home Screen</strong>.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="flex items-start gap-5">
+                          <div className="w-10 h-10 bg-white rounded-2xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600">1</div>
+                          <p className="text-base sm:text-lg font-bold text-gray-600 leading-snug">
+                            Open your browser menu (usually three dots <span className="font-black">⋮</span>).
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-5">
+                          <div className="w-10 h-10 bg-white rounded-2xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600">2</div>
+                          <p className="text-base sm:text-lg font-bold text-gray-600 leading-snug">
+                            Tap <strong>Install App</strong> or <strong>Add to Home Screen</strong>.
+                          </p>
+                        </div>
+                      </div>
                     )}
-                  />
-                ))}
-              </div>
-
-              {/* Navigation Arrows - Hidden on very small screens, visible on sm+ */}
-              <button 
-                onClick={prevFeature}
-                className="absolute left-[-10px] sm:left-[-25px] top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/30 active:scale-90 transition-all hover:bg-white/30 z-20"
-              >
-                <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
-              </button>
-              <button 
-                onClick={nextFeature}
-                className="absolute right-[-10px] sm:right-[-25px] top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white border border-white/30 active:scale-90 transition-all hover:bg-white/30 z-20"
-              >
-                <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
-              </button>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowGuide(true)}
-              className="w-full bg-white text-[#46178f] py-4 sm:py-6 rounded-[2rem] sm:rounded-[2.5rem] font-black text-xl sm:text-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] flex items-center justify-center gap-3 sm:gap-4 group relative overflow-hidden"
-            >
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-purple-100 to-white opacity-0 group-hover:opacity-100 transition-opacity"
-              />
-              <span className="relative z-10">ENTER MOODERIA</span>
-              <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform relative z-10" />
-            </motion.button>
-          </div>
-        ) : (
-          <div className="flex-1 flex flex-col justify-center space-y-6 sm:space-y-8 overflow-y-auto no-scrollbar py-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-8 shadow-2xl border-4 border-white/20 text-center space-y-4 sm:space-y-6"
-            >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto text-[#46178f] shadow-inner">
-                <Smartphone className="w-8 h-8 sm:w-10 sm:h-10" />
-              </div>
-
-              <div className="space-y-1 sm:space-y-2">
-                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-none uppercase">Install Required</h2>
-                <p className="text-sm sm:text-base text-gray-500 font-bold leading-tight">
-                  Mooderia is a Progressive Web App. Add it to your home screen to unlock all city features.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border-2 border-gray-100 text-left space-y-3 sm:space-y-4">
-                <h4 className="font-black text-gray-900 flex items-center gap-2 uppercase tracking-tight text-sm sm:text-base">
-                  <Download className="w-4 h-4 text-purple-600" />
-                  Installation Guide
-                </h4>
-
-                {isIOS ? (
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg sm:rounded-xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600 text-xs sm:text-sm">1</div>
-                      <p className="text-xs sm:text-sm font-bold text-gray-600">
-                        Tap the <Share className="inline w-4 h-4 mx-1 text-blue-500" /> <strong>Share</strong> icon in your browser.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg sm:rounded-xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600 text-xs sm:text-sm">2</div>
-                      <p className="text-xs sm:text-sm font-bold text-gray-600">
-                        Scroll down and select <PlusSquare className="inline w-4 h-4 mx-1 text-gray-700" /> <strong>Add to Home Screen</strong>.
-                      </p>
-                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg sm:rounded-xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600 text-xs sm:text-sm">1</div>
-                      <p className="text-xs sm:text-sm font-bold text-gray-600">
-                        Open your browser menu (usually three dots <span className="font-black">⋮</span>).
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-lg sm:rounded-xl border-2 border-purple-100 flex items-center justify-center shrink-0 font-black text-purple-600 text-xs sm:text-sm">2</div>
-                      <p className="text-xs sm:text-sm font-bold text-gray-600">
-                        Tap <strong>Install App</strong> or <strong>Add to Home Screen</strong>.
-                      </p>
-                    </div>
-                  </div>
-                )}
+
+                  <button 
+                    onClick={() => setShowGuide(false)}
+                    className="w-full py-4 rounded-2xl bg-gray-100 text-gray-500 font-black uppercase tracking-widest hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ChevronLeft className="w-5 h-5" /> Back to Districts
+                  </button>
+                </motion.div>
               </div>
-
-              {!isMobile && (
-                <div className="bg-red-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-red-100 flex items-center gap-2 sm:gap-3 text-left">
-                  <MonitorX className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 shrink-0" />
-                  <p className="text-[9px] sm:text-[10px] font-black text-red-600 uppercase leading-tight">
-                    Desktop access is restricted. Please open this link on your mobile device to install.
-                  </p>
-                </div>
-              )}
-            </motion.div>
-
-            <button 
-              onClick={() => setShowGuide(false)}
-              className="text-white/60 font-black text-xs sm:text-sm uppercase tracking-widest hover:text-white transition-colors flex items-center justify-center gap-2"
-            >
-              <ChevronLeft className="w-4 h-4" /> Back to Showcase
-            </button>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Footer */}
-        <div className="mt-auto pt-4 sm:pt-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10">
-            <Info className="w-3 h-3 text-purple-300" />
-            <p className="text-[8px] sm:text-[10px] font-bold text-purple-200 uppercase tracking-widest">
-              Optimized for Mobile Standalone Mode
+        {/* Global Footer */}
+        <div className="w-full p-8 text-center mt-auto">
+          <div className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
+            <Info className="w-4 h-4 text-purple-300" />
+            <p className="text-[10px] sm:text-xs font-bold text-purple-200 uppercase tracking-[0.2em]">
+              Mooderia City Protocol • Optimized for Standalone Mode
             </p>
           </div>
         </div>
