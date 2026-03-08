@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
-import { MobileGuard } from "./MobileGuard";
-import { InstallGuard } from "./InstallGuard";
 import { DailyMoodPopup } from "./DailyMoodPopup";
 import { LoadingScreen } from "./LoadingScreen";
 import { BreathingModal } from "./BreathingModal";
@@ -92,49 +90,45 @@ export function Layout() {
   }
 
   return (
-    <InstallGuard>
-      <MobileGuard>
-        <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
-          <CityBackground isNight={state.isNightMode || isNightTime} />
-          {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay />}
-          {state.userProfile && location.pathname !== "/onboarding" && <CityEventsComponent />}
-          {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
-          {state.userProfile && location.pathname !== "/onboarding" && <RankUpModal />}
-          
-          <main className="max-w-md mx-auto min-h-screen relative pb-24">
-            {state.userProfile && location.pathname !== "/onboarding" && (
-              <Header onMenuClick={() => setIsSidebarOpen(true)} />
-            )}
+    <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
+      <CityBackground isNight={state.isNightMode || isNightTime} />
+      {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay />}
+      {state.userProfile && location.pathname !== "/onboarding" && <CityEventsComponent />}
+      {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
+      {state.userProfile && location.pathname !== "/onboarding" && <RankUpModal />}
+      
+      <main className="max-w-md mx-auto min-h-screen relative pb-24">
+        {state.userProfile && location.pathname !== "/onboarding" && (
+          <Header onMenuClick={() => setIsSidebarOpen(true)} />
+        )}
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
-          </main>
-          
-          {state.userProfile && location.pathname !== "/onboarding" && (
-            <>
-              <button
-                onClick={() => setIsBreathingOpen(true)}
-                className="fixed bottom-8 right-4 z-40 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-blue-400 hover:bg-blue-50 active:scale-95 transition-all"
-                title="Panic Button (Breathe)"
-              >
-                <Wind className="w-6 h-6" />
-              </button>
-              <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            </>
-          )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
+      </main>
+      
+      {state.userProfile && location.pathname !== "/onboarding" && (
+        <>
+          <button
+            onClick={() => setIsBreathingOpen(true)}
+            className="fixed bottom-8 right-4 z-40 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-blue-400 hover:bg-blue-50 active:scale-95 transition-all"
+            title="Panic Button (Breathe)"
+          >
+            <Wind className="w-6 h-6" />
+          </button>
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        </>
+      )}
 
-          <BreathingModal isOpen={isBreathingOpen} onClose={() => setIsBreathingOpen(false)} />
-        </div>
-      </MobileGuard>
-    </InstallGuard>
+      <BreathingModal isOpen={isBreathingOpen} onClose={() => setIsBreathingOpen(false)} />
+    </div>
   );
 }

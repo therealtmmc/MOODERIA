@@ -6,7 +6,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { StoreProvider } from "@/context/StoreContext";
 import { Layout } from "@/components/Layout";
-import { InstallPrompt } from "@/components/InstallPrompt";
+import { MooderiaGatekeeper } from "@/components/MooderiaGatekeeper";
 import MapPage from "@/pages/MapPage";
 import MoodPage from "@/pages/MoodPage";
 import WorkPage from "@/pages/WorkPage";
@@ -27,9 +27,9 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
-            <InstallPrompt>
+            <MooderiaGatekeeper>
               <Layout />
-            </InstallPrompt>
+            </MooderiaGatekeeper>
           }>
             <Route index element={<MapPage />} />
             <Route path="mood" element={<MoodPage />} />
