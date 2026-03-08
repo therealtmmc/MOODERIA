@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { DISTRICTS } from "@/constants/districts";
 
 const MESSAGES = [
-  "Welcome back, Citizen!",
-  "City Health: Optimal!",
-  "New District Unlocked!",
-  "Keep up the streak!",
-  "Mooderia is thriving!"
+  "Welcome to Mooderia!",
+  ...Object.values(DISTRICTS).map(d => `${d.name}: ${d.description}`)
 ];
 
 export function Billboard() {
