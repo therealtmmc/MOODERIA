@@ -48,7 +48,8 @@ export default function ProfilePage() {
   
   const intellect = Math.min(
     state.workTasks.filter(t => t.completed).length * 2 + 
-    state.events.length * 5, 
+    state.events.length * 5 +
+    (userProfile.intellect || 0), 
     100
   );
   

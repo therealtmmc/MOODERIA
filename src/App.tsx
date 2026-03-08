@@ -19,6 +19,7 @@ import OnboardingPage from "@/pages/OnboardingPage";
 import ArchivePage from "@/pages/ArchivePage";
 import CitizenHome from "@/pages/CitizenHome";
 import GlobalPage from "@/pages/GlobalPage";
+import MarketPage from "@/pages/MarketPage";
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="diary" element={<DiaryPage />} />
             <Route path="savings" element={<SavingsPage />} />
             <Route path="archive" element={<ArchivePage />} />
+            <Route path="market" element={<MarketPage />} />
             <Route path="home" element={<CitizenHome />} />
             <Route path="global" element={<GlobalPage />} />
             <Route path="onboarding" element={<OnboardingPage />} />

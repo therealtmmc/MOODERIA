@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useStore, SavingsGoal, Transaction } from "@/context/StoreContext";
-import { Plus, Trash2, X, PiggyBank, TrendingUp, History, DollarSign, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard } from "lucide-react";
+import { Plus, Trash2, X, PiggyBank, TrendingUp, History, DollarSign, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, PieChart, Target, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { SuccessAnimation } from "@/components/SuccessAnimation";

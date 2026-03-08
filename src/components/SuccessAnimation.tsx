@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Calendar, Dumbbell, Briefcase, Smile, PiggyBank, Plus } from "lucide-react";
+import { Check, Calendar, Dumbbell, Briefcase, Smile, PiggyBank, Plus, ShoppingCart, CreditCard } from "lucide-react";
 import { useEffect } from "react";
 
-type AnimationType = "work" | "work_add" | "event" | "workout" | "mood" | "savings" | "savings_goal";
+type AnimationType = "work" | "work_add" | "event" | "workout" | "mood" | "savings" | "savings_goal" | "market" | "market_add" | "transaction";
 
 interface SuccessAnimationProps {
   type: AnimationType;
@@ -60,6 +60,27 @@ const CONFIG = {
     bg: "bg-emerald-100",
     message: "Goal Added!",
     borderColor: "border-emerald-500"
+  },
+  market: {
+    icon: ShoppingCart,
+    color: "text-amber-500",
+    bg: "bg-amber-100",
+    message: "Item Bought!",
+    borderColor: "border-amber-500"
+  },
+  market_add: {
+    icon: Plus,
+    color: "text-amber-500",
+    bg: "bg-amber-100",
+    message: "Added to List!",
+    borderColor: "border-amber-500"
+  },
+  transaction: {
+    icon: CreditCard,
+    color: "text-slate-700",
+    bg: "bg-slate-100",
+    message: "Wallet Updated!",
+    borderColor: "border-slate-700"
   }
 };
 

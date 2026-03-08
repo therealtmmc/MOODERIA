@@ -1,4 +1,4 @@
-import { X, Calendar, Dumbbell, Briefcase, Smile, User, Book, PiggyBank, Globe } from "lucide-react";
+import { X, Calendar, Dumbbell, Briefcase, Smile, User, Book, PiggyBank, Globe, ShoppingCart } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { path: "/work", label: "Dept. of Labor", icon: Briefcase, color: "text-[#1368ce]" },
   { path: "/savings", label: "City Bank", icon: PiggyBank, color: "text-[#d4af37]" },
   { path: "/events", label: "Public Square", icon: Calendar, color: "text-[#26890c]" },
+  { path: "/market", label: "Market District", icon: ShoppingCart, color: "text-amber-600" },
   { path: "/health", label: "General Hospital", icon: Dumbbell, color: "text-[#e21b3c]" },
   { path: "/global", label: "Global Center", icon: Globe, color: "text-blue-500" },
   { path: "/profile", label: "Citizen ID", icon: User, color: "text-[#46178f]" },

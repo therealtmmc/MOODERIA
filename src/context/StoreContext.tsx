@@ -106,6 +106,7 @@ export type UserProfile = {
   joinedDate: string;
   passportNumber: string; // Random generated ID
   photo?: string; // Base64 string
+  intellect: number;
 };
 
 export type Task = {
@@ -121,6 +122,17 @@ export type Transaction = {
   type: "income" | "expense";
   category: "Salary" | "Gift" | "Initial Balance" | "Food" | "Transport" | "Bills" | "Savings Deposit" | "Other";
   note?: string;
+};
+
+export type MarketItem = {
+  id: string;
+  name: string;
+  day: string; // "Monday", "Tuesday", etc.
+  type: "liquid" | "solid";
+  unit: string;
+  amount: number;
+  completed: boolean;
+  price?: number;
 };
 
 export type AppState = {
@@ -142,6 +154,8 @@ export type AppState = {
   isNightMode: boolean;
   cityLevel: number;
   tasks: Task[];
+  marketItems: MarketItem[];
+  marketDecreeDay: string | null;
 };
 
 type Action =
@@ -176,7 +190,11 @@ type Action =
   | { type: "LOAD_STATE"; payload: AppState }
   | { type: "INCREMENT_CITY_LEVEL" }
   | { type: "ADD_TASK"; payload: Task }
-  | { type: "TOGGLE_TASK"; payload: string };
+  | { type: "TOGGLE_TASK"; payload: string }
+  | { type: "ADD_MARKET_ITEM"; payload: MarketItem }
+  | { type: "BUY_MARKET_ITEM"; payload: string }
+  | { type: "DELETE_MARKET_ITEM"; payload: string }
+  | { type: "SET_MARKET_DECREE_DAY"; payload: string };
 
 const initialState: AppState = {
   userProfile: null,
@@ -197,6 +215,8 @@ const initialState: AppState = {
   isNightMode: false,
   cityLevel: 1,
   tasks: [],
+  marketItems: [],
+  marketDecreeDay: null,
 };
 
 const StoreContext = createContext<{
@@ -239,7 +259,7 @@ function reducer(state: AppState, action: Action): AppState {
 
   switch (action.type) {
     case "SET_PROFILE":
-      return { ...state, userProfile: action.payload };
+      return { ...state, userProfile: { ...action.payload, intellect: action.payload.intellect || 0 } };
     case "ADD_MOOD":
       newState = {
         ...state,
@@ -420,6 +440,42 @@ function reducer(state: AppState, action: Action): AppState {
           t.id === action.payload ? { ...t, completed: !t.completed } : t
         ),
       };
+    case "ADD_MARKET_ITEM":
+      return { ...state, marketItems: [...state.marketItems, action.payload] };
+    case "BUY_MARKET_ITEM":
+      const itemToBuy = state.marketItems.find(i => i.id === action.payload);
+      const price = itemToBuy?.price || 0;
+      
+      const marketTransaction: Transaction = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        amount: price,
+        type: "expense",
+        category: "Food",
+        note: `Market Purchase: ${itemToBuy?.name || "Unknown Item"}`
+      };
+
+      return {
+        ...state,
+        marketItems: state.marketItems.map((item) =>
+          item.id === action.payload ? { ...item, completed: true } : item
+        ),
+        walletBalance: state.walletBalance - price,
+        transactions: [marketTransaction, ...state.transactions],
+        userProfile: state.userProfile
+          ? { ...state.userProfile, intellect: state.userProfile.intellect + 1 }
+          : null,
+      };
+    case "DELETE_MARKET_ITEM":
+      return {
+        ...state,
+        marketItems: state.marketItems.filter((item) => item.id !== action.payload),
+      };
+    case "SET_MARKET_DECREE_DAY":
+      return {
+        ...state,
+        marketDecreeDay: action.payload,
+      };
     case "LOAD_STATE":
       // Backfill IDs for old entries
       const moodsWithIds = (action.payload.moods || []).map((m) => ({
@@ -445,6 +501,8 @@ function reducer(state: AppState, action: Action): AppState {
         isNightMode: action.payload.isNightMode || false, // Default to false if not in saved state
         cityLevel: action.payload.cityLevel || 1,
         tasks: action.payload.tasks || [],
+        marketItems: action.payload.marketItems || [],
+        marketDecreeDay: action.payload.marketDecreeDay || null,
       };
     default:
       return state;

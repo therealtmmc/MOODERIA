@@ -56,4 +56,11 @@ export const DISTRICTS: Record<string, DistrictTheme> = {
     icon: "🏛️",
     description: "City administration."
   },
+  "/market": {
+    name: "Market District",
+    accentColor: "text-amber-600",
+    bgColor: "bg-amber-50",
+    icon: "🛒",
+    description: "Fresh goods and supplies."
+  },
 };

@@ -46,6 +46,7 @@ export default function OnboardingPage() {
           joinedDate: format(new Date(), "MMM d, yyyy"),
           passportNumber: Math.random().toString(36).substr(2, 9).toUpperCase(),
           photo: photo || undefined,
+          intellect: 0,
         },
       });
       navigate("/profile");

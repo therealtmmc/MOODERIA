@@ -20,6 +20,10 @@ export default function CitizenHome() {
             <h3 className="font-bold text-orange-900">Streak</h3>
             <p className="text-4xl font-black text-orange-600">{state.streak}</p>
           </div>
+          <div className="bg-blue-100 p-4 rounded-2xl">
+            <h3 className="font-bold text-blue-900">Intellect</h3>
+            <p className="text-4xl font-black text-blue-600">{state.userProfile?.intellect || 0}</p>
+          </div>
         </div>
       </div>
       <TaskComponent />
