@@ -22,11 +22,26 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const FEATURES = [
+interface Feature {
+  id: string;
+  title: string;
+  subtitle: string;
+  slogan: string;
+  description: string;
+  details: string[];
+  icon: any;
+  color: string;
+  textColor: string;
+  bgLight: string;
+  imageSeed: string;
+}
+
+const FEATURES: Feature[] = [
   {
     id: 'mood',
     title: 'Central Park',
     subtitle: 'Emotional Sanctuary',
+    slogan: 'Breathe with the City',
     description: 'The emotional lungs of your city. Log your daily feelings to maintain harmony and use breathing tools to find peace.',
     details: [
       'Daily Mood Logging: Track your emotional trends over time.',
@@ -38,11 +53,13 @@ const FEATURES = [
     color: 'bg-emerald-500',
     textColor: 'text-emerald-500',
     bgLight: 'bg-emerald-50',
+    imageSeed: 'forest',
   },
   {
     id: 'work',
     title: 'Business District',
     subtitle: 'Command Center',
+    slogan: 'Efficiency in Every Decree',
     description: 'Where city operations happen. Organize your daily routines, execute professional tasks, and level up your citizen status.',
     details: [
       'Routine Management: Build and maintain productive city habits.',
@@ -54,11 +71,13 @@ const FEATURES = [
     color: 'bg-blue-500',
     textColor: 'text-blue-500',
     bgLight: 'bg-blue-50',
+    imageSeed: 'office',
   },
   {
     id: 'savings',
     title: 'Financial District',
     subtitle: 'The Treasury',
+    slogan: 'Secure Your Legacy',
     description: 'The vault of your future. Secure your budget, set ambitious savings targets, and track your growing wealth with precision.',
     details: [
       'Budget Tracking: Real-time monitoring of your city\'s cash flow.',
@@ -70,11 +89,13 @@ const FEATURES = [
     color: 'bg-yellow-500',
     textColor: 'text-yellow-600',
     bgLight: 'bg-yellow-50',
+    imageSeed: 'gold',
   },
   {
     id: 'market',
     title: 'Market District',
     subtitle: 'Procurement Hub',
+    slogan: 'Supply Your Ambition',
     description: 'Your city supply center. Assign items to your shopping lists, manage essential goods, and track your urban spending.',
     details: [
       'Smart Shopping Lists: Organize your procurement by category.',
@@ -86,11 +107,13 @@ const FEATURES = [
     color: 'bg-amber-500',
     textColor: 'text-amber-600',
     bgLight: 'bg-amber-50',
+    imageSeed: 'market',
   },
   {
     id: 'events',
     title: 'Public Square',
     subtitle: 'Social Heartbeat',
+    slogan: 'Pulse of the People',
     description: 'Stay informed about city-wide events, community announcements, and social activities happening in your personal city.',
     details: [
       'City Calendar: Never miss a major urban event or milestone.',
@@ -102,11 +125,13 @@ const FEATURES = [
     color: 'bg-orange-500',
     textColor: 'text-orange-500',
     bgLight: 'bg-orange-50',
+    imageSeed: 'crowd',
   },
   {
     id: 'diary',
     title: 'The Library',
     subtitle: 'City Archives',
+    slogan: 'Preserve the Journey',
     description: 'The archive of your legacy. Write down daily reflections, store precious memories, and document your city\'s history.',
     details: [
       'Daily Journaling: A private space for your urban reflections.',
@@ -118,11 +143,13 @@ const FEATURES = [
     color: 'bg-stone-500',
     textColor: 'text-stone-600',
     bgLight: 'bg-stone-100',
+    imageSeed: 'library',
   },
   {
     id: 'health',
     title: 'The Gym',
     subtitle: 'Physical Vigor',
+    slogan: 'Strength in Unity',
     description: 'The foundation of a strong citizen. Log your workouts, track your daily activity, and ensure your health is in top condition.',
     details: [
       'Workout Logging: Record your physical training sessions.',
@@ -134,11 +161,13 @@ const FEATURES = [
     color: 'bg-red-500',
     textColor: 'text-red-500',
     bgLight: 'bg-red-50',
+    imageSeed: 'fitness',
   },
   {
     id: 'profile',
     title: 'Town Hall',
     subtitle: 'Administrative Core',
+    slogan: 'The Brain of the Republic',
     description: 'The brain of your city. Manage your citizen identity, customize your profile, and oversee your overall city progress.',
     details: [
       'Citizen Profile: Customize your identity in the Republic.',
@@ -150,8 +179,74 @@ const FEATURES = [
     color: 'bg-purple-500',
     textColor: 'text-purple-500',
     bgLight: 'bg-purple-50',
+    imageSeed: 'city',
   }
 ];
+
+const DistrictPoster = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -10 }}
+      onClick={onClick}
+      className="group relative w-full aspect-[3/4] sm:aspect-[4/3] lg:aspect-[16/9] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl border-4 border-white/10 hover:border-white transition-all duration-500"
+    >
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        <img 
+          src={`https://picsum.photos/seed/${feature.imageSeed}/1200/800`} 
+          alt={feature.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          referrerPolicy="no-referrer"
+        />
+        <div className={cn("absolute inset-0 opacity-60 mix-blend-multiply transition-opacity group-hover:opacity-40", feature.color)} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+      </div>
+
+      {/* Poster Content */}
+      <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-end">
+        <div className="relative z-10 space-y-4">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30"
+          >
+            {React.createElement(feature.icon, { className: "w-5 h-5 text-white" })}
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{feature.subtitle}</span>
+          </motion.div>
+
+          <div className="space-y-1">
+            <h3 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none">
+              {feature.title}
+            </h3>
+            <p className="text-purple-200 font-black text-xs sm:text-sm uppercase tracking-[0.3em] opacity-80">
+              {feature.slogan}
+            </p>
+          </div>
+
+          <p className="text-white/70 font-bold text-sm sm:text-lg max-w-xl line-clamp-2 group-hover:line-clamp-none transition-all duration-500">
+            {feature.description}
+          </p>
+
+          <div className="pt-4 flex items-center gap-4">
+            <div className="h-px flex-1 bg-white/20" />
+            <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest">
+              <span>Enter District</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute top-8 right-8 text-white/20 font-black text-6xl select-none pointer-events-none uppercase tracking-tighter">
+        {feature.id.slice(0, 2)}
+      </div>
+    </motion.div>
+  );
+};
 
 export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) {
   const [isStandalone, setIsStandalone] = useState(true);
@@ -271,42 +366,15 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
           <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-12 flex flex-col">
             {!showGuide ? (
               <div className="space-y-6">
-                {/* Vertical Features List - The "Up to Down" arrangement */}
-                <div className="grid gap-4 sm:gap-6">
+                {/* Vertical Features List - The "Up to Down" arrangement with Posters */}
+                <div className="grid gap-8 sm:gap-12">
                   {FEATURES.map((feature, idx) => (
-                    <motion.div
-                      key={feature.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: idx * 0.1 }}
-                      onClick={() => setSelectedFeature(idx)}
-                      className="group bg-white/5 hover:bg-white backdrop-blur-xl rounded-[2rem] p-6 sm:p-8 border border-white/10 hover:border-white transition-all duration-500 shadow-xl cursor-pointer"
-                    >
-                      <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                        <div className={cn("w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center justify-center text-white shadow-2xl shrink-0 group-hover:scale-110 transition-transform", feature.color)}>
-                          {React.createElement(feature.icon, { className: "w-8 h-8 sm:w-10 sm:h-10" })}
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1 group-hover:opacity-100 opacity-60 transition-opacity", feature.textColor)}>
-                                {feature.subtitle}
-                              </p>
-                              <h3 className="text-2xl sm:text-3xl font-black text-white group-hover:text-gray-900 leading-none transition-colors">
-                                {feature.title}
-                              </h3>
-                            </div>
-                            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white group-hover:text-gray-900 group-hover:border-gray-900 transition-all">
-                              <ChevronRight className="w-5 h-5" />
-                            </div>
-                          </div>
-                          <p className="text-purple-100 group-hover:text-gray-500 font-bold leading-relaxed text-sm sm:text-base transition-colors">
-                            {feature.description}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
+                    <div key={feature.id}>
+                      <DistrictPoster 
+                        feature={feature} 
+                        onClick={() => setSelectedFeature(idx)} 
+                      />
+                    </div>
                   ))}
                 </div>
 
