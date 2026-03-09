@@ -192,6 +192,21 @@ const FEATURES: Feature[] = [
   }
 ];
 
+const QUOTES = [
+  "Your mind is a city; keep the streets clean and the lights bright. ✨",
+  "Productivity is the heartbeat of progress. ⚡",
+  "In the Republic of Mooderia, every citizen is a hero. 👑",
+  "Small habits build great empires. 🏛️",
+  "Peace is the foundation of urban harmony. 🌳",
+  "Your potential is as vast as the city skyline. 🏙️"
+];
+
+const WEATHER_TYPES = [
+  { type: 'Sunny', emoji: '☀️', bg: 'from-blue-400 to-emerald-300', particles: '✨' },
+  { type: 'Rainy', emoji: '🌧️', bg: 'from-slate-700 to-blue-900', particles: '💧' },
+  { type: 'Cloudy', emoji: '☁️', bg: 'from-gray-400 to-slate-500', particles: '💨' }
+];
+
 const DistrictPoster = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => {
   return (
     <motion.div
@@ -231,6 +246,33 @@ const DistrictPoster = ({ feature, onClick }: { feature: Feature, onClick: () =>
           {feature.emoji.split('')[0]}
         </motion.div>
       </div>
+
+      {/* Micro-Interaction Sparkles on Hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <motion.div
+            key={i}
+            animate={{ 
+              scale: [0, 1, 0],
+              x: [0, (Math.random() - 0.5) * 200],
+              y: [0, (Math.random() - 0.5) * 200]
+            }}
+            transition={{ duration: 1, repeat: Infinity, delay: Math.random() }}
+            className="absolute top-1/2 left-1/2 text-2xl"
+          >
+            ✨
+          </motion.div>
+        ))}
+      </div>
+
+      {/* District Mascot */}
+      <motion.div
+        initial={{ x: 50, opacity: 0 }}
+        whileHover={{ x: 0, opacity: 1 }}
+        className="absolute top-1/2 -right-4 -translate-y-1/2 bg-white p-4 rounded-full shadow-xl border-4 border-black/10 z-20 hidden sm:flex items-center justify-center text-4xl"
+      >
+        🤖
+      </motion.div>
 
       {/* Poster Content */}
       <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-between">
@@ -283,6 +325,9 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
   const [checked, setChecked] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
+  const [weather, setWeather] = useState(WEATHER_TYPES[0]);
+  const [quote, setQuote] = useState(QUOTES[0]);
+  const [confetti, setConfetti] = useState(false);
 
   useEffect(() => {
     const checkStatus = () => {
@@ -300,9 +345,37 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
     };
 
     checkStatus();
+
+    // Randomize weather and quote on load
+    setWeather(WEATHER_TYPES[Math.floor(Math.random() * WEATHER_TYPES.length)]);
+    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+
     window.addEventListener('resize', checkStatus);
-    return () => window.removeEventListener('resize', checkStatus);
+    return () => {
+      window.removeEventListener('resize', checkStatus);
+    };
   }, []);
+
+  const getAtmosphere = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 10) return "from-orange-100 to-blue-200"; // Sunrise
+    if (hour >= 10 && hour < 17) return weather.bg; // Day (Weather synced)
+    if (hour >= 17 && hour < 20) return "from-orange-200 to-purple-300"; // Sunset
+    return "from-indigo-900 via-purple-900 to-black"; // Night
+  };
+
+  const isNight = new Date().getHours() >= 20 || new Date().getHours() < 5;
+
+  const sunMoonPos = () => {
+    const hour = new Date().getHours();
+    const percent = ((hour - 5) / 15) * 100; // 5am to 8pm
+    return Math.min(100, Math.max(0, percent));
+  };
+
+  const triggerConfetti = () => {
+    setConfetti(true);
+    setTimeout(() => setConfetti(false), 3000);
+  };
 
   if (!checked) return null;
 
@@ -312,27 +385,100 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#46178f] overflow-y-auto overflow-x-hidden font-sans no-scrollbar">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className={cn("fixed inset-0 z-[9999] overflow-y-auto overflow-x-hidden font-sans no-scrollbar transition-colors duration-1000 bg-gradient-to-b", getAtmosphere())}>
+      {/* Sun/Moon Path */}
+      <motion.div 
+        className="fixed top-20 left-0 w-full px-20 pointer-events-none z-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-10%] right-[-10%] w-[100%] h-[100%] md:w-[70%] md:h-[70%] bg-purple-500/20 rounded-full blur-[120px]" 
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            rotate: [0, -90, 0],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] left-[-10%] w-[100%] h-[100%] md:w-[70%] md:h-[70%] bg-blue-500/20 rounded-full blur-[120px]" 
-        />
+          style={{ left: `${sunMoonPos()}%` }}
+          className="absolute text-8xl drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+        >
+          {isNight ? '🌙' : '☀️'}
+        </motion.div>
+      </motion.div>
+
+      {/* Urban Constellations (Night Mode) */}
+      {isNight && (
+        <div className="fixed inset-0 pointer-events-none">
+          {FEATURES.map((f, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.2, 0.5, 0.2] }}
+              transition={{ duration: 3, repeat: Infinity, delay: i }}
+              className="absolute text-white text-xl"
+              style={{ 
+                top: `${Math.random() * 80}%`, 
+                left: `${Math.random() * 90}%` 
+              }}
+            >
+              {React.createElement(f.icon, { className: "w-8 h-8 opacity-20" })}
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Floating Urban Elements & Weather Particles */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {[
+          { e: '☁️', d: 20, s: 1.2, y: '10%' },
+          { e: '☁️', d: 25, s: 0.8, y: '25%' },
+          { e: '🚁', d: 15, s: 1.5, y: '40%' },
+          { e: '🐦', d: 10, s: 0.5, y: '15%' },
+          { e: '☁️', d: 30, s: 1.0, y: '60%' },
+          // Weather particles
+          ...Array.from({ length: 10 }).map((_, i) => ({ e: weather.particles, d: 5 + Math.random() * 5, s: 1, y: `${Math.random() * 100}%` }))
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ x: '-20%' }}
+            animate={{ x: '120%' }}
+            transition={{ duration: item.d, repeat: Infinity, ease: "linear", delay: i * 2 }}
+            className="absolute text-4xl opacity-20"
+            style={{ top: item.y, scale: item.s }}
+          >
+            {item.e}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Confetti Celebration */}
+      {confetti && (
+        <div className="fixed inset-0 pointer-events-none z-[10001]">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: -20, x: Math.random() * window.innerWidth, opacity: 1 }}
+              animate={{ y: window.innerHeight + 20, rotate: 360 }}
+              transition={{ duration: 2 + Math.random() * 2, ease: "linear" }}
+              className="absolute text-2xl"
+            >
+              {['🎉', '✨', '🏙️', '🌈'][Math.floor(Math.random() * 4)]}
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Fast-Travel Mini-Map */}
+      <div className="fixed bottom-8 right-8 z-[1000] hidden lg:flex flex-col gap-2 bg-white/80 backdrop-blur-md p-4 rounded-[2rem] border-4 border-black/10 shadow-2xl">
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 text-center">Mini-Map</p>
+        <div className="grid grid-cols-2 gap-2">
+          {FEATURES.map((f, i) => (
+            <button
+              key={f.id}
+              onClick={() => {
+                const el = document.getElementById(`poster-${f.id}`);
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform", f.color)}
+            >
+              {React.createElement(f.icon, { className: "w-5 h-5" })}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="relative z-10 min-h-screen flex flex-col">
@@ -355,36 +501,64 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
                   <Sparkles className="w-7 h-7 text-[#46178f]" />
                 </motion.div>
                 <div>
-                  <h1 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">Mooderia</h1>
-                  <p className="text-[10px] font-black text-purple-300 uppercase tracking-widest mt-1">The Future of Living</p>
+                  <h1 className={cn("text-2xl font-black uppercase tracking-tighter leading-none", isNight ? "text-white" : "text-gray-900")}>Mooderia</h1>
+                  <p className={cn("text-[10px] font-black uppercase tracking-widest mt-1", isNight ? "text-purple-300" : "text-purple-600")}>The Future of Living</p>
                 </div>
               </div>
-              <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-lg">
-                <p className="text-[10px] font-black text-white uppercase tracking-widest">v2.0 Beta</p>
+              <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-lg flex items-center gap-2">
+                <span className="text-xl">{weather.emoji}</span>
+                <p className={cn("text-[10px] font-black uppercase tracking-widest", isNight ? "text-white" : "text-gray-900")}>{weather.type}</p>
               </div>
             </motion.div>
 
-            <div className="flex-1 flex flex-col justify-center">
+            <div className="flex-1 flex flex-col justify-center space-y-8">
+              {/* Citizen's Daily Quote */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-4 mb-8 lg:mb-0"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/90 backdrop-blur-xl p-6 rounded-[2.5rem] border-4 border-black/5 shadow-2xl inline-block rotate-[-2deg] self-start max-w-sm relative"
               >
-                <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-[0.9] uppercase tracking-tighter">
-                  WELCOME TO <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-300">THE CITY</span>
-                </h2>
-                <p className="text-purple-200 font-bold text-lg sm:text-xl max-w-md">
-                  Experience Mooderia as it was meant to be. A personal sanctuary for your mind, body, and soul.
+                <div className="absolute -top-4 -left-4 text-4xl">💬</div>
+                <p className="text-lg font-black text-gray-800 leading-tight italic">
+                  "{quote}"
                 </p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-purple-600 mt-4">— Republic Wisdom</p>
               </motion.div>
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-3 bg-white/30 backdrop-blur-md px-6 py-2 rounded-full border-2 border-white/50"
+                >
+                  <span className="text-sm font-black text-purple-900 uppercase tracking-[0.3em]">Republic of Mooderia</span>
+                </motion.div>
+                
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className={cn("text-6xl sm:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] uppercase", isNight ? "text-white" : "text-gray-900")}
+                >
+                  Your City <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">Awaits.</span>
+                </motion.h1>
+              </div>
+
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className={cn("text-lg sm:text-2xl font-bold leading-tight max-w-md", isNight ? "text-purple-200" : "text-gray-600")}
+              >
+                Mooderia is currently in <strong>Standalone Mode</strong>. Install the Republic to your home screen to begin your urban legacy.
+              </motion.p>
 
               {/* Scroll Indicator for mobile */}
               <div className="lg:hidden mt-8">
-                <div className="flex items-center gap-2 text-white/40 font-black text-[10px] uppercase tracking-[0.2em] mb-4">
-                  <div className="h-px flex-1 bg-white/10" />
+                <div className={cn("flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.2em] mb-4", isNight ? "text-white/40" : "text-gray-400")}>
+                  <div className={cn("h-px flex-1", isNight ? "bg-white/10" : "bg-gray-200")} />
                   <span>Scroll to Explore Districts</span>
-                  <div className="h-px flex-1 bg-white/10" />
+                  <div className={cn("h-px flex-1", isNight ? "bg-white/10" : "bg-gray-200")} />
                 </div>
               </div>
             </div>
@@ -413,6 +587,7 @@ export function MooderiaGatekeeper({ children }: { children: React.ReactNode }) 
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setShowGuide(true);
+                      triggerConfetti();
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className="w-full bg-white text-[#46178f] py-6 rounded-[2.5rem] font-black text-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-4 group relative overflow-hidden"
