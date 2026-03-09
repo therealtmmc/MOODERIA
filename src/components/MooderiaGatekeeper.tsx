@@ -30,6 +30,7 @@ interface Feature {
   description: string;
   details: string[];
   icon: any;
+  emoji: string;
   color: string;
   textColor: string;
   bgLight: string;
@@ -40,9 +41,9 @@ const FEATURES: Feature[] = [
   {
     id: 'mood',
     title: 'Central Park',
-    subtitle: 'Emotional Sanctuary',
-    slogan: 'Breathe with the City',
-    description: 'The emotional lungs of your city. Log your daily feelings to maintain harmony and use breathing tools to find peace.',
+    subtitle: 'Happy Zone',
+    slogan: 'Turn that Frown Upside Down! 🌳',
+    description: 'The emotional lungs of your city. Log your daily feelings and keep the vibes high!',
     details: [
       'Daily Mood Logging: Track your emotional trends over time.',
       'Breathing Exercises: Quick sessions to reduce stress and find focus.',
@@ -50,17 +51,18 @@ const FEATURES: Feature[] = [
       'Wellness Analytics: Gain insights into what drives your happiness.'
     ],
     icon: TreePine,
-    color: 'bg-emerald-500',
-    textColor: 'text-emerald-500',
+    emoji: '🌳✨🌈',
+    color: 'bg-emerald-400',
+    textColor: 'text-emerald-600',
     bgLight: 'bg-emerald-50',
     imageSeed: 'forest',
   },
   {
     id: 'work',
     title: 'Business District',
-    subtitle: 'Command Center',
-    slogan: 'Efficiency in Every Decree',
-    description: 'Where city operations happen. Organize your daily routines, execute professional tasks, and level up your citizen status.',
+    subtitle: 'Hustle Hub',
+    slogan: 'Get Stuff Done! 🚀',
+    description: 'Where city operations happen. Organize your routines and become a Super Citizen!',
     details: [
       'Routine Management: Build and maintain productive city habits.',
       'Task Delegation: Organize your professional duties with ease.',
@@ -68,17 +70,18 @@ const FEATURES: Feature[] = [
       'Focus Zones: Dedicated timers for deep urban productivity.'
     ],
     icon: Briefcase,
-    color: 'bg-blue-500',
-    textColor: 'text-blue-500',
+    emoji: '💼🚀🔥',
+    color: 'bg-blue-400',
+    textColor: 'text-blue-600',
     bgLight: 'bg-blue-50',
     imageSeed: 'office',
   },
   {
     id: 'savings',
     title: 'Financial District',
-    subtitle: 'The Treasury',
-    slogan: 'Secure Your Legacy',
-    description: 'The vault of your future. Secure your budget, set ambitious savings targets, and track your growing wealth with precision.',
+    subtitle: 'Money Vault',
+    slogan: 'Stack those Coins! 💰',
+    description: 'The vault of your future. Secure your budget and watch your wealth grow!',
     details: [
       'Budget Tracking: Real-time monitoring of your city\'s cash flow.',
       'Savings Goals: Set and visualize your path to urban prosperity.',
@@ -86,17 +89,18 @@ const FEATURES: Feature[] = [
       'Expense Categorization: Understand where your city\'s wealth goes.'
     ],
     icon: PiggyBank,
-    color: 'bg-yellow-500',
-    textColor: 'text-yellow-600',
+    emoji: '💰💎🏦',
+    color: 'bg-yellow-400',
+    textColor: 'text-yellow-700',
     bgLight: 'bg-yellow-50',
     imageSeed: 'gold',
   },
   {
     id: 'market',
     title: 'Market District',
-    subtitle: 'Procurement Hub',
-    slogan: 'Supply Your Ambition',
-    description: 'Your city supply center. Assign items to your shopping lists, manage essential goods, and track your urban spending.',
+    subtitle: 'Shopping Spree',
+    slogan: 'Fill your Cart! 🛒',
+    description: 'Your city supply center. Manage your goods and track your urban spending.',
     details: [
       'Smart Shopping Lists: Organize your procurement by category.',
       'Unit Conversion: Seamlessly switch between urban measurements.',
@@ -104,17 +108,18 @@ const FEATURES: Feature[] = [
       'Supply Inventory: Keep track of your city\'s essential stock.'
     ],
     icon: ShoppingCart,
-    color: 'bg-amber-500',
-    textColor: 'text-amber-600',
-    bgLight: 'bg-amber-50',
+    emoji: '🛒🍎📦',
+    color: 'bg-orange-400',
+    textColor: 'text-orange-700',
+    bgLight: 'bg-orange-50',
     imageSeed: 'market',
   },
   {
     id: 'events',
     title: 'Public Square',
-    subtitle: 'Social Heartbeat',
-    slogan: 'Pulse of the People',
-    description: 'Stay informed about city-wide events, community announcements, and social activities happening in your personal city.',
+    subtitle: 'Party Central',
+    slogan: 'Join the Fun! 🎉',
+    description: 'Stay informed about city-wide events and social activities in your personal city.',
     details: [
       'City Calendar: Never miss a major urban event or milestone.',
       'Public Notices: Stay updated with the latest city decrees.',
@@ -122,17 +127,18 @@ const FEATURES: Feature[] = [
       'Event Reminders: Get notified before city activities begin.'
     ],
     icon: Megaphone,
-    color: 'bg-orange-500',
-    textColor: 'text-orange-500',
-    bgLight: 'bg-orange-50',
+    emoji: '🎉🎈📣',
+    color: 'bg-pink-400',
+    textColor: 'text-pink-600',
+    bgLight: 'bg-pink-50',
     imageSeed: 'crowd',
   },
   {
     id: 'diary',
     title: 'The Library',
-    subtitle: 'City Archives',
-    slogan: 'Preserve the Journey',
-    description: 'The archive of your legacy. Write down daily reflections, store precious memories, and document your city\'s history.',
+    subtitle: 'Secret Archives',
+    slogan: 'Write your Story! 📖',
+    description: 'The archive of your legacy. Write down reflections and store precious memories.',
     details: [
       'Daily Journaling: A private space for your urban reflections.',
       'Memory Vault: Store photos and notes from city milestones.',
@@ -140,17 +146,18 @@ const FEATURES: Feature[] = [
       'Searchable Archives: Easily find past entries and reflections.'
     ],
     icon: BookOpen,
-    color: 'bg-stone-500',
-    textColor: 'text-stone-600',
-    bgLight: 'bg-stone-100',
+    emoji: '📖✍️🕰️',
+    color: 'bg-purple-400',
+    textColor: 'text-purple-700',
+    bgLight: 'bg-purple-50',
     imageSeed: 'library',
   },
   {
     id: 'health',
     title: 'The Gym',
-    subtitle: 'Physical Vigor',
-    slogan: 'Strength in Unity',
-    description: 'The foundation of a strong citizen. Log your workouts, track your daily activity, and ensure your health is in top condition.',
+    subtitle: 'Power House',
+    slogan: 'Get Stronger! 💪',
+    description: 'The foundation of a strong citizen. Log your workouts and stay in top condition.',
     details: [
       'Workout Logging: Record your physical training sessions.',
       'Activity Tracking: Monitor your daily steps and movement.',
@@ -158,17 +165,18 @@ const FEATURES: Feature[] = [
       'Fitness Goals: Set and achieve new levels of physical vigor.'
     ],
     icon: Dumbbell,
-    color: 'bg-red-500',
-    textColor: 'text-red-500',
+    emoji: '💪🏋️‍♂️🥗',
+    color: 'bg-red-400',
+    textColor: 'text-red-600',
     bgLight: 'bg-red-50',
     imageSeed: 'fitness',
   },
   {
     id: 'profile',
     title: 'Town Hall',
-    subtitle: 'Administrative Core',
-    slogan: 'The Brain of the Republic',
-    description: 'The brain of your city. Manage your citizen identity, customize your profile, and oversee your overall city progress.',
+    subtitle: 'Boss Mode',
+    slogan: 'Rule your World! 👑',
+    description: 'The brain of your city. Manage your identity and oversee your city progress.',
     details: [
       'Citizen Profile: Customize your identity in the Republic.',
       'City Settings: Fine-tune your urban experience.',
@@ -176,9 +184,10 @@ const FEATURES: Feature[] = [
       'Account Security: Protect your city\'s data and legacy.'
     ],
     icon: Building2,
-    color: 'bg-purple-500',
-    textColor: 'text-purple-500',
-    bgLight: 'bg-purple-50',
+    emoji: '👑🏛️⚙️',
+    color: 'bg-indigo-400',
+    textColor: 'text-indigo-600',
+    bgLight: 'bg-indigo-50',
     imageSeed: 'city',
   }
 ];
@@ -186,64 +195,83 @@ const FEATURES: Feature[] = [
 const DistrictPoster = ({ feature, onClick }: { feature: Feature, onClick: () => void }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      whileHover={{ y: -10 }}
+      whileHover={{ scale: 1.02, rotate: 1 }}
       onClick={onClick}
-      className="group relative w-full aspect-[3/4] sm:aspect-[4/3] lg:aspect-[16/9] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl border-4 border-white/10 hover:border-white transition-all duration-500"
+      className={cn(
+        "group relative w-full aspect-[3/4] sm:aspect-[4/3] lg:aspect-[16/9] rounded-[3rem] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-8 border-white transition-all duration-500",
+        feature.color
+      )}
     >
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
-        <img 
-          src={`https://picsum.photos/seed/${feature.imageSeed}/1200/800`} 
-          alt={feature.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          referrerPolicy="no-referrer"
-        />
-        <div className={cn("absolute inset-0 opacity-60 mix-blend-multiply transition-opacity group-hover:opacity-40", feature.color)} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+      {/* Cartoonish Background Patterns */}
+      <div className="absolute inset-0 opacity-20 select-none pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full grid grid-cols-6 gap-4 p-4">
+          {Array.from({ length: 24 }).map((_, i) => (
+            <div key={i} className="text-4xl opacity-20 rotate-12">{feature.emoji.split('')[0]}</div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Emoji Visual */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <motion.div 
+          animate={{ 
+            y: [0, -20, 0],
+            rotate: [0, 5, -5, 0]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="text-[120px] sm:text-[180px] lg:text-[240px] drop-shadow-[0_20px_20px_rgba(0,0,0,0.3)]"
+        >
+          {feature.emoji.split('')[0]}
+        </motion.div>
       </div>
 
       {/* Poster Content */}
-      <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-end">
-        <div className="relative z-10 space-y-4">
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30"
-          >
-            {React.createElement(feature.icon, { className: "w-5 h-5 text-white" })}
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{feature.subtitle}</span>
-          </motion.div>
+      <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-between">
+        <div className="flex justify-between items-start">
+          <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border-4 border-black/10 shadow-lg">
+            <p className={cn("text-sm font-black uppercase tracking-[0.2em]", feature.textColor)}>
+              {feature.subtitle}
+            </p>
+          </div>
+          <div className="w-16 h-16 bg-white rounded-2xl border-4 border-black/10 flex items-center justify-center shadow-xl rotate-12 group-hover:rotate-0 transition-transform">
+            {React.createElement(feature.icon, { className: cn("w-8 h-8", feature.textColor) })}
+          </div>
+        </div>
 
+        <div className="space-y-4 bg-white/90 backdrop-blur-md p-8 rounded-[2.5rem] border-4 border-black/10 shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform">
           <div className="space-y-1">
-            <h3 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none">
+            <h3 className={cn("text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-none", feature.textColor)}>
               {feature.title}
             </h3>
-            <p className="text-purple-200 font-black text-xs sm:text-sm uppercase tracking-[0.3em] opacity-80">
+            <p className="text-gray-600 font-black text-sm sm:text-lg uppercase tracking-widest">
               {feature.slogan}
             </p>
           </div>
 
-          <p className="text-white/70 font-bold text-sm sm:text-lg max-w-xl line-clamp-2 group-hover:line-clamp-none transition-all duration-500">
+          <p className="text-gray-500 font-bold text-sm sm:text-base max-w-xl line-clamp-2">
             {feature.description}
           </p>
 
           <div className="pt-4 flex items-center gap-4">
-            <div className="h-px flex-1 bg-white/20" />
-            <div className="flex items-center gap-2 text-white font-black text-[10px] uppercase tracking-widest">
-              <span>Enter District</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+            <div className={cn("h-2 flex-1 rounded-full opacity-20", feature.color)} />
+            <div className={cn("flex items-center gap-2 font-black text-xs uppercase tracking-widest", feature.textColor)}>
+              <span>Explore</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute top-8 right-8 text-white/20 font-black text-6xl select-none pointer-events-none uppercase tracking-tighter">
-        {feature.id.slice(0, 2)}
-      </div>
+      {/* Floating Emojis */}
+      <div className="absolute top-1/4 right-1/4 text-6xl opacity-40 animate-bounce delay-100">{feature.emoji.split('')[1]}</div>
+      <div className="absolute bottom-1/4 left-1/4 text-6xl opacity-40 animate-bounce delay-300">{feature.emoji.split('')[2]}</div>
     </motion.div>
   );
 };
