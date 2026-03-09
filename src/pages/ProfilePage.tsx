@@ -87,7 +87,12 @@ export default function ProfilePage() {
         <div className="flex justify-between items-start relative z-10">
           <div className="flex gap-4 items-center">
             {/* User Photo */}
-            <div className="w-24 h-24 bg-gray-200 rounded-3xl border-4 border-white shadow-md overflow-hidden shrink-0 relative">
+            <div className={cn(
+              "w-24 h-24 bg-gray-200 rounded-3xl border-4 shadow-md overflow-hidden shrink-0 relative",
+              state.profileBorder === "border_gold" ? "border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.5)]" :
+              state.profileBorder === "border_diamond" ? "border-[#b9f2ff] shadow-[0_0_15px_rgba(185,242,255,0.8)]" :
+              "border-white"
+            )}>
                {userProfile.photo ? (
                  <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
                ) : (

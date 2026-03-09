@@ -135,6 +135,13 @@ export type MarketItem = {
   price?: number;
 };
 
+export type Boss = {
+  name: string;
+  hp: number;
+  maxHp: number;
+  level: number;
+};
+
 export type AppState = {
   userProfile: UserProfile | null;
   moods: MoodEntry[];
@@ -156,6 +163,12 @@ export type AppState = {
   tasks: Task[];
   marketItems: MarketItem[];
   marketDecreeDay: string | null;
+  coins: number;
+  inventory: { id: string; name: string; icon: string }[];
+  boss: Boss;
+  extraXP: number;
+  streakSavers: number;
+  profileBorder: string | null;
 };
 
 type Action =
@@ -194,7 +207,11 @@ type Action =
   | { type: "ADD_MARKET_ITEM"; payload: MarketItem }
   | { type: "BUY_MARKET_ITEM"; payload: string }
   | { type: "DELETE_MARKET_ITEM"; payload: string }
-  | { type: "SET_MARKET_DECREE_DAY"; payload: string };
+  | { type: "SET_MARKET_DECREE_DAY"; payload: string }
+  | { type: "ADD_COINS"; payload: number }
+  | { type: "BUY_SHOP_ITEM"; payload: { id: string; name: string; icon: string; price: number } }
+  | { type: "DAMAGE_BOSS"; payload: number }
+  | { type: "LEVEL_UP_BOSS" };
 
 const initialState: AppState = {
   userProfile: null,
@@ -217,6 +234,12 @@ const initialState: AppState = {
   tasks: [],
   marketItems: [],
   marketDecreeDay: null,
+  coins: 0,
+  inventory: [],
+  boss: { name: "The Slump", hp: 100, maxHp: 100, level: 1 },
+  extraXP: 0,
+  streakSavers: 0,
+  profileBorder: null,
 };
 
 const StoreContext = createContext<{
@@ -244,7 +267,8 @@ function checkRankUp(state: AppState): AppState {
     state.moods.length + 
     state.workTasks.filter(t => t.completed).length + 
     state.events.length + 
-    state.workouts.length;
+    state.workouts.length +
+    (state.extraXP || 0);
   
   const newRank = calculateRank(totalTasks);
   
@@ -346,9 +370,41 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         events: state.events.filter((e) => e.id !== action.payload),
       };
-    case "LOG_WORKOUT":
-      newState = { ...state, workouts: [...state.workouts, action.payload] };
+    case "LOG_WORKOUT": {
+      let newWorkouts = [...state.workouts];
+      let newStreakSavers = state.streakSavers || 0;
+      
+      const todayStr = action.payload.date;
+      const uniqueDates = Array.from(new Set(state.workouts.map(w => w.date))).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      
+      if (uniqueDates.length > 0) {
+        const lastDateStr = uniqueDates[0];
+        const todayDate = new Date(todayStr);
+        const lastDate = new Date(lastDateStr);
+        const diffTime = Math.abs(todayDate.getTime() - lastDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays > 1 && newStreakSavers >= diffDays - 1) {
+          for (let i = 1; i < diffDays; i++) {
+            const gapDate = new Date(lastDate.getTime() + i * 86400000);
+            newWorkouts.push({
+              id: `saver-${gapDate.getTime()}`,
+              date: gapDate.toISOString().split('T')[0],
+              type: "Streak Saver",
+              duration: 0,
+              reps: 0,
+              difficulty: "Easy"
+            });
+            newStreakSavers--;
+          }
+        }
+      }
+      
+      newWorkouts.push(action.payload);
+      
+      let newState = { ...state, workouts: newWorkouts, streakSavers: newStreakSavers };
       return checkRankUp(newState);
+    }
     case "LOG_WALK":
       return { ...state, walks: [...state.walks, action.payload] };
     case "ADD_SAVINGS":
@@ -412,6 +468,9 @@ function reducer(state: AppState, action: Action): AppState {
         customRoutines: state.customRoutines.filter((r) => r.id !== action.payload),
       };
     case "RESET_STREAK":
+      if (state.streakSavers && state.streakSavers > 0) {
+        return { ...state, streakSavers: state.streakSavers - 1 };
+      }
       return { ...state, streak: 0 };
     case "INCREMENT_STREAK":
       return { ...state, streak: state.streak + 1 };
@@ -476,6 +535,54 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         marketDecreeDay: action.payload,
       };
+    case "ADD_COINS":
+      return { ...state, coins: state.coins + action.payload };
+    case "BUY_SHOP_ITEM":
+      if (state.coins >= action.payload.price) {
+        let newState = {
+          ...state,
+          coins: state.coins - action.payload.price,
+        };
+        
+        if (action.payload.id === "exp_small") {
+          newState.extraXP = (newState.extraXP || 0) + 10;
+          newState = checkRankUp(newState);
+        } else if (action.payload.id === "exp_medium") {
+          newState.extraXP = (newState.extraXP || 0) + 50;
+          newState = checkRankUp(newState);
+        } else if (action.payload.id === "exp_large") {
+          newState.extraXP = (newState.extraXP || 0) + 100;
+          newState = checkRankUp(newState);
+        } else if (action.payload.id === "streak_saver") {
+          newState.streakSavers = (newState.streakSavers || 0) + 1;
+        } else if (action.payload.id.startsWith("border_")) {
+          newState.profileBorder = action.payload.id;
+        } else {
+          newState.inventory = [...state.inventory, { id: action.payload.id, name: action.payload.name, icon: action.payload.icon }];
+        }
+        return newState;
+      }
+      return state;
+    case "DAMAGE_BOSS":
+      const newHp = Math.max(0, state.boss.hp - action.payload);
+      return {
+        ...state,
+        boss: { ...state.boss, hp: newHp },
+      };
+    case "LEVEL_UP_BOSS":
+      const nextLevel = state.boss.level + 1;
+      const nextMaxHp = 100 + (nextLevel * 50);
+      const bossNames = ["The Slump", "Junk Food Goblin", "Procrastination Phantom", "Snooze Button Demon"];
+      return {
+        ...state,
+        boss: {
+          name: bossNames[nextLevel % bossNames.length],
+          level: nextLevel,
+          maxHp: nextMaxHp,
+          hp: nextMaxHp,
+        },
+        coins: state.coins + 50, // Reward for defeating boss
+      };
     case "LOAD_STATE":
       // Backfill IDs for old entries
       const moodsWithIds = (action.payload.moods || []).map((m) => ({
@@ -503,6 +610,12 @@ function reducer(state: AppState, action: Action): AppState {
         tasks: action.payload.tasks || [],
         marketItems: action.payload.marketItems || [],
         marketDecreeDay: action.payload.marketDecreeDay || null,
+        coins: action.payload.coins || 0,
+        inventory: action.payload.inventory || [],
+        boss: action.payload.boss || { name: "The Slump", hp: 100, maxHp: 100, level: 1 },
+        extraXP: action.payload.extraXP || 0,
+        streakSavers: action.payload.streakSavers || 0,
+        profileBorder: action.payload.profileBorder || null,
       };
     default:
       return state;

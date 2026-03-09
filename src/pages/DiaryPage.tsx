@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format, subDays, isSameDay, parseISO, isAfter, addMonths, addYears, addDays } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock } from "lucide-react";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
@@ -214,8 +214,10 @@ export default function DiaryPage() {
       />
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-[#1368ce]">City Archives</h1>
-          <p className="text-gray-500 font-bold">Personal Records & Memories</p>
+          <h1 className="text-3xl font-black text-[#1368ce] flex items-center gap-2">
+            <Library className="w-8 h-8" /> Library of Memories
+          </h1>
+          <p className="text-gray-500 font-bold">Your Personal Archives</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -630,86 +632,79 @@ export default function DiaryPage() {
         </div>
 
         {viewMode === "list" ? (
-          <div className="space-y-4">
-            {state.moods
-              .filter(m => m.note || m.image || m.video || m.audio)
-              .filter(m => filterMode === "all" || m.isHighlight)
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((entry) => {
-                const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
-                
-                return (
-                  <motion.div 
-                    key={entry.id} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white p-5 rounded-3xl shadow-md border border-gray-100 relative overflow-hidden"
-                  >
-                    {isLocked && (
-                      <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6">
-                        <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
-                          <Lock className="w-6 h-6 text-indigo-500" />
-                        </div>
-                        <h3 className="font-black text-gray-800 text-lg">Time Capsule</h3>
-                        <p className="text-gray-500 text-sm font-bold mt-1">
-                          Opens on {format(parseISO(entry.lockDate!), "MMMM d, yyyy")}
-                        </p>
-                      </div>
-                    )}
+          <div className="space-y-6">
+            {/* Bookshelf Layout */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {state.moods
+                .filter(m => m.note || m.image || m.video || m.audio)
+                .filter(m => filterMode === "all" || m.isHighlight)
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((entry) => {
+                  const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
+                  
+                  return (
+                    <motion.div 
+                      key={entry.id} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={cn(
+                        "relative aspect-[3/4] rounded-r-2xl rounded-l-md shadow-lg border-l-8 flex flex-col justify-between p-4 overflow-hidden group cursor-pointer",
+                        MOOD_COLORS[entry.mood] || "bg-gray-200 border-gray-400",
+                        "border-black/20" // Book spine effect
+                      )}
+                    >
+                      {/* Book Cover Texture */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
 
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm", MOOD_COLORS[entry.mood])}>
-                          {entry.isHighlight ? <Trophy className="w-4 h-4" /> : <div className={cn("w-3 h-3 rounded-full opacity-50", entry.mood === "Tired" ? "bg-gray-400" : "bg-white")} />}
+                      {isLocked && (
+                        <div className="absolute inset-0 z-20 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-center p-2">
+                          <Lock className="w-8 h-8 text-white mb-2" />
+                          <p className="text-white text-[10px] font-bold">
+                            Opens {format(parseISO(entry.lockDate!), "MMM d, yyyy")}
+                          </p>
                         </div>
-                        <div>
-                          <p className="font-black text-gray-800">{format(new Date(entry.date), "MMMM d, yyyy")}</p>
-                          <span className={cn("text-[10px] font-bold uppercase tracking-wider text-gray-400")}>
-                             {entry.mood}
-                          </span>
+                      )}
+
+                      <div className="relative z-10 flex justify-between items-start">
+                        <div className="bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
+                          <p className="font-black text-gray-800 text-xs">{format(new Date(entry.date), "MMM d")}</p>
+                          <p className="text-[8px] font-bold uppercase text-gray-500">{format(new Date(entry.date), "yyyy")}</p>
+                        </div>
+                        {entry.isHighlight && <Trophy className="w-5 h-5 text-yellow-300 fill-yellow-300 drop-shadow-md" />}
+                      </div>
+                      
+                      <div className="relative z-10 mt-auto">
+                        <div className="bg-white/90 backdrop-blur-sm p-2 rounded-lg shadow-sm">
+                          <p className="text-xs font-bold text-gray-800 line-clamp-2">
+                            {entry.note || "Media Entry"}
+                          </p>
+                          <div className="flex gap-1 mt-1 text-gray-400">
+                            {entry.image && <ImageIcon className="w-3 h-3" />}
+                            {entry.video && <Video className="w-3 h-3" />}
+                            {entry.audio && <Mic className="w-3 h-3" />}
+                          </div>
                         </div>
                       </div>
+
+                      {/* Delete Button (Hidden until hover/focus) */}
                       <button
-                        onClick={() => {
-                          if(confirm("Delete this entry?")) {
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if(confirm("Delete this memory?")) {
                             dispatch({ type: "DELETE_DIARY", payload: entry.id });
                           }
                         }}
-                        className="text-gray-300 hover:text-red-500 transition-colors p-2"
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 shadow-md"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-3 h-3" />
                       </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-2 mb-4">
-                      {entry.image && (
-                        <div className="rounded-2xl overflow-hidden shadow-sm aspect-video">
-                          <img src={entry.image} alt="Memory" className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      {entry.video && (
-                        <div className="rounded-2xl overflow-hidden shadow-sm aspect-video bg-black">
-                          <video src={entry.video} controls className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      {entry.audio && (
-                        <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3 border border-gray-100">
-                          <div className="w-8 h-8 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce] shrink-0">
-                            <Mic className="w-4 h-4" />
-                          </div>
-                          <audio src={entry.audio} controls className="w-full h-8" />
-                        </div>
-                      )}
-                    </div>
-
-                    {entry.note && (
-                      <div className="bg-gray-50 p-4 rounded-2xl">
-                        <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap font-medium">{entry.note}</p>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
+                    </motion.div>
+                  );
+                })}
+            </div>
+            {/* Shelf Graphic */}
+            <div className="h-4 bg-amber-800/20 rounded-full w-full mt-2 shadow-inner" />
           </div>
         ) : (
           <div className="space-y-8">

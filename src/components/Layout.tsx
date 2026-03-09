@@ -4,11 +4,9 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { DailyMoodPopup } from "./DailyMoodPopup";
 import { LoadingScreen } from "./LoadingScreen";
-import { BreathingModal } from "./BreathingModal";
 import { RankUpModal } from "./RankUpModal";
 import { useStore } from "@/context/StoreContext";
 import { format } from "date-fns";
-import { Wind } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CityBackground } from "./CityBackground";
 import { WeatherOverlay } from "./WeatherOverlay";
@@ -21,7 +19,6 @@ export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [isBreathingOpen, setIsBreathingOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Determine current theme based on district
@@ -36,6 +33,10 @@ export function Layout() {
   const currentTheme = state.isNightMode || isNightTime
     ? "bg-slate-950 text-slate-100" 
     : moodTheme;
+
+  // Determine weather based on last mood
+  const lastMood = state.moods[state.moods.length - 1]?.mood || "Neutral";
+  const weather = lastMood === "Sad" ? "Rainy" : lastMood === "Energetic" ? "Sunny" : "Cloudy";
 
   // Redirect to Onboarding if no profile
   useEffect(() => {
@@ -91,17 +92,13 @@ export function Layout() {
 
   return (
     <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
-      <CityBackground isNight={state.isNightMode || isNightTime} />
-      {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay />}
+      <CityBackground isNight={state.isNightMode || isNightTime} district={district} weather={weather} cityLevel={state.cityLevel} />
+      {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay weather={weather} />}
       {state.userProfile && location.pathname !== "/onboarding" && <CityEventsComponent />}
       {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
       {state.userProfile && location.pathname !== "/onboarding" && <RankUpModal />}
       
-      <main className="max-w-md mx-auto min-h-screen relative pb-24">
-        {state.userProfile && location.pathname !== "/onboarding" && (
-          <Header onMenuClick={() => setIsSidebarOpen(true)} />
-        )}
-
+      <main className="max-w-md mx-auto min-h-screen relative pb-32">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -109,7 +106,11 @@ export function Layout() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 0.2 }}
+            className="relative z-10"
           >
+            {state.userProfile && location.pathname !== "/onboarding" && (
+              <Header onMenuClick={() => setIsSidebarOpen(true)} />
+            )}
             <Outlet />
           </motion.div>
         </AnimatePresence>
@@ -117,18 +118,9 @@ export function Layout() {
       
       {state.userProfile && location.pathname !== "/onboarding" && (
         <>
-          <button
-            onClick={() => setIsBreathingOpen(true)}
-            className="fixed bottom-8 right-4 z-40 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-blue-400 hover:bg-blue-50 active:scale-95 transition-all"
-            title="Panic Button (Breathe)"
-          >
-            <Wind className="w-6 h-6" />
-          </button>
           <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         </>
       )}
-
-      <BreathingModal isOpen={isBreathingOpen} onClose={() => setIsBreathingOpen(false)} />
     </div>
   );
 }

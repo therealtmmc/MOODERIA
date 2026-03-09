@@ -267,7 +267,7 @@ export default function EventsPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#26890c] p-6 text-center space-y-6"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#26890c] p-6 text-center space-y-6"
             >
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                 <CalendarIcon className="w-8 h-8 text-[#26890c]" />
@@ -310,7 +310,7 @@ export default function EventsPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#26890c]"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#26890c]"
             >
               <div className="bg-[#26890c] p-4 flex justify-between items-center">
                 <h3 className="text-white font-black text-xl">New Event</h3>

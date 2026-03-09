@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useStore, MarketItem } from "@/context/StoreContext";
-import { Plus, Trash2, Check, X, ShoppingCart, Megaphone, Crown, Scale, Droplets, Box, ArrowRightLeft, SortAsc, CalendarDays, Wallet, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Check, X, ShoppingCart, Megaphone, Crown, Scale, Droplets, Box, ArrowRightLeft, SortAsc, CalendarDays, Wallet, AlertTriangle, Store, Coins } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,7 @@ export default function MarketPage() {
   const { state, dispatch } = useStore();
   const [showAdd, setShowAdd] = useState(false);
   const [showConverter, setShowConverter] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const [successType, setSuccessType] = useState<"market" | "market_add" | null>(null);
   const [sortOrder, setSortOrder] = useState<"standard" | "today">("standard");
   const [itemToBuy, setItemToBuy] = useState<string | null>(null);
@@ -59,6 +60,29 @@ export default function MarketPage() {
     toUnit: "mL",
     value: 1,
   });
+
+  const SHOP_ITEMS = [
+    { id: "exp_small", name: "Small EXP", description: "+10 XP", price: 50, icon: "✨" },
+    { id: "exp_medium", name: "Medium EXP", description: "+50 XP", price: 200, icon: "✨" },
+    { id: "exp_large", name: "Large EXP", description: "+100 XP", price: 350, icon: "✨" },
+    { id: "streak_saver", name: "Streak Saver", description: "Saves your streak once", price: 200, icon: "🔥" },
+    { id: "border_gold", name: "Gold Profile Border", description: "A shiny gold border", price: 500, icon: "🖼️" },
+    { id: "border_diamond", name: "Diamond Profile Border", description: "A sparkling diamond border", price: 1000, icon: "💎" },
+  ];
+
+  const handleBuyShopItem = (item: typeof SHOP_ITEMS[0]) => {
+    if (state.coins < item.price) {
+      alert("Not enough coins!");
+      return;
+    }
+    dispatch({ type: "BUY_SHOP_ITEM", payload: { id: item.id, name: item.name, icon: item.icon, price: item.price } });
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#fbbf24", "#ffffff"],
+    });
+  };
 
   const handleAddItem = () => {
     if (!newItem.name) return;
@@ -146,6 +170,13 @@ export default function MarketPage() {
         </div>
         <div className="flex gap-2">
            <button
+            onClick={() => setShowShop(true)}
+            className="bg-purple-100 text-purple-600 p-3 rounded-xl shadow-md active:scale-95 transition-transform border-2 border-purple-200 flex items-center gap-2"
+          >
+            <Store className="w-6 h-6" />
+            <span className="font-black text-sm hidden sm:inline">Item Shop</span>
+          </button>
+           <button
             onClick={() => setSortOrder(prev => prev === "standard" ? "today" : "standard")}
             className={cn(
               "p-3 rounded-xl shadow-md active:scale-95 transition-all border-2 flex items-center gap-2 font-bold text-xs",
@@ -172,14 +203,24 @@ export default function MarketPage() {
       </header>
 
       {/* Bank Balance Notice */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex items-center gap-4">
-        <div className="bg-blue-100 p-3 rounded-xl text-blue-600">
-          <Wallet className="w-6 h-6" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex items-center gap-4">
+          <div className="bg-blue-100 p-3 rounded-xl text-blue-600">
+            <Wallet className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-black text-blue-400 uppercase tracking-widest">Bank Balance</p>
+            <p className="text-xl font-black text-blue-700">{state.userProfile?.currency} {state.walletBalance.toLocaleString()}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-xs font-black text-blue-400 uppercase tracking-widest">Bank Balance</p>
-          <p className="text-xl font-black text-blue-700">{state.userProfile?.currency} {state.walletBalance.toLocaleString()}</p>
-          <p className="text-[10px] font-bold text-blue-500 mt-0.5">Note: You must have funds in the bank to purchase items.</p>
+        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-4 flex items-center gap-4">
+          <div className="bg-yellow-100 p-3 rounded-xl text-yellow-600">
+            <Coins className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-black text-yellow-500 uppercase tracking-widest">Game Coins</p>
+            <p className="text-xl font-black text-yellow-700">{state.coins.toLocaleString()}</p>
+          </div>
         </div>
       </div>
 
@@ -370,7 +411,7 @@ export default function MarketPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500"
             >
               <div className="bg-amber-500 p-4 flex justify-between items-center">
                 <h3 className="text-white font-black text-xl">Add Item</h3>
@@ -483,7 +524,7 @@ export default function MarketPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500"
             >
               <div className="bg-amber-500 p-4 flex justify-between items-center">
                 <h3 className="text-white font-black text-xl flex items-center gap-2">
@@ -565,6 +606,77 @@ export default function MarketPage() {
         )}
       </AnimatePresence>
       
+      {/* Item Shop Modal */}
+      <AnimatePresence>
+        {showShop && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white text-gray-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border-4 border-purple-500"
+            >
+              <div className="bg-purple-500 p-4 flex justify-between items-center">
+                <h3 className="text-white font-black text-xl flex items-center gap-2">
+                  <Store className="w-6 h-6" /> Item Shop
+                </h3>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1 bg-white/20 px-3 py-1 rounded-full text-white font-black text-sm">
+                    <Coins className="w-4 h-4" /> {state.coins}
+                  </div>
+                  <button onClick={() => setShowShop(false)} className="text-white/80 hover:text-white">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                {SHOP_ITEMS.map((item) => (
+                  <div key={item.id} className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-200 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-2xl border border-gray-100">
+                        {item.icon}
+                      </div>
+                      <div>
+                        <h4 className="font-black text-gray-800">{item.name}</h4>
+                        <p className="text-xs font-bold text-gray-500">{item.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        onClick={() => handleBuyShopItem(item)}
+                        disabled={state.coins < item.price}
+                        className="bg-purple-500 text-white px-4 py-2 rounded-xl font-black text-sm shadow-md active:scale-95 transition-transform border-b-4 border-purple-700 active:border-b-0 active:translate-y-1 disabled:opacity-50 disabled:active:translate-y-0 disabled:active:border-b-4 flex items-center gap-1"
+                      >
+                        <Coins className="w-4 h-4" /> {item.price}
+                      </button>
+                      {state.coins < item.price && (
+                        <span className="text-[10px] font-bold text-red-500 uppercase">Not enough coins</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="p-4 bg-gray-50 border-t border-gray-100">
+                <h4 className="font-black text-gray-700 mb-2">Your Inventory</h4>
+                <div className="flex flex-wrap gap-2">
+                  {state.inventory.length > 0 ? (
+                    state.inventory.map((item, idx) => (
+                      <div key={idx} className="bg-white px-3 py-1 rounded-lg border border-gray-200 text-xs font-bold text-gray-600 shadow-sm">
+                        {item.name}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400 font-bold">Inventory is empty.</p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Buy Confirmation Modal */}
       <AnimatePresence>
         {itemToBuy && (
@@ -573,7 +685,7 @@ export default function MarketPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500 p-6 text-center space-y-6"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-500 p-6 text-center space-y-6"
             >
               <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
                 <ShoppingCart className="w-10 h-10" />

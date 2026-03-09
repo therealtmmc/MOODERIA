@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore, WorkoutLog, WalkLog } from "@/context/StoreContext";
-import { Play, MapPin, StopCircle, Timer, Flame, X, Calendar } from "lucide-react";
+import { Play, MapPin, StopCircle, Timer, Flame, X, Calendar, Sword, Shield, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -131,10 +131,21 @@ export default function HealthPage() {
     };
 
     dispatch({ type: "LOG_WORKOUT", payload: log });
+    
+    // Damage Boss
+    const damage = Math.max(5, validExercises.length * 5);
+    dispatch({ type: "DAMAGE_BOSS", payload: damage });
+    
+    if (state.boss.hp - damage <= 0) {
+      dispatch({ type: "LEVEL_UP_BOSS" });
+      setSuccessStats(`Defeated ${state.boss.name}! +50 Coins`);
+    } else {
+      setSuccessStats(`Dealt ${damage} DMG to ${state.boss.name}!`);
+    }
+
     setShowLogModal(false);
     setCustomExercises([{ name: "", sets: "", reps: "", weight: "" }]);
     setShowSuccess(true);
-    setSuccessStats("Strength +5");
     
     confetti({
       particleCount: 150,
@@ -269,9 +280,20 @@ export default function HealthPage() {
     };
     
     dispatch({ type: "LOG_WORKOUT", payload: log });
+    
+    // Damage Boss
+    const damage = Math.max(10, Math.floor(totalDuration / 10) + Math.floor(totalReps / 2));
+    dispatch({ type: "DAMAGE_BOSS", payload: damage });
+    
+    if (state.boss.hp - damage <= 0) {
+      dispatch({ type: "LEVEL_UP_BOSS" });
+      setSuccessStats(`Defeated ${state.boss.name}! +50 Coins`);
+    } else {
+      setSuccessStats(`Dealt ${damage} DMG to ${state.boss.name}!`);
+    }
+
     stopWorkout();
     setShowSuccess(true);
-    setSuccessStats("Strength +5");
     
     confetti({
       particleCount: 150,
@@ -295,11 +317,22 @@ export default function HealthPage() {
         duration: walkTime,
       };
       dispatch({ type: "LOG_WALK", payload: log });
+      
+      // Damage Boss
+      const damage = Math.max(2, Math.floor(walkDistance / 100)); // 1 dmg per 100m
+      dispatch({ type: "DAMAGE_BOSS", payload: damage });
+      
+      if (state.boss.hp - damage <= 0) {
+        dispatch({ type: "LEVEL_UP_BOSS" });
+        setSuccessStats(`Defeated ${state.boss.name}! +50 Coins`);
+      } else {
+        setSuccessStats(`Dealt ${damage} DMG to ${state.boss.name}!`);
+      }
+
       setIsWalking(false);
       setWalkTime(0);
       setWalkDistance(0);
       setShowSuccess(true);
-      setSuccessStats("Agility +2");
       confetti({
         particleCount: 100,
         spread: 70,
@@ -490,7 +523,12 @@ export default function HealthPage() {
       />
 
       <header className="flex justify-between items-center">
-        <h1 className="text-3xl font-black text-[#e21b3c]">General Hospital</h1>
+        <div>
+          <h1 className="text-3xl font-black text-[#e21b3c] flex items-center gap-2">
+            <Sword className="w-8 h-8" /> The Arena
+          </h1>
+          <p className="text-gray-500 font-bold">Defeat monsters by working out!</p>
+        </div>
         {workoutStreak > 0 && (
           <div className="flex items-center gap-1 bg-orange-100 px-3 py-1 rounded-full border-2 border-orange-200">
             <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-pulse" />
@@ -498,6 +536,45 @@ export default function HealthPage() {
           </div>
         )}
       </header>
+
+      {/* Boss Battle UI */}
+      <div className="bg-gray-900 rounded-3xl p-6 shadow-2xl relative overflow-hidden border-4 border-gray-800">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+          <div className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-red-500/30">
+            Level {state.boss.level} Boss
+          </div>
+          
+          <h2 className="text-3xl font-black text-white drop-shadow-md">{state.boss.name}</h2>
+          
+          <div className="w-32 h-32 bg-gray-800 rounded-full flex items-center justify-center border-4 border-gray-700 shadow-inner relative">
+             <motion.div 
+               animate={{ y: [0, -10, 0] }} 
+               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+               className="text-6xl drop-shadow-[0_0_15px_rgba(226,27,60,0.5)]"
+             >
+               👾
+             </motion.div>
+          </div>
+
+          <div className="w-full max-w-xs space-y-2">
+            <div className="flex justify-between text-xs font-bold text-gray-400 uppercase">
+              <span>HP</span>
+              <span>{state.boss.hp} / {state.boss.maxHp}</span>
+            </div>
+            <div className="h-4 bg-gray-800 rounded-full overflow-hidden border-2 border-gray-700">
+              <motion.div 
+                className="h-full bg-gradient-to-r from-red-600 to-red-400"
+                initial={{ width: "100%" }}
+                animate={{ width: `${(state.boss.hp / state.boss.maxHp) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+          
+          <p className="text-gray-400 text-sm font-bold">Complete workouts to deal damage!</p>
+        </div>
+      </div>
 
       {/* Streak Visualizer */}
       {workoutStreak > 0 && (
@@ -785,7 +862,7 @@ export default function HealthPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[85vh] flex flex-col"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[85vh] flex flex-col"
             >
               <div className="bg-[#e21b3c] p-4 flex justify-between items-center shrink-0">
                 <h3 className="text-white font-black text-xl">Build Routine</h3>
@@ -949,7 +1026,7 @@ export default function HealthPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[85vh] flex flex-col"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[85vh] flex flex-col"
             >
               <div className="bg-[#e21b3c] p-4 flex justify-between items-center shrink-0">
                 <h3 className="text-white font-black text-xl">Log Workout</h3>
@@ -1043,7 +1120,7 @@ export default function HealthPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[80vh] overflow-y-auto"
+              className="bg-white text-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#e21b3c] max-h-[80vh] overflow-y-auto"
             >
               <div className="bg-[#e21b3c] p-4 flex justify-between items-center sticky top-0 z-10">
                 <h3 className="text-white font-black text-xl">Select Program</h3>
