@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { decodeShareData, SharePayload } from '@/lib/shareUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '@/context/StoreContext';
-import { Mail, Dumbbell, Calendar, Save, X, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Mail, Dumbbell, Calendar, Save, X, AlertTriangle, ArrowRight, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ShareReceiverPage() {
@@ -58,6 +58,20 @@ export default function ShareReceiverPage() {
         dispatch({ type: 'ADD_EVENT', payload: { ...payload.data, id: crypto.randomUUID() } });
         navigate('/events');
         break;
+      case 'market':
+        // payload.data is { day: string, items: MarketItem[] }
+        const total = payload.data.items.reduce((acc: number, item: any) => acc + (item.price || 0), 0);
+        if (state.walletBalance >= total) {
+          payload.data.items.forEach((item: any) => {
+            const newId = crypto.randomUUID();
+            dispatch({ type: 'ADD_MARKET_ITEM', payload: { ...item, id: newId } });
+            dispatch({ type: 'BUY_MARKET_ITEM', payload: newId });
+          });
+          navigate('/market');
+        } else {
+          alert("Insufficient funds in bank! Please deposit money first in City Bank.");
+        }
+        break;
     }
   };
 
@@ -101,6 +115,7 @@ export default function ShareReceiverPage() {
                 {payload.type === 'diary' && <Mail className="w-12 h-12 text-purple-600" />}
                 {payload.type === 'workout' && <Dumbbell className="w-12 h-12 text-red-500" />}
                 {payload.type === 'event' && <Calendar className="w-12 h-12 text-blue-500" />}
+                {payload.type === 'market' && <ShoppingCart className="w-12 h-12 text-amber-500" />}
               </div>
             </button>
             <h2 className="text-white font-black text-2xl mt-6 uppercase tracking-widest drop-shadow-md">
@@ -144,6 +159,17 @@ export default function ShareReceiverPage() {
                 </span>
               </motion.div>
             )}
+            {payload.type === 'market' && (
+              <motion.div
+                animate={{ y: [-50, 0], scale: [0.8, 1] }}
+                transition={{ duration: 1.5, ease: "bounce" }}
+                className="w-48 h-64 bg-white rounded-xl shadow-2xl border-t-8 border-t-amber-500 flex flex-col items-center justify-start pt-4"
+              >
+                <div className="w-32 h-4 bg-gray-200 rounded-full mb-4"></div>
+                <div className="w-24 h-4 bg-gray-200 rounded-full mb-4"></div>
+                <div className="w-28 h-4 bg-gray-200 rounded-full"></div>
+              </motion.div>
+            )}
           </motion.div>
         )}
 
@@ -158,13 +184,15 @@ export default function ShareReceiverPage() {
             <div className={cn(
               "p-6 text-white flex justify-between items-center",
               payload.type === 'diary' ? 'bg-purple-600' :
-              payload.type === 'workout' ? 'bg-red-500' : 'bg-blue-500'
+              payload.type === 'workout' ? 'bg-red-500' :
+              payload.type === 'market' ? 'bg-amber-500' : 'bg-blue-500'
             )}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
                   {payload.type === 'diary' && <Mail className="w-5 h-5" />}
                   {payload.type === 'workout' && <Dumbbell className="w-5 h-5" />}
                   {payload.type === 'event' && <Calendar className="w-5 h-5" />}
+                  {payload.type === 'market' && <ShoppingCart className="w-5 h-5" />}
                 </div>
                 <h2 className="font-black text-xl uppercase tracking-tight">Shared {payload.type}</h2>
               </div>
@@ -243,20 +271,71 @@ export default function ShareReceiverPage() {
                   </div>
                 </div>
               )}
+
+              {payload.type === 'market' && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-3xl font-black text-gray-900 uppercase">{payload.data.day}'s List</h3>
+                    <p className="text-gray-500 font-bold mt-1 uppercase tracking-widest">{payload.data.items.length} items</p>
+                  </div>
+                  <div className="space-y-3">
+                    {payload.data.items?.map((item: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center font-black text-gray-400 shadow-sm">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <p className="font-black text-gray-800 uppercase">{item.name}</p>
+                            <p className="text-xs font-bold text-gray-500 uppercase">
+                              {item.amount} {item.unit}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-black text-gray-900">{state.userProfile?.currency} {item.price || 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-4 border-t-4 border-gray-200 flex justify-between items-center">
+                    <span className="font-black text-xl text-gray-800 uppercase tracking-widest">Total</span>
+                    <span className="font-black text-2xl text-amber-600">
+                      {state.userProfile?.currency} {payload.data.items.reduce((acc: number, item: any) => acc + (item.price || 0), 0)}
+                    </span>
+                  </div>
+                  {state.walletBalance < payload.data.items.reduce((acc: number, item: any) => acc + (item.price || 0), 0) && (
+                    <div className="bg-red-50 border border-red-200 p-3 rounded-xl flex items-center gap-2 text-red-600 text-xs font-bold text-left mt-4">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Insufficient funds in bank! Please deposit money first in City Bank.</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Footer Actions */}
             <div className="p-6 bg-gray-50 border-t-2 border-gray-100">
               <button
                 onClick={handleSave}
+                disabled={payload.type === 'market' && state.walletBalance < payload.data.items.reduce((acc: number, item: any) => acc + (item.price || 0), 0)}
                 className={cn(
-                  "w-full py-4 rounded-2xl font-black text-white uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform",
-                  payload.type === 'diary' ? 'bg-purple-600 hover:bg-purple-700' :
-                  payload.type === 'workout' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+                  "w-full py-4 rounded-2xl font-black text-white uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:active:scale-100",
+                  payload.type === 'diary' ? 'bg-purple-600 hover:bg-purple-700 border-b-4 border-purple-800 active:border-b-0 active:translate-y-1' :
+                  payload.type === 'workout' ? 'bg-red-500 hover:bg-red-600 border-b-4 border-red-700 active:border-b-0 active:translate-y-1' :
+                  payload.type === 'market' ? 'bg-amber-500 hover:bg-amber-600 border-b-4 border-amber-700 active:border-b-0 active:translate-y-1' :
+                  'bg-blue-500 hover:bg-blue-600 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1'
                 )}
               >
-                <Save className="w-5 h-5" />
-                Save to My City
+                {payload.type === 'market' ? (
+                  <>
+                    <ShoppingCart className="w-5 h-5 fill-current" />
+                    Purchase All
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Save to My City
+                  </>
+                )}
               </button>
             </div>
           </motion.div>

@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { useStore, MarketItem } from "@/context/StoreContext";
-import { Plus, Trash2, Check, X, ShoppingCart, Megaphone, Crown, Scale, Droplets, Box, ArrowRightLeft, SortAsc, CalendarDays, Wallet, AlertTriangle, Store, Coins } from "lucide-react";
+import { Plus, Trash2, Check, X, ShoppingCart, Megaphone, Crown, Scale, Droplets, Box, ArrowRightLeft, SortAsc, CalendarDays, Wallet, AlertTriangle, Store, Coins, Share2, QrCode } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
+import { ShareQRModal } from "@/components/ShareQRModal";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -44,6 +45,8 @@ export default function MarketPage() {
   const [sortOrder, setSortOrder] = useState<"standard" | "today">("standard");
   const [itemToBuy, setItemToBuy] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<string>(DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]);
+  const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   
   const [newItem, setNewItem] = useState({
     name: "",
@@ -302,58 +305,76 @@ export default function MarketPage() {
                   )}
                 </h2>
                 
-                <button 
-                  onClick={() => dispatch({ type: "SET_MARKET_DECREE_DAY", payload: day })}
-                  className={cn(
-                    "flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm transition-all",
-                    isDecree ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-400 hover:bg-amber-100 hover:text-amber-600"
-                  )}
-                >
-                  <Megaphone className="w-3 h-3" /> {isDecree ? "Decree Active" : "Set as Decree"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShareData({ isOpen: true, data: { day, items }, title: `${day}'s Market List` })}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-md transition-all bg-blue-500 text-white hover:bg-blue-600 active:scale-95 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
+                    title="Share List"
+                  >
+                    <QrCode className="w-4 h-4" /> Share List
+                  </button>
+                  <button 
+                    onClick={() => dispatch({ type: "SET_MARKET_DECREE_DAY", payload: day })}
+                    className={cn(
+                      "flex items-center gap-1 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter shadow-sm transition-all border-b-2 active:border-b-0 active:translate-y-0.5",
+                      isDecree ? "bg-amber-500 text-white border-amber-700" : "bg-gray-100 text-gray-500 border-gray-300 hover:bg-amber-100 hover:text-amber-600 hover:border-amber-300"
+                    )}
+                  >
+                    <Megaphone className="w-3 h-3" /> {isDecree ? "Decree Active" : "Set Decree"}
+                  </button>
+                </div>
               </div>
 
               {items.length > 0 ? (
-                <div className="grid gap-4">
-                  {items.map(item => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      className={cn(
-                        "bg-white p-4 rounded-2xl shadow-md border-2 flex justify-between items-center transition-colors",
-                        isDecree ? "border-amber-200" : "border-amber-50"
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center",
-                          item.type === "liquid" ? "bg-blue-100 text-blue-600" : "bg-amber-100 text-amber-600"
-                        )}>
-                          {item.type === "liquid" ? <Droplets className="w-5 h-5" /> : <Box className="w-5 h-5" />}
+                <div className="space-y-4">
+                  <div className="grid gap-4">
+                    {items.map(item => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        className={cn(
+                          "bg-white p-4 rounded-2xl shadow-md border-2 flex justify-between items-center transition-colors",
+                          isDecree ? "border-amber-200" : "border-amber-50"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center",
+                            item.type === "liquid" ? "bg-blue-100 text-blue-600" : "bg-amber-100 text-amber-600"
+                          )}>
+                            {item.type === "liquid" ? <Droplets className="w-5 h-5" /> : <Box className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <h3 className="font-black text-lg text-gray-800">{item.name}</h3>
+                            <p className="text-xs font-bold text-gray-400 uppercase">
+                              {item.amount} {item.unit} • {state.userProfile?.currency} {item.price || 0}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-black text-lg text-gray-800">{item.name}</h3>
-                          <p className="text-xs font-bold text-gray-400 uppercase">
-                            {item.amount} {item.unit} • {state.userProfile?.currency} {item.price || 0}
-                          </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setItemToBuy(item.id)}
+                            className="bg-amber-500 text-white px-4 py-2 rounded-xl font-black text-sm shadow-md active:scale-95 transition-transform border-b-4 border-amber-700 active:border-b-0 active:translate-y-1"
+                          >
+                            BUY
+                          </button>
+                          <button
+                            onClick={() => dispatch({ type: "DELETE_MARKET_ITEM", payload: item.id })}
+                            className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setItemToBuy(item.id)}
-                          className="bg-amber-500 text-white px-4 py-2 rounded-xl font-black text-sm shadow-md active:scale-95 transition-transform border-b-4 border-amber-700 active:border-b-0 active:translate-y-1"
-                        >
-                          BUY
-                        </button>
-                        <button
-                          onClick={() => dispatch({ type: "DELETE_MARKET_ITEM", payload: item.id })}
-                          className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setIsCheckoutModalOpen(true)}
+                    className="w-full bg-amber-500 text-white p-4 rounded-2xl shadow-lg border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 transition-all flex items-center justify-between"
+                  >
+                    <span className="font-black text-lg">Checkout Day</span>
+                    <ShoppingCart className="w-6 h-6 fill-current" />
+                  </button>
                 </div>
               ) : (
                 <div className="text-center py-12 opacity-50 border-2 border-dashed border-gray-200 rounded-3xl">
@@ -727,6 +748,109 @@ export default function MarketPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Checkout Modal */}
+      <AnimatePresence>
+        {isCheckoutModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 bg-amber-500 text-white flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-xl uppercase tracking-tight">{selectedDay} Checkout</h2>
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-80">
+                      {state.marketItems.filter(item => item.day === selectedDay && !item.completed).length} Items
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsCheckoutModalOpen(false)} 
+                  className="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                <div className="space-y-3">
+                  {state.marketItems.filter(item => item.day === selectedDay && !item.completed).map((item) => (
+                    <div key={item.id} className="flex justify-between items-center border-b-2 border-gray-100 pb-2">
+                      <span className="font-bold text-gray-700">{item.name}</span>
+                      <span className="font-black text-gray-900">{state.userProfile?.currency} {item.price || 0}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="pt-4 border-t-4 border-gray-200 flex justify-between items-center">
+                  <span className="font-black text-xl text-gray-800 uppercase tracking-widest">Total</span>
+                  <span className="font-black text-2xl text-amber-600">
+                    {state.userProfile?.currency} {state.marketItems.filter(item => item.day === selectedDay && !item.completed).reduce((acc, item) => acc + (item.price || 0), 0)}
+                  </span>
+                </div>
+
+                {state.walletBalance < state.marketItems.filter(item => item.day === selectedDay && !item.completed).reduce((acc, item) => acc + (item.price || 0), 0) && (
+                  <div className="bg-red-50 border border-red-200 p-3 rounded-xl flex items-center gap-2 text-red-600 text-xs font-bold text-left mt-4">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>Insufficient funds in bank! Please deposit money first in City Bank.</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 bg-gray-50 border-t-2 border-gray-100 flex gap-3">
+                <button
+                  onClick={() => {
+                    const itemsToBuy = state.marketItems.filter(item => item.day === selectedDay && !item.completed);
+                    const total = itemsToBuy.reduce((acc, item) => acc + (item.price || 0), 0);
+                    if (state.walletBalance >= total) {
+                      itemsToBuy.forEach(item => {
+                        dispatch({ type: "BUY_MARKET_ITEM", payload: item.id });
+                      });
+                      setIsCheckoutModalOpen(false);
+                      setSuccessType("market");
+                      setTimeout(() => setSuccessType(null), 3000);
+                    }
+                  }}
+                  disabled={state.walletBalance < state.marketItems.filter(item => item.day === selectedDay && !item.completed).reduce((acc, item) => acc + (item.price || 0), 0)}
+                  className="flex-1 py-4 bg-amber-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-amber-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-amber-700 active:border-b-0 active:translate-y-1 disabled:opacity-50 disabled:active:translate-y-0 disabled:active:border-b-4"
+                >
+                  <ShoppingCart className="w-5 h-5 fill-current" />
+                  Purchase All
+                </button>
+                <button
+                  onClick={() => {
+                    setShareData({ 
+                      isOpen: true, 
+                      data: { day: selectedDay, items: state.marketItems.filter(item => item.day === selectedDay && !item.completed) }, 
+                      title: `${selectedDay}'s Market List` 
+                    });
+                    setIsCheckoutModalOpen(false);
+                  }}
+                  className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
+                >
+                  <QrCode className="w-5 h-5" />
+                  Share
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <ShareQRModal
+        isOpen={shareData.isOpen}
+        onClose={() => setShareData({ ...shareData, isOpen: false })}
+        type="market"
+        data={shareData.data}
+        title={shareData.title}
+      />
     </div>
   );
 }

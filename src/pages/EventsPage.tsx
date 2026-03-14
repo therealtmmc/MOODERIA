@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useStore, Event } from "@/context/StoreContext";
-import { Plus, Trash2, X, Calendar as CalendarIcon, Clock, List, Grid, AlertCircle, Briefcase, User, Plane, Layers, Share2 } from "lucide-react";
+import { Plus, Trash2, X, Calendar as CalendarIcon, Clock, List, Grid, AlertCircle, Briefcase, User, Plane, Layers, Share2, QrCode } from "lucide-react";
 import { Calendar } from "@/components/Calendar";
 import { motion, AnimatePresence } from "motion/react";
 import { format, parseISO, isAfter, startOfDay, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
@@ -34,6 +34,7 @@ export default function EventsPage() {
   // Countdown Logic
   const [timeLeft, setTimeLeft] = useState<{days: number, hours: number, mins: number} | null>(null);
   const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   
   const upcomingEvents = state.events
     .filter((e) => isAfter(parseISO(e.date), startOfDay(new Date())) || e.date === format(new Date(), "yyyy-MM-dd"))
@@ -216,8 +217,9 @@ export default function EventsPage() {
                 layout
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
+                onClick={() => setSelectedEvent(event)}
                 className={cn(
-                  "bg-white p-4 rounded-2xl shadow-md border-l-8 flex justify-between items-center",
+                  "bg-white p-4 rounded-2xl shadow-md border-l-8 flex justify-between items-center cursor-pointer hover:shadow-lg transition-shadow",
                   typeStyle.color.split(" ").pop() // Get border color class
                 )}
               >
@@ -238,13 +240,13 @@ export default function EventsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setShareData({ isOpen: true, data: event, title: `Event: ${event.title}` })}
                     className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     title="Share Event"
                   >
-                    <Share2 className="w-5 h-5" />
+                    <QrCode className="w-5 h-5" />
                   </button>
                   <a
                     href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.date.replace(/-/g, "")}T${event.time.replace(/:/g, "")}00/${event.date.replace(/-/g, "")}T${event.time.replace(/:/g, "")}00&details=${encodeURIComponent(event.description || "")}`}
@@ -408,6 +410,95 @@ export default function EventsPage() {
           </div>
         )}
       </AnimatePresence>
+      {/* Selected Event Modal */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className={cn(
+                "p-6 text-white flex justify-between items-center",
+                getEventTypeStyle(selectedEvent.type).color.split(" ").slice(0, 2).join(" ").replace('text-', 'bg-').replace('bg-', 'bg-').replace('100', '500').replace('600', '500') // Quick hack to get a solid color from the style
+              )}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                    {(() => {
+                      const Icon = getEventTypeStyle(selectedEvent.type).icon;
+                      return <Icon className="w-5 h-5" />;
+                    })()}
+                  </div>
+                  <div>
+                    <h2 className="font-black text-xl uppercase tracking-tight">{selectedEvent.title}</h2>
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-80">
+                      {selectedEvent.type}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedEvent(null)} 
+                  className="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                  <div className="flex-1 text-center border-r-2 border-gray-200">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Date</p>
+                    <p className="font-black text-gray-800 text-lg">{format(parseISO(selectedEvent.date), "MMM d, yyyy")}</p>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Time</p>
+                    <p className="font-black text-gray-800 text-lg">{selectedEvent.time}</p>
+                  </div>
+                </div>
+
+                {selectedEvent.description && (
+                  <div className="space-y-2">
+                    <h3 className="font-black text-gray-400 uppercase text-xs tracking-widest">Description</h3>
+                    <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                      <p className="text-gray-700 font-medium leading-relaxed whitespace-pre-wrap">
+                        {selectedEvent.description}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 bg-gray-50 border-t-2 border-gray-100 flex gap-3">
+                <button
+                  onClick={() => {
+                    if(confirm("Delete this event?")) {
+                      dispatch({ type: "DELETE_EVENT", payload: selectedEvent.id });
+                      setSelectedEvent(null);
+                    }
+                  }}
+                  className="flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-black uppercase tracking-widest hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  Delete
+                </button>
+                <button
+                  onClick={() => {
+                    setShareData({ isOpen: true, data: selectedEvent, title: `Event: ${selectedEvent.title}` });
+                    setSelectedEvent(null);
+                  }}
+                  className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
+                >
+                  <QrCode className="w-5 h-5" />
+                  Share
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Share Modal */}
       <ShareQRModal
         isOpen={shareData.isOpen}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format, subDays, isSameDay, parseISO, isAfter, addMonths, addYears, addDays } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library, Share2 } from "lucide-react";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library, Share2, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
@@ -55,6 +55,7 @@ export default function DiaryPage() {
   const [futureLetterText, setFutureLetterText] = useState("");
   const [futureLetterDate, setFutureLetterDate] = useState(format(addMonths(new Date(), 6), "yyyy-MM-dd"));
   const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
+  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -650,6 +651,7 @@ export default function DiaryPage() {
                       key={entry.id} 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
+                      onClick={() => !isLocked && setSelectedEntry(entry)}
                       className={cn(
                         "relative aspect-[3/4] rounded-r-2xl rounded-l-md shadow-lg border-l-8 flex flex-col justify-between p-4 overflow-hidden group cursor-pointer",
                         MOOD_COLORS[entry.mood] || "bg-gray-200 border-gray-400",
@@ -699,7 +701,7 @@ export default function DiaryPage() {
                           }}
                           className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
                         >
-                          <Share2 className="w-3 h-3" />
+                          <QrCode className="w-3 h-3" />
                         </button>
                         <button
                           onClick={(e) => {
@@ -750,7 +752,8 @@ export default function DiaryPage() {
                         key={entry.id}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100"
+                        onClick={() => !isLocked && setSelectedEntry(entry)}
+                        className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100 cursor-pointer group"
                       >
                         {isLocked ? (
                           <div className="absolute inset-0 bg-gray-200 flex items-center justify-center z-10">
@@ -789,7 +792,7 @@ export default function DiaryPage() {
                             }}
                             className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
                           >
-                            <Share2 className="w-3 h-3" />
+                            <QrCode className="w-3 h-3" />
                           </button>
                           <button
                             onClick={(e) => {
@@ -819,6 +822,91 @@ export default function DiaryPage() {
           </div>
         )}
       </div>
+
+      {/* Maximized Entry Modal */}
+      <AnimatePresence>
+        {selectedEntry && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className={cn(
+                "p-6 text-white flex justify-between items-center",
+                MOOD_COLORS[selectedEntry.mood] || "bg-gray-400"
+              )}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-xl uppercase tracking-tight">{format(new Date(selectedEntry.date), "MMM d, yyyy")}</h2>
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-80">{selectedEntry.mood}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedEntry(null)} 
+                  className="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                {selectedEntry.note && (
+                  <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                    <p className="text-gray-700 font-medium leading-relaxed whitespace-pre-wrap text-lg">
+                      {selectedEntry.note}
+                    </p>
+                  </div>
+                )}
+
+                {selectedEntry.image && (
+                  <img src={selectedEntry.image} alt="Diary" className="w-full rounded-2xl shadow-md" />
+                )}
+
+                {selectedEntry.video && (
+                  <video src={selectedEntry.video} controls className="w-full rounded-2xl shadow-md" />
+                )}
+
+                {selectedEntry.audio && (
+                  <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                    <audio src={selectedEntry.audio} controls className="w-full" />
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 bg-gray-50 border-t-2 border-gray-100 flex gap-3">
+                <button
+                  onClick={() => {
+                    if(confirm("Delete this memory?")) {
+                      dispatch({ type: "DELETE_DIARY", payload: selectedEntry.id });
+                      setSelectedEntry(null);
+                    }
+                  }}
+                  className="flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-black uppercase tracking-widest hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  Delete
+                </button>
+                <button
+                  onClick={() => {
+                    setShareData({ isOpen: true, data: selectedEntry, title: `Diary Entry: ${format(new Date(selectedEntry.date), "MMM d, yyyy")}` });
+                    setSelectedEntry(null);
+                  }}
+                  className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
+                >
+                  <QrCode className="w-5 h-5" />
+                  Share
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Share Modal */}
       <ShareQRModal
         isOpen={shareData.isOpen}

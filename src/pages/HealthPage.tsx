@@ -8,7 +8,7 @@ import confetti from "canvas-confetti";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 
 import { ShareQRModal } from "@/components/ShareQRModal";
-import { Share2, Edit2, Trash2 } from "lucide-react";
+import { Share2, Edit2, Trash2, QrCode } from "lucide-react";
 
 const WORKOUT_PROGRAMS = [
   {
@@ -96,6 +96,7 @@ export default function HealthPage() {
     { name: "", sets: "", reps: "", weight: "" }
   ]);
   const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
+  const [selectedRoutine, setSelectedRoutine] = useState<any | null>(null);
 
   const handleAddExerciseRow = () => {
     setCustomExercises([...customExercises, { name: "", sets: "", reps: "", weight: "" }]);
@@ -681,7 +682,11 @@ export default function HealthPage() {
           <div className="space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase ml-2">Your Saved Routines</p>
             {customRoutines.map((routine) => (
-              <div key={routine.id} className="bg-white p-4 rounded-2xl shadow-md border-2 border-gray-100 relative overflow-hidden group">
+              <div 
+                key={routine.id} 
+                onClick={() => setSelectedRoutine(routine)}
+                className="bg-white p-4 rounded-2xl shadow-md border-2 border-gray-100 relative overflow-hidden group cursor-pointer hover:border-[#e21b3c] transition-colors"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-black text-lg text-gray-800">{routine.name}</h3>
@@ -694,12 +699,12 @@ export default function HealthPage() {
                       {routine.difficulty || "Medium"}
                     </span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setShareData({ isOpen: true, data: routine, title: `Workout: ${routine.name}` })}
                       className="p-2 bg-blue-50 text-blue-500 rounded-xl hover:bg-blue-100 transition-colors"
                     >
-                      <Share2 className="w-4 h-4" />
+                      <QrCode className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => openBuilderForEdit(routine)}
@@ -721,7 +726,10 @@ export default function HealthPage() {
                     {routine.steps.length} Steps • {Math.round(routine.steps.reduce((acc, s) => acc + (s.duration || 0), 0) / 60)} min
                   </p>
                   <button
-                    onClick={() => startCustomRoutine(routine.steps)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startCustomRoutine(routine.steps);
+                    }}
                     disabled={isActive || isWalking}
                     className="bg-[#e21b3c] text-white px-4 py-2 rounded-xl font-black text-sm shadow-md active:scale-95 transition-transform flex items-center gap-2 disabled:opacity-50"
                   >
@@ -1170,6 +1178,83 @@ export default function HealthPage() {
           </div>
         )}
       </AnimatePresence>
+      {/* Selected Routine Modal */}
+      <AnimatePresence>
+        {selectedRoutine && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 bg-[#e21b3c] text-white flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-xl uppercase tracking-tight">{selectedRoutine.name}</h2>
+                    <p className="text-xs font-bold uppercase tracking-widest opacity-80">
+                      {selectedRoutine.difficulty || "Medium"} • {Math.round(selectedRoutine.steps.reduce((acc: number, s: any) => acc + (s.duration || 0), 0) / 60)} min
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedRoutine(null)} 
+                  className="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                <h3 className="font-black text-gray-400 uppercase text-xs tracking-widest">Exercises</h3>
+                <div className="space-y-3">
+                  {selectedRoutine.steps.map((step: any, index: number) => (
+                    <div key={index} className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 flex items-center gap-4">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-black text-gray-500 text-sm shrink-0">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-black text-gray-800">{step.name}</h4>
+                        <p className="text-xs font-bold text-gray-500">
+                          {step.duration ? `${step.duration}s` : `${step.reps} reps`}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-6 bg-gray-50 border-t-2 border-gray-100 flex gap-3">
+                <button
+                  onClick={() => {
+                    startCustomRoutine(selectedRoutine.steps);
+                    setSelectedRoutine(null);
+                  }}
+                  disabled={isActive || isWalking}
+                  className="flex-1 py-4 bg-[#e21b3c] text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-[#c01733] active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-[#9e132a] active:border-b-0 active:translate-y-1 disabled:opacity-50"
+                >
+                  <Play className="w-5 h-5 fill-current" />
+                  Start
+                </button>
+                <button
+                  onClick={() => {
+                    setShareData({ isOpen: true, data: selectedRoutine, title: `Workout: ${selectedRoutine.name}` });
+                    setSelectedRoutine(null);
+                  }}
+                  className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
+                >
+                  <QrCode className="w-5 h-5" />
+                  Share
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Share Modal */}
       <ShareQRModal
         isOpen={shareData.isOpen}
