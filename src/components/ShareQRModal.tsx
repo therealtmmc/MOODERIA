@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import html2canvas from 'html2canvas';
+import { QRCodeCanvas } from 'qrcode.react';
+import { toPng } from 'html-to-image';
 import { X, Download, Share2 } from 'lucide-react';
 import { generateShareUrl, ShareType } from '@/lib/shareUtils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -19,14 +19,14 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
   const handleDownload = async () => {
     if (!qrRef.current) return;
     try {
-      const canvas = await html2canvas(qrRef.current, {
-        scale: 2, // Higher resolution
-        backgroundColor: null,
+      const dataUrl = await toPng(qrRef.current, {
+        quality: 1,
+        pixelRatio: 3, // High resolution
+        skipFonts: false,
       });
-      const url = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `Mooderia-${type}-${title.replace(/\s+/g, '-')}.png`;
-      link.href = url;
+      link.href = dataUrl;
       link.click();
     } catch (error) {
       console.error('Failed to download QR code', error);
@@ -64,22 +64,28 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
             <div 
               ref={qrRef} 
               className="bg-gradient-to-br from-purple-500 to-indigo-600 p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #4338ca 100%)',
+              }}
             >
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
               
-              <div className="bg-white p-4 rounded-2xl shadow-lg relative z-10">
-                <QRCodeSVG 
+              <div className="bg-white p-4 rounded-2xl shadow-lg relative z-10 mb-4">
+                <QRCodeCanvas 
                   value={shareUrl} 
-                  size={200} 
+                  size={180} 
                   level="H"
                   includeMargin={false}
-                  fgColor="#46178f"
+                  fgColor="#4338ca"
                 />
               </div>
               
-              <div className="mt-6 text-center relative z-10">
-                <h3 className="text-white font-black text-xl leading-tight drop-shadow-md">{title}</h3>
-                <p className="text-purple-200 text-xs font-bold uppercase tracking-widest mt-1">Mooderia Republic</p>
+              <div className="mt-2 text-center relative z-10 w-full">
+                <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-2 backdrop-blur-sm">
+                  {type}
+                </div>
+                <h3 className="text-white font-black text-xl leading-tight drop-shadow-md break-words line-clamp-2">{title}</h3>
+                <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest mt-2">Mooderia Republic</p>
               </div>
             </div>
 
