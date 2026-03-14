@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore, WorkoutLog, WalkLog } from "@/context/StoreContext";
-import { Play, MapPin, StopCircle, Timer, Flame, X, Calendar, Sword, Shield, Heart } from "lucide-react";
+import { Play, MapPin, StopCircle, Timer, Flame, X, Calendar, Sword, Shield, Heart, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -681,9 +681,9 @@ export default function HealthPage() {
         {customRoutines.length > 0 && (
           <div className="space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase ml-2">Your Saved Routines</p>
-            {customRoutines.map((routine) => (
+            {customRoutines.map((routine, index) => (
               <div 
-                key={routine.id} 
+                key={routine.id ? `${routine.id}-${index}` : index} 
                 onClick={() => setSelectedRoutine(routine)}
                 className="bg-white p-4 rounded-2xl shadow-md border-2 border-gray-100 relative overflow-hidden group cursor-pointer hover:border-[#e21b3c] transition-colors"
               >

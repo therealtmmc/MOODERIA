@@ -1,6 +1,6 @@
 import LZString from 'lz-string';
 
-export type ShareType = 'diary' | 'workout' | 'event' | 'market';
+export type ShareType = 'diary' | 'workout' | 'event' | 'market' | 'passport';
 
 export interface SharePayload {
   type: ShareType;

@@ -643,12 +643,12 @@ export default function DiaryPage() {
                 .filter(m => m.note || m.image || m.video || m.audio)
                 .filter(m => filterMode === "all" || m.isHighlight)
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .map((entry) => {
+                .map((entry, index) => {
                   const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
                   
                   return (
                     <motion.div 
-                      key={entry.id} 
+                      key={entry.id ? `${entry.id}-${index}` : index} 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       onClick={() => !isLocked && setSelectedEntry(entry)}
@@ -745,11 +745,11 @@ export default function DiaryPage() {
                   <div className="h-px bg-gray-200 flex-1" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  {(entries as typeof state.moods).map((entry) => {
+                  {(entries as typeof state.moods).map((entry, index) => {
                      const isLocked = entry.lockDate && isAfter(parseISO(entry.lockDate), new Date());
                      return (
                       <motion.div
-                        key={entry.id}
+                        key={entry.id ? `${entry.id}-${index}` : index}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         onClick={() => !isLocked && setSelectedEntry(entry)}

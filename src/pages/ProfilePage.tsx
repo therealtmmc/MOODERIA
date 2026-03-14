@@ -1,8 +1,10 @@
 import { useStore } from "@/context/StoreContext";
-import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown, DollarSign } from "lucide-react";
+import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown, DollarSign, Database } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
+import { useState } from "react";
+import { DataTransferModal } from "@/components/DataTransferModal";
 
 const RANKS = [
   { id: 0, name: "Novice Dreamer", icon: "🌱", color: "text-green-500", bg: "bg-green-100", border: "border-green-500", threshold: 0 },
@@ -21,6 +23,7 @@ const RANKS = [
 export default function ProfilePage() {
   const { state } = useStore();
   const { userProfile, currentRank, streak } = state;
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   if (!userProfile) return null;
 
@@ -251,6 +254,22 @@ export default function ProfilePage() {
            </div>
         </div>
       </div>
+
+      {/* Transfer Data Button */}
+      <div className="pt-4">
+        <button
+          onClick={() => setIsTransferModalOpen(true)}
+          className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-indigo-700 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1"
+        >
+          <Database className="w-5 h-5" />
+          Account Passport
+        </button>
+      </div>
+
+      <DataTransferModal 
+        isOpen={isTransferModalOpen} 
+        onClose={() => setIsTransferModalOpen(false)} 
+      />
     </div>
   );
 }

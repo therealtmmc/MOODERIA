@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { decodeShareData, SharePayload } from '@/lib/shareUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '@/context/StoreContext';
-import { Mail, Dumbbell, Calendar, Save, X, AlertTriangle, ArrowRight, ShoppingCart } from 'lucide-react';
+import { Mail, Dumbbell, Calendar, Save, X, AlertTriangle, ArrowRight, ShoppingCart, Database } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ShareReceiverPage() {
@@ -72,6 +72,44 @@ export default function ShareReceiverPage() {
           alert("Insufficient funds in bank! Please deposit money first in City Bank.");
         }
         break;
+      case 'passport':
+        // payload.data contains profile, walletBalance, coins, currentRank, streak, profileBorder, moods, workouts, events, marketItems
+        // The user wants to REPLACE the current account data with the passport data
+        
+        // Construct a clean state based on the passport data
+        const newState = {
+          userProfile: payload.data.profile || null,
+          walletBalance: payload.data.walletBalance || 0,
+          coins: payload.data.coins || 0,
+          currentRank: payload.data.currentRank || 0,
+          streak: payload.data.streak || 0,
+          profileBorder: payload.data.profileBorder || null,
+          moods: payload.data.moods || [],
+          customRoutines: payload.data.workouts || [],
+          events: payload.data.events || [],
+          marketItems: payload.data.marketItems || [],
+          // Reset other things to default
+          routines: [],
+          workTasks: [],
+          workouts: [],
+          walks: [],
+          savings: [],
+          transactions: [],
+          lastMoodDate: payload.data.moods?.[payload.data.moods.length - 1]?.date || null,
+          showRankUpPopup: false,
+          isNightMode: state.isNightMode,
+          cityLevel: 1,
+          tasks: [],
+          marketDecreeDay: null,
+          inventory: [],
+          boss: { name: "The Slump", hp: 100, maxHp: 100, level: 1 },
+          extraXP: 0,
+          streakSavers: 0,
+        };
+
+        dispatch({ type: 'LOAD_STATE', payload: newState as any });
+        navigate('/profile');
+        break;
     }
   };
 
@@ -116,6 +154,7 @@ export default function ShareReceiverPage() {
                 {payload.type === 'workout' && <Dumbbell className="w-12 h-12 text-red-500" />}
                 {payload.type === 'event' && <Calendar className="w-12 h-12 text-blue-500" />}
                 {payload.type === 'market' && <ShoppingCart className="w-12 h-12 text-amber-500" />}
+                {payload.type === 'passport' && <Database className="w-12 h-12 text-indigo-500" />}
               </div>
             </button>
             <h2 className="text-white font-black text-2xl mt-6 uppercase tracking-widest drop-shadow-md">
@@ -170,6 +209,15 @@ export default function ShareReceiverPage() {
                 <div className="w-28 h-4 bg-gray-200 rounded-full"></div>
               </motion.div>
             )}
+            {payload.type === 'passport' && (
+              <motion.div
+                animate={{ rotate: [0, 360], scale: [0.5, 1] }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                className="w-48 h-48 bg-white rounded-full shadow-2xl border-8 border-indigo-500 flex items-center justify-center"
+              >
+                <Database className="w-20 h-20 text-indigo-500" />
+              </motion.div>
+            )}
           </motion.div>
         )}
 
@@ -185,7 +233,8 @@ export default function ShareReceiverPage() {
               "p-6 text-white flex justify-between items-center",
               payload.type === 'diary' ? 'bg-purple-600' :
               payload.type === 'workout' ? 'bg-red-500' :
-              payload.type === 'market' ? 'bg-amber-500' : 'bg-blue-500'
+              payload.type === 'market' ? 'bg-amber-500' : 
+              payload.type === 'passport' ? 'bg-indigo-600' : 'bg-blue-500'
             )}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
@@ -193,6 +242,7 @@ export default function ShareReceiverPage() {
                   {payload.type === 'workout' && <Dumbbell className="w-5 h-5" />}
                   {payload.type === 'event' && <Calendar className="w-5 h-5" />}
                   {payload.type === 'market' && <ShoppingCart className="w-5 h-5" />}
+                  {payload.type === 'passport' && <Database className="w-5 h-5" />}
                 </div>
                 <h2 className="font-black text-xl uppercase tracking-tight">Shared {payload.type}</h2>
               </div>
@@ -310,6 +360,53 @@ export default function ShareReceiverPage() {
                   )}
                 </div>
               )}
+
+              {payload.type === 'passport' && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-3xl font-black text-gray-900 uppercase">Data Passport</h3>
+                    <p className="text-gray-500 font-bold mt-1 uppercase tracking-widest">
+                      {payload.data.profile?.name || 'Unknown Citizen'}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-indigo-50 p-4 rounded-2xl border-2 border-indigo-100 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-indigo-200 rounded-full flex items-center justify-center font-black text-indigo-700">
+                      {payload.data.currentRank || 0}
+                    </div>
+                    <div>
+                      <p className="font-black text-indigo-900 uppercase">Level & Wallet</p>
+                      <p className="text-xs font-bold text-indigo-700 uppercase">
+                        {payload.data.walletBalance || 0} {payload.data.profile?.currency || 'Coins'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 p-3 rounded-2xl border-2 border-gray-100 text-center">
+                      <p className="text-2xl font-black text-purple-600">{payload.data.moods?.length || 0}</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase">Diary Entries</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-2xl border-2 border-gray-100 text-center">
+                      <p className="text-2xl font-black text-red-500">{payload.data.workouts?.length || 0}</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase">Workouts</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-2xl border-2 border-gray-100 text-center">
+                      <p className="text-2xl font-black text-blue-500">{payload.data.events?.length || 0}</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase">Events</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-2xl border-2 border-gray-100 text-center">
+                      <p className="text-2xl font-black text-amber-500">{payload.data.marketItems?.length || 0}</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase">Market Items</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-red-50 border border-red-200 p-3 rounded-xl flex items-start gap-2 text-red-700 text-xs font-bold text-left mt-4">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>Warning: Importing this passport will OVERWRITE your current account data. Your current progress will be lost and replaced by the data in this passport.</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer Actions */}
@@ -322,6 +419,7 @@ export default function ShareReceiverPage() {
                   payload.type === 'diary' ? 'bg-purple-600 hover:bg-purple-700 border-b-4 border-purple-800 active:border-b-0 active:translate-y-1' :
                   payload.type === 'workout' ? 'bg-red-500 hover:bg-red-600 border-b-4 border-red-700 active:border-b-0 active:translate-y-1' :
                   payload.type === 'market' ? 'bg-amber-500 hover:bg-amber-600 border-b-4 border-amber-700 active:border-b-0 active:translate-y-1' :
+                  payload.type === 'passport' ? 'bg-indigo-600 hover:bg-indigo-700 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1' :
                   'bg-blue-500 hover:bg-blue-600 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1'
                 )}
               >
@@ -329,6 +427,11 @@ export default function ShareReceiverPage() {
                   <>
                     <ShoppingCart className="w-5 h-5 fill-current" />
                     Purchase All
+                  </>
+                ) : payload.type === 'passport' ? (
+                  <>
+                    <Database className="w-5 h-5" />
+                    Restore Account
                   </>
                 ) : (
                   <>
