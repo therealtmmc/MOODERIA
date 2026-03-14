@@ -20,12 +20,14 @@ import ArchivePage from "@/pages/ArchivePage";
 import CitizenHome from "@/pages/CitizenHome";
 import GlobalPage from "@/pages/GlobalPage";
 import MarketPage from "@/pages/MarketPage";
+import ShareReceiverPage from "@/pages/ShareReceiverPage";
 
 export default function App() {
   return (
     <StoreProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/share" element={<ShareReceiverPage />} />
           <Route path="/" element={
             <MooderiaGatekeeper>
               <Layout />

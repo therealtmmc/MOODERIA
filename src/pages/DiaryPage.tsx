@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format, subDays, isSameDay, parseISO, isAfter, addMonths, addYears, addDays } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library } from "lucide-react";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
+
+import { ShareQRModal } from "@/components/ShareQRModal";
 
 const MOOD_COLORS: Record<string, string> = {
   Happy: "bg-yellow-400",
@@ -52,6 +54,7 @@ export default function DiaryPage() {
   const [showFutureLetterModal, setShowFutureLetterModal] = useState(false);
   const [futureLetterText, setFutureLetterText] = useState("");
   const [futureLetterDate, setFutureLetterDate] = useState(format(addMonths(new Date(), 6), "yyyy-MM-dd"));
+  const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -688,17 +691,28 @@ export default function DiaryPage() {
                       </div>
 
                       {/* Delete Button (Hidden until hover/focus) */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if(confirm("Delete this memory?")) {
-                            dispatch({ type: "DELETE_DIARY", payload: entry.id });
-                          }
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-30 shadow-md"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShareData({ isOpen: true, data: entry, title: `Diary Entry: ${format(new Date(entry.date), "MMM d, yyyy")}` });
+                          }}
+                          className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
+                        >
+                          <Share2 className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if(confirm("Delete this memory?")) {
+                              dispatch({ type: "DELETE_DIARY", payload: entry.id });
+                            }
+                          }}
+                          className="bg-red-500 text-white p-1.5 rounded-full shadow-md hover:bg-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -765,6 +779,30 @@ export default function DiaryPage() {
                             {entry.isHighlight && <Trophy className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
                           </div>
                         </div>
+                        
+                        {/* Actions */}
+                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShareData({ isOpen: true, data: entry, title: `Diary Entry: ${format(new Date(entry.date), "MMM d, yyyy")}` });
+                            }}
+                            className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
+                          >
+                            <Share2 className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if(confirm("Delete this memory?")) {
+                                dispatch({ type: "DELETE_DIARY", payload: entry.id });
+                              }
+                            }}
+                            className="bg-red-500 text-white p-1.5 rounded-full shadow-md hover:bg-red-600 transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -781,6 +819,14 @@ export default function DiaryPage() {
           </div>
         )}
       </div>
+      {/* Share Modal */}
+      <ShareQRModal
+        isOpen={shareData.isOpen}
+        onClose={() => setShareData({ ...shareData, isOpen: false })}
+        type="diary"
+        data={shareData.data}
+        title={shareData.title}
+      />
     </div>
   );
 }

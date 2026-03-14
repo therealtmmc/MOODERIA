@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useStore, Event } from "@/context/StoreContext";
-import { Plus, Trash2, X, Calendar as CalendarIcon, Clock, List, Grid, AlertCircle, Briefcase, User, Plane, Layers } from "lucide-react";
+import { Plus, Trash2, X, Calendar as CalendarIcon, Clock, List, Grid, AlertCircle, Briefcase, User, Plane, Layers, Share2 } from "lucide-react";
 import { Calendar } from "@/components/Calendar";
 import { motion, AnimatePresence } from "motion/react";
 import { format, parseISO, isAfter, startOfDay, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
+import { ShareQRModal } from "@/components/ShareQRModal";
 
 const EVENT_TYPES = [
   { id: "Social", label: "Social", icon: User, color: "bg-green-100 text-green-600 border-green-500" },
@@ -32,6 +33,7 @@ export default function EventsPage() {
 
   // Countdown Logic
   const [timeLeft, setTimeLeft] = useState<{days: number, hours: number, mins: number} | null>(null);
+  const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
   
   const upcomingEvents = state.events
     .filter((e) => isAfter(parseISO(e.date), startOfDay(new Date())) || e.date === format(new Date(), "yyyy-MM-dd"))
@@ -237,6 +239,13 @@ export default function EventsPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => setShareData({ isOpen: true, data: event, title: `Event: ${event.title}` })}
+                    className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Share Event"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
                   <a
                     href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.date.replace(/-/g, "")}T${event.time.replace(/:/g, "")}00/${event.date.replace(/-/g, "")}T${event.time.replace(/:/g, "")}00&details=${encodeURIComponent(event.description || "")}`}
                     target="_blank"
@@ -399,6 +408,14 @@ export default function EventsPage() {
           </div>
         )}
       </AnimatePresence>
+      {/* Share Modal */}
+      <ShareQRModal
+        isOpen={shareData.isOpen}
+        onClose={() => setShareData({ ...shareData, isOpen: false })}
+        type="event"
+        data={shareData.data}
+        title={shareData.title}
+      />
     </div>
   );
 }

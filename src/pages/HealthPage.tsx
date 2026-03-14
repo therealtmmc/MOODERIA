@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 
+import { ShareQRModal } from "@/components/ShareQRModal";
+import { Share2, Edit2, Trash2 } from "lucide-react";
+
 const WORKOUT_PROGRAMS = [
   {
     id: "abs_beginner",
@@ -92,6 +95,7 @@ export default function HealthPage() {
   const [customExercises, setCustomExercises] = useState<{name: string, sets: string, reps: string, weight: string}[]>([
     { name: "", sets: "", reps: "", weight: "" }
   ]);
+  const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
 
   const handleAddExerciseRow = () => {
     setCustomExercises([...customExercises, { name: "", sets: "", reps: "", weight: "" }]);
@@ -692,6 +696,12 @@ export default function HealthPage() {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => setShareData({ isOpen: true, data: routine, title: `Workout: ${routine.name}` })}
+                      className="p-2 bg-blue-50 text-blue-500 rounded-xl hover:bg-blue-100 transition-colors"
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => openBuilderForEdit(routine)}
                       className="p-2 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-colors"
                     >
@@ -1160,6 +1170,14 @@ export default function HealthPage() {
           </div>
         )}
       </AnimatePresence>
+      {/* Share Modal */}
+      <ShareQRModal
+        isOpen={shareData.isOpen}
+        onClose={() => setShareData({ ...shareData, isOpen: false })}
+        type="workout"
+        data={shareData.data}
+        title={shareData.title}
+      />
     </div>
   );
 }
