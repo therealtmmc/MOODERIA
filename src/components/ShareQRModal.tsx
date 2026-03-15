@@ -24,43 +24,10 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
 
   useEffect(() => {
     if (isOpen) {
-      const isMedia = (val: any) => val instanceof Blob || (typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:')));
-      const hasMedia = isMedia(data.image) || isMedia(data.audio);
-      
-      if (hasMedia) {
-        const startCloudShare = async () => {
-          setIsUploading(true);
-          setUploadProgress(0);
-          setError(null);
-
-          // Check if any file exceeds 20MB
-          const MAX_SIZE = 20 * 1024 * 1024; // 20MB
-          const files = [data.image, data.audio].filter(f => f instanceof Blob) as Blob[];
-          if (files.some(f => f.size > MAX_SIZE)) {
-            setError("Media file is too large (max 20MB).");
-            setIsUploading(false);
-            return;
-          }
-
-          try {
-            const id = await createCloudShare(type, data, (progress) => {
-              setUploadProgress(progress);
-            });
-            setCloudId(id);
-          } catch (err) {
-            console.error("Cloud share failed", err);
-            setError("Failed to upload media to cloud. Sharing without media.");
-          } finally {
-            setIsUploading(false);
-          }
-        };
-        startCloudShare();
-      } else {
-        setCloudId(null);
-        setError(null);
-      }
+      setCloudId(null);
+      setError(null);
     }
-  }, [isOpen, data, type]);
+  }, [isOpen]);
 
   const handleDownload = async () => {
     if (!cardRef.current) return;

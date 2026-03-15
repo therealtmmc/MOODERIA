@@ -35,9 +35,6 @@ export default function DiaryPage() {
 
   const [diaryEntry, setDiaryEntry] = useState(todayMood?.note || "");
   const [selectedMood, setSelectedMood] = useState<string | null>(todayMood?.mood || null);
-  const [selectedImage, setSelectedImage] = useState<string | Blob | null>(todayMood?.image || null);
-  const [selectedVideo, setSelectedVideo] = useState<string | Blob | null>(todayMood?.video || null);
-  const [selectedAudio, setSelectedAudio] = useState<string | Blob | null>(todayMood?.audio || null);
   const [lockDate, setLockDate] = useState<string | null>(todayMood?.lockDate || null);
   const [isHighlight, setIsHighlight] = useState<boolean>(todayMood?.isHighlight || false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -48,11 +45,8 @@ export default function DiaryPage() {
   const [dailyPrompt, setDailyPrompt] = useState("");
 
   const filteredMoods = React.useMemo(() => {
-    return state.moods.filter(m => m.note || m.image || m.video || m.audio);
+    return state.moods.filter(m => m.note);
   }, [state.moods]);
-  
-  const [isRecording, setIsRecording] = useState(false);
-  const [showRecordingPopup, setShowRecordingPopup] = useState(false);
   
   // Future Letter State
   const [showFutureLetterModal, setShowFutureLetterModal] = useState(false);
@@ -61,89 +55,9 @@ export default function DiaryPage() {
   const [shareData, setShareData] = useState<{ isOpen: boolean; data: any; title: string }>({ isOpen: false, data: null, title: "" });
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
     setDailyPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
   }, []);
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = () => {
-          setSelectedAudio(reader.result as string);
-        };
-        
-        // Stop all tracks to release microphone
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      setShowRecordingPopup(true);
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-      alert("Could not access microphone. Please ensure you have granted permission.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setShowRecordingPopup(false);
-    }
-  };
-
-  const getMediaUrl = (media: string | Blob | undefined) => {
-    if (!media) return "";
-    if (media instanceof Blob) {
-      return URL.createObjectURL(media);
-    }
-    return media;
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check size (limit to 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        alert("Image file is too large. Please choose an image under 50MB.");
-        return;
-      }
-      setSelectedImage(file);
-    }
-  };
-
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check size (limit to 50MB now that we use IndexedDB)
-      if (file.size > 50 * 1024 * 1024) {
-        alert("Video file is too large. Please choose a video under 50MB.");
-        return;
-      }
-      setSelectedVideo(file);
-    }
-  };
 
   const handleSaveDiary = () => {
     if (!selectedMood && !todayMood) return;
@@ -158,9 +72,6 @@ export default function DiaryPage() {
           date: today,
           mood: moodToSave,
           note: diaryEntry,
-          image: selectedImage || undefined,
-          video: selectedVideo || undefined,
-          audio: selectedAudio || undefined,
           lockDate: lockDate || undefined,
           isHighlight: isHighlight
         } 
@@ -462,92 +373,8 @@ export default function DiaryPage() {
             </div>
           </div>
 
-          {/* Media Upload */}
-          <div className="flex gap-2 mb-2">
-            <input 
-              type="file" 
-              accept="image/*" 
-              ref={fileInputRef} 
-              className="hidden" 
-              onChange={handleImageUpload}
-            />
-            <input 
-              type="file" 
-              accept="video/*" 
-              ref={videoInputRef} 
-              className="hidden" 
-              onChange={handleVideoUpload}
-            />
-            <input 
-              type="file" 
-              accept="video/*" 
-              ref={videoInputRef} 
-              className="hidden" 
-              onChange={handleVideoUpload}
-            />
-            
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="flex-1 h-12 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center gap-2 text-gray-400 hover:text-[#1368ce] hover:border-[#1368ce] hover:bg-blue-50 transition-all"
-            >
-              <Camera className="w-5 h-5" />
-              <span className="font-bold text-xs">Photo</span>
-            </button>
-          </div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">
-            Max file size: 50MB
-          </p>
-
-          {/* Media Previews */}
-          {(selectedImage || selectedVideo || selectedAudio) && (
-            <div className="grid grid-cols-1 gap-2 mb-4">
-              {selectedImage && (
-                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 group aspect-video">
-                  <img src={getMediaUrl(selectedImage)} alt="Attachment" className="w-full h-full object-cover" />
-                  <button 
-                    onClick={() => setSelectedImage(null)}
-                    className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-              {selectedVideo && (
-                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 group aspect-video bg-black">
-                  <video src={getMediaUrl(selectedVideo)} controls playsInline className="w-full h-full object-cover" />
-                  <button 
-                    onClick={() => setSelectedVideo(null)}
-                    className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors z-10"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-              {selectedAudio && (
-                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce]">
-                    <Mic className="w-5 h-5" />
-                  </div>
-                  <audio src={getMediaUrl(selectedAudio)} controls className="w-full h-8" />
-                  <button 
-                    onClick={() => setSelectedAudio(null)}
-                    className="bg-gray-200 text-gray-500 p-1 rounded-full hover:bg-red-500 hover:text-white transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Media Upload and Voice Note removed as per user request */}
           
-          <button
-            onClick={startRecording}
-            className="w-full mb-3 bg-white border-2 border-[#1368ce] text-[#1368ce] py-3 rounded-2xl font-black shadow-sm active:scale-95 transition-transform flex items-center justify-center gap-2 hover:bg-blue-50"
-          >
-            <Mic className="w-5 h-5" />
-            <span>Record Voice Note</span>
-          </button>
-
           <button
             onClick={handleSaveDiary}
             disabled={!selectedMood}
@@ -558,40 +385,6 @@ export default function DiaryPage() {
           </button>
         </div>
       </div>
-
-      {/* Recording Popup */}
-      <AnimatePresence>
-        {showRecordingPopup && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-red-500 p-8 text-center space-y-8"
-            >
-              <div>
-                <h3 className="text-2xl font-black text-gray-800 mb-2">Recording...</h3>
-                <p className="text-gray-500 font-bold">Speak clearly into your microphone</p>
-              </div>
-
-              <div className="w-32 h-32 rounded-full bg-red-50 flex items-center justify-center mx-auto relative">
-                <div className="absolute inset-0 rounded-full border-4 border-red-500 animate-ping opacity-20" />
-                <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg animate-pulse">
-                  <Mic className="w-10 h-10" />
-                </div>
-              </div>
-
-              <button
-                onClick={stopRecording}
-                className="w-full bg-red-500 text-white py-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
-              >
-                <MicOff className="w-6 h-6" />
-                Stop Recording
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* On This Day */}
       {onThisDayEntries.length > 0 && (
@@ -768,8 +561,9 @@ export default function DiaryPage() {
                      return (
                       <motion.div
                         key={entry.id ? `${entry.id}-${index}` : index}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         onClick={() => !isLocked && setSelectedEntry(entry)}
                         className="relative aspect-square rounded-2xl overflow-hidden shadow-md bg-gray-100 cursor-pointer group"
                       >
@@ -886,26 +680,6 @@ export default function DiaryPage() {
                     <p className="text-gray-700 font-medium leading-relaxed whitespace-pre-wrap text-lg">
                       {selectedEntry.note}
                     </p>
-                  </div>
-                )}
-
-                {selectedEntry.image && (
-                  <img src={getMediaUrl(selectedEntry.image)} alt="Diary" className="w-full rounded-2xl shadow-md" />
-                )}
-
-                {selectedEntry.video && (
-                  <video 
-                    src={getMediaUrl(selectedEntry.video)} 
-                    controls 
-                    playsInline 
-                    preload="metadata" 
-                    className="w-full rounded-2xl shadow-md max-h-[60vh] bg-black" 
-                  />
-                )}
-
-                {selectedEntry.audio && (
-                  <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
-                    <audio src={getMediaUrl(selectedEntry.audio)} controls className="w-full" />
                   </div>
                 )}
               </div>
