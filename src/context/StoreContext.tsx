@@ -160,6 +160,7 @@ export type AppState = {
   currentRank: number;
   showRankUpPopup: boolean;
   isNightMode: boolean;
+  isStarkTheme: boolean;
   cityLevel: number;
   tasks: Task[];
   marketItems: MarketItem[];
@@ -201,6 +202,7 @@ type Action =
   | { type: "CLEAR_ALL_DIARY" }
   | { type: "CLOSE_RANK_POPUP" }
   | { type: "SET_THEME"; payload: boolean }
+  | { type: "TOGGLE_STARK_THEME" }
   | { type: "LOAD_STATE"; payload: AppState }
   | { type: "INCREMENT_CITY_LEVEL" }
   | { type: "ADD_TASK"; payload: Task }
@@ -231,6 +233,7 @@ const initialState: AppState = {
   currentRank: 0,
   showRankUpPopup: false,
   isNightMode: false,
+  isStarkTheme: false,
   cityLevel: 1,
   tasks: [],
   marketItems: [],
@@ -489,6 +492,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, showRankUpPopup: false };
     case "SET_THEME":
       return { ...state, isNightMode: action.payload };
+    case "TOGGLE_STARK_THEME":
+      return { ...state, isStarkTheme: !state.isStarkTheme };
     case "INCREMENT_CITY_LEVEL":
       return { ...state, cityLevel: state.cityLevel + 1 };
     case "ADD_TASK":

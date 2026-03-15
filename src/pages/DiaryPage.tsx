@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useStore } from "@/context/StoreContext";
 import { format, subDays, isSameDay, parseISO, isAfter, addMonths, addYears, addDays } from "date-fns";
-import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library, Share2, QrCode } from "lucide-react";
+import { Book, Trash2, Image as ImageIcon, X, Camera, Video, Grid, List, BarChart2, Sparkles, Mic, MicOff, Play, Pause, Lock, Unlock, Trophy, Calendar, Mail, Clock, BookOpen, Library, Share2, QrCode, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
@@ -37,6 +37,12 @@ export default function DiaryPage() {
   const [selectedMood, setSelectedMood] = useState<string | null>(todayMood?.mood || null);
   const [lockDate, setLockDate] = useState<string | null>(todayMood?.lockDate || null);
   const [isHighlight, setIsHighlight] = useState<boolean>(todayMood?.isHighlight || false);
+  const [image, setImage] = useState<string | null>(todayMood?.image as string || null);
+  const [video, setVideo] = useState<string | null>(todayMood?.video as string || null);
+  const [audio, setAudio] = useState<string | null>(todayMood?.audio as string || null);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successStats, setSuccessStats] = useState("");
   
@@ -59,6 +65,66 @@ export default function DiaryPage() {
     setDailyPrompt(PROMPTS[Math.floor(Math.random() * PROMPTS.length)]);
   }, []);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVideo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAudio(reader.result as string);
+        };
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Could not access microphone.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const handleSaveDiary = () => {
     if (!selectedMood && !todayMood) return;
 
@@ -72,6 +138,9 @@ export default function DiaryPage() {
           date: today,
           mood: moodToSave,
           note: diaryEntry,
+          image,
+          video,
+          audio,
           lockDate: lockDate || undefined,
           isHighlight: isHighlight
         } 
@@ -136,7 +205,7 @@ export default function DiaryPage() {
   }, [state.moods]);
 
   return (
-    <div className="p-4 pt-8 pb-24 space-y-6">
+    <div className={cn("p-4 pt-8 pb-24 space-y-6 transition-colors duration-500", state.isStarkTheme && "stark-theme")}>
       <SuccessAnimation 
         type="mood" 
         isVisible={showSuccess} 
@@ -145,10 +214,21 @@ export default function DiaryPage() {
       />
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-black text-[#1368ce] flex items-center gap-2">
-            <Library className="w-8 h-8" /> Library of Memories
-          </h1>
-          <p className="text-gray-500 font-bold">Your Personal Archives</p>
+          <div className="flex items-center gap-2">
+            <h1 className={cn(
+              "text-3xl font-black flex items-center gap-2",
+              state.isStarkTheme ? "text-green-400 font-mono tracking-tighter" : "text-[#1368ce]"
+            )}>
+              {state.isStarkTheme ? <Terminal className="w-8 h-8" /> : <Library className="w-8 h-8" />} 
+              {state.isStarkTheme ? "[CODE_MOODERIA]" : "Library of Memories"}
+            </h1>
+          </div>
+          <p className={cn(
+            "font-bold",
+            state.isStarkTheme ? "text-green-600/70 font-mono text-xs uppercase tracking-widest" : "text-gray-500"
+          )}>
+            {state.isStarkTheme ? "> SYSTEM.ARCHIVES.INIT()" : "Your Personal Archives"}
+          </p>
         </div>
         <div className="flex gap-2">
           <button
@@ -373,7 +453,55 @@ export default function DiaryPage() {
             </div>
           </div>
 
-          {/* Media Upload and Voice Note removed as per user request */}
+          {/* Media Upload and Voice Note */}
+          <div className="flex gap-3 mb-6">
+            <div className="flex-1 relative">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+              />
+              <button className={cn(
+                "w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-2 transition-all",
+                image ? "bg-blue-100 border-blue-400 text-blue-700" : "bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
+              )}>
+                <ImageIcon className="w-4 h-4" />
+                {image ? "Photo Added" : "Add Photo"}
+              </button>
+            </div>
+            
+            <div className="flex-1 relative">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoUpload}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+              />
+              <button className={cn(
+                "w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-2 transition-all",
+                video ? "bg-purple-100 border-purple-400 text-purple-700" : "bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
+              )}>
+                <Video className="w-4 h-4" />
+                {video ? "Video Added" : "Add Video"}
+              </button>
+            </div>
+
+            <button
+              onClick={isRecording ? stopRecording : startRecording}
+              className={cn(
+                "flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-2 transition-all",
+                isRecording 
+                  ? "bg-red-100 border-red-400 text-red-600 animate-pulse" 
+                  : audio 
+                    ? "bg-green-100 border-green-400 text-green-700"
+                    : "bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
+              )}
+            >
+              {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isRecording ? "Recording..." : audio ? "Voice Added" : "Voice Note"}
+            </button>
+          </div>
           
           <button
             onClick={handleSaveDiary}
@@ -505,15 +633,18 @@ export default function DiaryPage() {
 
                       {/* Delete Button (Hidden until hover/focus) */}
                       <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShareData({ isOpen: true, data: entry, title: `Diary Entry: ${format(new Date(entry.date), "MMM d, yyyy")}` });
-                          }}
-                          className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
-                        >
-                          <QrCode className="w-3 h-3" />
-                        </button>
+                        {!(entry.image || entry.video || entry.audio) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShareData({ isOpen: true, data: entry, title: `Diary Entry: ${format(new Date(entry.date), "MMM d, yyyy")}` });
+                            }}
+                            className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
+                            title="Share Memory"
+                          >
+                            <QrCode className="w-3 h-3" />
+                          </button>
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -605,15 +736,18 @@ export default function DiaryPage() {
                         
                         {/* Actions */}
                         <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShareData({ isOpen: true, data: entry, title: `Diary Entry: ${format(new Date(entry.date), "MMM d, yyyy")}` });
-                            }}
-                            className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
-                          >
-                            <QrCode className="w-3 h-3" />
-                          </button>
+                          {!(entry.image || entry.video || entry.audio) && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShareData({ isOpen: true, data: entry, title: `Diary Entry: ${format(new Date(entry.date), "MMM d, yyyy")}` });
+                              }}
+                              className="bg-blue-500 text-white p-1.5 rounded-full shadow-md hover:bg-blue-600 transition-colors"
+                              title="Share Memory"
+                            >
+                              <QrCode className="w-3 h-3" />
+                            </button>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -682,6 +816,26 @@ export default function DiaryPage() {
                     </p>
                   </div>
                 )}
+
+                {selectedEntry.image && (
+                  <img src={selectedEntry.image as string} alt="Diary" className="w-full rounded-2xl shadow-md" />
+                )}
+
+                {selectedEntry.video && (
+                  <video 
+                    src={selectedEntry.video as string} 
+                    controls 
+                    playsInline 
+                    preload="metadata" 
+                    className="w-full rounded-2xl shadow-md max-h-[60vh] bg-black" 
+                  />
+                )}
+
+                {selectedEntry.audio && (
+                  <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                    <audio src={selectedEntry.audio as string} controls className="w-full" />
+                  </div>
+                )}
               </div>
 
               <div className="p-6 bg-gray-50 border-t-2 border-gray-100 flex gap-3">
@@ -695,16 +849,18 @@ export default function DiaryPage() {
                   <Trash2 className="w-5 h-5" />
                   Delete
                 </button>
-                <button
-                  onClick={() => {
-                    setShareData({ isOpen: true, data: selectedEntry, title: `Diary Entry: ${format(new Date(selectedEntry.date), "MMM d, yyyy")}` });
-                    setSelectedEntry(null);
-                  }}
-                  className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
-                >
-                  <QrCode className="w-5 h-5" />
-                  Share
-                </button>
+                {!(selectedEntry.image || selectedEntry.video || selectedEntry.audio) && (
+                  <button
+                    onClick={() => {
+                      setShareData({ isOpen: true, data: selectedEntry, title: `Diary Entry: ${format(new Date(selectedEntry.date), "MMM d, yyyy")}` });
+                      setSelectedEntry(null);
+                    }}
+                    className="flex-1 py-4 bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-blue-600 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
+                  >
+                    <QrCode className="w-5 h-5" />
+                    Share
+                  </button>
+                )}
               </div>
             </motion.div>
           </div>

@@ -24,7 +24,7 @@ export function CityEventsComponent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className="bg-orange-500 text-white p-4 rounded-2xl shadow-lg m-4"
+          className="bg-orange-500 text-white p-4 rounded-2xl shadow-lg"
         >
           {event}
         </motion.div>

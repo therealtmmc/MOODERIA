@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -10,9 +10,10 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CityBackground } from "./CityBackground";
 import { WeatherOverlay } from "./WeatherOverlay";
-import { CityEventsComponent } from "./CityEventsComponent";
 import { motion, AnimatePresence } from "motion/react";
 import { DISTRICTS } from "@/constants/districts";
+import { HackingTransition } from "./HackingTransition";
+import { RestoreTransition } from "./RestoreTransition";
 
 export function Layout() {
   const { state } = useStore();
@@ -20,6 +21,17 @@ export function Layout() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevThemeRef = useRef(state.isStarkTheme);
+
+  useEffect(() => {
+    if (state.isStarkTheme !== prevThemeRef.current) {
+      setIsTransitioning(true);
+      prevThemeRef.current = state.isStarkTheme;
+      const timer = setTimeout(() => setIsTransitioning(false), 6500);
+      return () => clearTimeout(timer);
+    }
+  }, [state.isStarkTheme]);
 
   // Determine current theme based on district
   const district = useMemo(() => DISTRICTS[location.pathname], [location.pathname]);
@@ -33,10 +45,13 @@ export function Layout() {
   
   // Override with Night Mode if active, or use time-based theme
   const currentTheme = useMemo(() => {
+    if (state.isStarkTheme) {
+      return "bg-black text-green-400 font-mono";
+    }
     return state.isNightMode || isNightTime
       ? "bg-slate-950 text-slate-100" 
       : moodTheme;
-  }, [state.isNightMode, isNightTime, moodTheme]);
+  }, [state.isStarkTheme, state.isNightMode, isNightTime, moodTheme]);
 
   // Determine weather based on last mood
   const weather = useMemo(() => {
@@ -99,10 +114,24 @@ export function Layout() {
   }
 
   return (
-    <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
-      <CityBackground isNight={state.isNightMode || isNightTime} district={district} weather={weather} cityLevel={state.cityLevel} />
-      {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay weather={weather} />}
-      {state.userProfile && location.pathname !== "/onboarding" && <CityEventsComponent />}
+    <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-[3000ms]", 
+      state.isStarkTheme ? "stark-theme" : "font-sans text-gray-800",
+      currentTheme
+    )}>
+      <AnimatePresence>
+        {!state.isStarkTheme && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 3 }}
+            className="fixed inset-0 z-0 pointer-events-none"
+          >
+            <CityBackground isNight={state.isNightMode || isNightTime} district={district} weather={weather} cityLevel={state.cityLevel} />
+            {state.userProfile && location.pathname !== "/onboarding" && <WeatherOverlay weather={weather} />}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {state.userProfile && location.pathname !== "/onboarding" && <DailyMoodPopup />}
       {state.userProfile && location.pathname !== "/onboarding" && <RankUpModal />}
       
@@ -129,6 +158,12 @@ export function Layout() {
           <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         </>
       )}
+
+      <AnimatePresence>
+        {isTransitioning && (
+          state.isStarkTheme ? <HackingTransition /> : <RestoreTransition />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
