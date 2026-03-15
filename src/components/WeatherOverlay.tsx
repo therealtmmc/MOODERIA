@@ -27,13 +27,13 @@ export function WeatherOverlay({ weather }: { weather: string }) {
   if (weather === "Rainy") {
     return (
       <div className="fixed inset-0 z-1 pointer-events-none overflow-hidden">
-        {Array.from({ length: 30 }).map((_, i) => (
+        {Array.from({ length: 15 }).map((_, i) => (
           <motion.div
             key={`rain-${i}`}
             className="absolute w-0.5 h-4 bg-blue-400/40 rounded-full"
             initial={{ y: -20, x: Math.random() * window.innerWidth }}
             animate={{ y: "100vh" }}
-            transition={{ duration: 0.5 + Math.random() * 0.5, repeat: Infinity, ease: "linear", delay: Math.random() }}
+            transition={{ duration: 0.6 + Math.random() * 0.4, repeat: Infinity, ease: "linear", delay: Math.random() }}
           />
         ))}
       </div>
@@ -43,13 +43,13 @@ export function WeatherOverlay({ weather }: { weather: string }) {
   if (weather === "Cloudy") {
     return (
       <div className="fixed inset-0 z-1 pointer-events-none overflow-hidden">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, i) => (
           <motion.div
             key={`cloud-${i}`}
             className="absolute text-8xl opacity-10"
             initial={{ x: "-20vw", y: Math.random() * window.innerHeight }}
             animate={{ x: "120vw" }}
-            transition={{ duration: 20 + Math.random() * 20, repeat: Infinity, ease: "linear", delay: Math.random() * 10 }}
+            transition={{ duration: 25 + Math.random() * 15, repeat: Infinity, ease: "linear", delay: Math.random() * 10 }}
           >
             ☁️
           </motion.div>

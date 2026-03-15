@@ -265,7 +265,23 @@ export default function ShareReceiverPage() {
                     {payload.data.note}
                   </p>
                   {payload.data.image && (
-                    <img src={payload.data.image} alt="Diary" className="w-full rounded-2xl shadow-md mt-4" />
+                    payload.data.image.startsWith('[') ? (
+                      <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
+                        {payload.data.image}
+                      </div>
+                    ) : (
+                      <img src={payload.data.image} alt="Diary" className="w-full rounded-2xl shadow-md mt-4" />
+                    )
+                  )}
+                  {payload.data.video && (
+                    <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
+                      {payload.data.video.startsWith('[') ? payload.data.video : 'Video Attachment'}
+                    </div>
+                  )}
+                  {payload.data.audio && (
+                    <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
+                      {payload.data.audio.startsWith('[') ? payload.data.audio : 'Audio Attachment'}
+                    </div>
                   )}
                 </div>
               )}

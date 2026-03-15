@@ -20,14 +20,26 @@ export function DataTransferModal({ isOpen, onClose }: DataTransferModalProps) {
   const [showQR, setShowQR] = useState(false);
   const [transferData, setTransferData] = useState<any>(null);
 
-  // Calculate approximate size
+  // Calculate approximate size safely
   const estimatedSize = useMemo(() => {
     let size = 150; // Base profile + wallet size approx
     
-    state.moods.forEach(m => { if (selectedMoods.has(m.id)) size += JSON.stringify(m).length; });
-    state.customRoutines.forEach(w => { if (selectedWorkouts.has(w.id)) size += JSON.stringify(w).length; });
-    state.events.forEach(e => { if (selectedEvents.has(e.id)) size += JSON.stringify(e).length; });
-    state.marketItems.forEach(i => { if (selectedMarketItems.has(i.id)) size += JSON.stringify(i).length; });
+    const getItemSize = (item: any) => {
+      let itemSize = 0;
+      Object.entries(item).forEach(([key, value]) => {
+        if (typeof value === 'string') itemSize += value.length;
+        else if (value instanceof Blob) itemSize += value.size;
+        else if (typeof value === 'number') itemSize += 8;
+        else if (typeof value === 'boolean') itemSize += 4;
+        else if (value && typeof value === 'object') itemSize += JSON.stringify(value).length;
+      });
+      return itemSize;
+    };
+
+    state.moods.forEach(m => { if (selectedMoods.has(m.id)) size += getItemSize(m); });
+    state.customRoutines.forEach(w => { if (selectedWorkouts.has(w.id)) size += getItemSize(w); });
+    state.events.forEach(e => { if (selectedEvents.has(e.id)) size += getItemSize(e); });
+    state.marketItems.forEach(i => { if (selectedMarketItems.has(i.id)) size += getItemSize(i); });
     
     return size;
   }, [selectedMoods, selectedWorkouts, selectedEvents, selectedMarketItems, state]);
@@ -56,6 +68,17 @@ export function DataTransferModal({ isOpen, onClose }: DataTransferModalProps) {
   const handleGenerate = () => {
     if (isOverLimit) return;
     
+    // Helper to strip Blobs for QR transfer (QR can't handle them)
+    const stripMedia = (item: any) => {
+      const { image, video, audio, ...rest } = item;
+      return {
+        ...rest,
+        image: typeof image === 'string' ? image : undefined,
+        video: typeof video === 'string' ? video : undefined,
+        audio: typeof audio === 'string' ? audio : undefined,
+      };
+    };
+
     const payload = {
       profile: state.userProfile,
       walletBalance: state.walletBalance,
@@ -63,7 +86,7 @@ export function DataTransferModal({ isOpen, onClose }: DataTransferModalProps) {
       currentRank: state.currentRank,
       streak: state.streak,
       profileBorder: state.profileBorder,
-      moods: state.moods.filter(m => selectedMoods.has(m.id)),
+      moods: state.moods.filter(m => selectedMoods.has(m.id)).map(stripMedia),
       workouts: state.customRoutines.filter(w => selectedWorkouts.has(w.id)),
       events: state.events.filter(e => selectedEvents.has(e.id)),
       marketItems: state.marketItems.filter(i => selectedMarketItems.has(i.id)),

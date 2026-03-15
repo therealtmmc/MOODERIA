@@ -35,9 +35,9 @@ export default function DiaryPage() {
 
   const [diaryEntry, setDiaryEntry] = useState(todayMood?.note || "");
   const [selectedMood, setSelectedMood] = useState<string | null>(todayMood?.mood || null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(todayMood?.image || null);
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(todayMood?.video || null);
-  const [selectedAudio, setSelectedAudio] = useState<string | null>(todayMood?.audio || null);
+  const [selectedImage, setSelectedImage] = useState<string | Blob | null>(todayMood?.image || null);
+  const [selectedVideo, setSelectedVideo] = useState<string | Blob | null>(todayMood?.video || null);
+  const [selectedAudio, setSelectedAudio] = useState<string | Blob | null>(todayMood?.audio || null);
   const [lockDate, setLockDate] = useState<string | null>(todayMood?.lockDate || null);
   const [isHighlight, setIsHighlight] = useState<boolean>(todayMood?.isHighlight || false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -113,30 +113,35 @@ export default function DiaryPage() {
     }
   };
 
+  const getMediaUrl = (media: string | Blob | undefined) => {
+    if (!media) return "";
+    if (media instanceof Blob) {
+      return URL.createObjectURL(media);
+    }
+    return media;
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Check size (limit to 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert("Image file is too large. Please choose an image under 50MB.");
+        return;
+      }
+      setSelectedImage(file);
     }
   };
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check size (limit to 5MB for base64 safety in localstorage and performance)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Video file is too large. Please choose a video under 5MB to ensure smooth playback and prevent crashes.");
+      // Check size (limit to 50MB now that we use IndexedDB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert("Video file is too large. Please choose a video under 50MB.");
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedVideo(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setSelectedVideo(file);
     }
   };
 
@@ -458,7 +463,7 @@ export default function DiaryPage() {
           </div>
 
           {/* Media Upload */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-2">
             <input 
               type="file" 
               accept="image/*" 
@@ -489,13 +494,16 @@ export default function DiaryPage() {
               <span className="font-bold text-xs">Video</span>
             </button>
           </div>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">
+            Max file size: 50MB
+          </p>
 
           {/* Media Previews */}
           {(selectedImage || selectedVideo || selectedAudio) && (
             <div className="grid grid-cols-1 gap-2 mb-4">
               {selectedImage && (
                 <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 group aspect-video">
-                  <img src={selectedImage} alt="Attachment" className="w-full h-full object-cover" />
+                  <img src={getMediaUrl(selectedImage)} alt="Attachment" className="w-full h-full object-cover" />
                   <button 
                     onClick={() => setSelectedImage(null)}
                     className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors"
@@ -506,7 +514,7 @@ export default function DiaryPage() {
               )}
               {selectedVideo && (
                 <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 group aspect-video bg-black">
-                  <video src={selectedVideo} controls playsInline className="w-full h-full object-cover" />
+                  <video src={getMediaUrl(selectedVideo)} controls playsInline className="w-full h-full object-cover" />
                   <button 
                     onClick={() => setSelectedVideo(null)}
                     className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors z-10"
@@ -520,7 +528,7 @@ export default function DiaryPage() {
                   <div className="w-10 h-10 bg-[#1368ce]/10 rounded-full flex items-center justify-center text-[#1368ce]">
                     <Mic className="w-5 h-5" />
                   </div>
-                  <audio src={selectedAudio} controls className="w-full h-8" />
+                  <audio src={getMediaUrl(selectedAudio)} controls className="w-full h-8" />
                   <button 
                     onClick={() => setSelectedAudio(null)}
                     className="bg-gray-200 text-gray-500 p-1 rounded-full hover:bg-red-500 hover:text-white transition-colors"
@@ -774,7 +782,15 @@ export default function DiaryPage() {
                             {entry.image ? (
                               <img src={entry.image} alt="Gallery" className="w-full h-full object-cover" />
                             ) : (entry.video ? (
-                              <video src={entry.video} className="w-full h-full object-cover" />
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white">
+                                <Video className="w-10 h-10 mb-2 opacity-50" />
+                                <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Video Memory</span>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                    <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-white border-b-[8px] border-b-transparent ml-1" />
+                                  </div>
+                                </div>
+                              </div>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-gray-200">
                                 <Mic className="w-12 h-12 text-gray-400" />
@@ -874,16 +890,22 @@ export default function DiaryPage() {
                 )}
 
                 {selectedEntry.image && (
-                  <img src={selectedEntry.image} alt="Diary" className="w-full rounded-2xl shadow-md" />
+                  <img src={getMediaUrl(selectedEntry.image)} alt="Diary" className="w-full rounded-2xl shadow-md" />
                 )}
 
                 {selectedEntry.video && (
-                  <video src={selectedEntry.video} controls playsInline className="w-full rounded-2xl shadow-md" />
+                  <video 
+                    src={getMediaUrl(selectedEntry.video)} 
+                    controls 
+                    playsInline 
+                    preload="metadata" 
+                    className="w-full rounded-2xl shadow-md max-h-[60vh] bg-black" 
+                  />
                 )}
 
                 {selectedEntry.audio && (
                   <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
-                    <audio src={selectedEntry.audio} controls className="w-full" />
+                    <audio src={getMediaUrl(selectedEntry.audio)} controls className="w-full" />
                   </div>
                 )}
               </div>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, ReactNode, Dispatch } from "react";
+import { get, set } from "idb-keyval";
 
 // Types
 export type MoodEntry = {
@@ -6,9 +7,9 @@ export type MoodEntry = {
   date: string; // ISO Date string (YYYY-MM-DD)
   mood: string; // e.g., "Happy", "Sad", "Excited"
   note: string;
-  image?: string; // Base64 string or URL
-  video?: string; // Base64 string or URL
-  audio?: string; // Base64 string or URL
+  image?: string | Blob; // Base64 string, URL, or Blob
+  video?: string | Blob; // Base64 string, URL, or Blob
+  audio?: string | Blob; // Base64 string, URL, or Blob
   lockDate?: string; // ISO Date string for Time Capsule
   isHighlight?: boolean; // "This was a Win"
 };
@@ -105,7 +106,7 @@ export type UserProfile = {
   currency: string;
   joinedDate: string;
   passportNumber: string; // Random generated ID
-  photo?: string; // Base64 string
+  photo?: string | Blob; // Base64 string or Blob
   intellect: number;
 };
 
@@ -625,28 +626,39 @@ function reducer(state: AppState, action: Action): AppState {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Load from localStorage on mount
+  // Load from storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("mooderia-state");
-    if (saved) {
+    const loadData = async () => {
       try {
-        dispatch({ type: "LOAD_STATE", payload: JSON.parse(saved) });
+        // 1. Try IndexedDB first (new storage)
+        const idbSaved = await get("mooderia-state");
+        if (idbSaved) {
+          dispatch({ type: "LOAD_STATE", payload: idbSaved });
+          return;
+        }
+
+        // 2. Fallback to localStorage (migration)
+        const lsSaved = localStorage.getItem("mooderia-state");
+        if (lsSaved) {
+          const parsed = JSON.parse(lsSaved);
+          dispatch({ type: "LOAD_STATE", payload: parsed });
+          // Migrate to IDB immediately
+          await set("mooderia-state", parsed);
+        }
       } catch (e) {
-        console.error("Failed to load state", e);
+        console.error("Failed to load state from storage", e);
       }
-    }
+    };
+    loadData();
   }, []);
 
-  // Save to localStorage on change with debounce to prevent lag with large data (like videos)
+  // Save to IndexedDB on change with debounce
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(async () => {
       try {
-        localStorage.setItem("mooderia-state", JSON.stringify(state));
+        await set("mooderia-state", state);
       } catch (e) {
-        console.error("Failed to save state to localStorage", e);
-        if (e instanceof Error && e.name === 'QuotaExceededError') {
-          alert("Storage limit reached! Try deleting some old diary entries with large videos.");
-        }
+        console.error("Failed to save state to IndexedDB", e);
       }
     }, 1000); // 1 second debounce
     return () => clearTimeout(timeoutId);

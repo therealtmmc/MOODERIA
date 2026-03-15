@@ -8,7 +8,18 @@ export interface SharePayload {
 }
 
 export const encodeShareData = (type: ShareType, data: any): string => {
-  const payload: SharePayload = { type, data };
+  // Deep clone and strip large media for sharing safety
+  const safeData = JSON.parse(JSON.stringify(data, (key, value) => {
+    if (typeof value === 'string' && value.length > 5000) {
+      return "[Media too large for QR]";
+    }
+    if (value instanceof Blob) {
+      return "[Media Blob]";
+    }
+    return value;
+  }));
+
+  const payload: SharePayload = { type, data: safeData };
   const jsonString = JSON.stringify(payload);
   // Compress and encode for URL
   return LZString.compressToEncodedURIComponent(jsonString);

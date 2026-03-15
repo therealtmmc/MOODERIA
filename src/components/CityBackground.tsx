@@ -41,7 +41,7 @@ export const CityBackground = memo(function CityBackground({ isNight, district, 
   // Generate buildings based on city level
   const buildings = useMemo(() => {
     const bList = [];
-    const count = Math.min(12 + Math.floor(cityLevel / 2), 24); // More buildings as you level up
+    const count = Math.min(8 + Math.floor(cityLevel / 3), 16); // Reduced building count
     
     for (let i = 0; i < count; i++) {
       let heightMultiplier = 1;
@@ -50,16 +50,16 @@ export const CityBackground = memo(function CityBackground({ isNight, district, 
 
       if (cityLevel >= 6 && cityLevel < 16) {
         // Mid-rise
-        heightMultiplier = 1.5 + Math.random();
-        type = Math.random() > 0.5 ? "midrise" : "house";
+        heightMultiplier = 1.3 + Math.random() * 0.5;
+        type = Math.random() > 0.6 ? "midrise" : "house";
       } else if (cityLevel >= 16) {
         // Skyscrapers
-        heightMultiplier = 2 + Math.random() * 2;
-        widthMultiplier = 0.8 + Math.random() * 0.5;
-        type = Math.random() > 0.3 ? "skyscraper" : "midrise";
+        heightMultiplier = 1.8 + Math.random() * 1.5;
+        widthMultiplier = 0.8 + Math.random() * 0.4;
+        type = Math.random() > 0.4 ? "skyscraper" : "midrise";
       }
 
-      const windowCount = type === "skyscraper" ? 12 : type === "midrise" ? 6 : 2;
+      const windowCount = type === "skyscraper" ? 6 : type === "midrise" ? 4 : 1; // Reduced window count
       const windows = Array.from({ length: windowCount }).map((_, j) => ({
         id: j,
         duration: 2 + Math.random() * 2,
@@ -86,9 +86,12 @@ export const CityBackground = memo(function CityBackground({ isNight, district, 
         animate={{ opacity: 1 }}
       >
         <motion.div 
-          style={{ 
+          animate={{ 
             left: `${sunMoonPos()}%`, 
-            top: `${sunMoonVerticalPos()}%`,
+            top: `${sunMoonVerticalPos()}%`
+          }}
+          transition={{ duration: 2, ease: "easeInOut" }}
+          style={{ 
             transform: 'translate(-50%, -50%)'
           }}
           className="absolute text-8xl drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]"
@@ -100,15 +103,12 @@ export const CityBackground = memo(function CityBackground({ isNight, district, 
       {/* Urban Constellations (Night Mode) */}
       {isNight && (
         <div className="absolute inset-0">
-          {Array.from({ length: 30 }).map((_, i) => (
-            <motion.div
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div
               key={`star-${i}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.2, 0.8, 0.2] }}
-              transition={{ duration: 2 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 2 }}
-              className="absolute w-1 h-1 bg-white rounded-full"
+              className="absolute w-1 h-1 bg-white rounded-full opacity-40"
               style={{ 
-                top: `${Math.random() * 80}%`, 
+                top: `${Math.random() * 60}%`, 
                 left: `${Math.random() * 100}%` 
               }}
             />
@@ -139,11 +139,9 @@ export const CityBackground = memo(function CityBackground({ isNight, district, 
               b.type === "skyscraper" ? "grid-cols-3" : b.type === "midrise" ? "grid-cols-2" : "grid-cols-1"
             )}>
                 {b.windows.map((w) => (
-                    <motion.div 
+                    <div 
                         key={w.id} 
-                        className={cn("w-full h-3 rounded-sm", isNight ? "bg-yellow-500/80" : "bg-white/60")}
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ repeat: Infinity, duration: w.duration, delay: w.delay }}
+                        className={cn("w-full h-3 rounded-sm opacity-80", isNight ? "bg-yellow-500/80" : "bg-white/60")}
                     />
                 ))}
             </div>

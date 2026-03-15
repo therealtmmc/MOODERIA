@@ -92,11 +92,11 @@ export function Layout() {
     setLoading(false);
   };
 
+  const toggleSidebar = useMemo(() => () => setIsSidebarOpen(true), []);
+
   if (loading) {
     return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
-
-  const toggleSidebar = useMemo(() => () => setIsSidebarOpen(true), []);
 
   return (
     <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>

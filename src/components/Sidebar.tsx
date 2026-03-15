@@ -73,9 +73,22 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               })}
             </div>
             
-            <div className="mt-8 pt-6 border-t-2 border-gray-100 text-center">
-                <p className="text-gray-400 text-xs font-black uppercase tracking-widest">Mooderia City v2.0</p>
-                <p className="text-gray-300 text-[10px] font-bold mt-1">made with ❤</p>
+            <div className="mt-8 pt-6 border-t-2 border-gray-100 space-y-4">
+                <button
+                  onClick={() => {
+                    if (confirm("EMERGENCY RESET: This will clear all your data (memories, profile, savings). Use this if the app is crashing or very slow. Continue?")) {
+                      localStorage.removeItem("mooderia-state");
+                      window.location.href = "/";
+                    }
+                  }}
+                  className="w-full py-3 text-red-400 hover:text-red-600 text-[10px] font-black uppercase tracking-widest transition-colors"
+                >
+                  Emergency Reset
+                </button>
+                <div className="text-center">
+                  <p className="text-gray-400 text-xs font-black uppercase tracking-widest">Mooderia City v2.0</p>
+                  <p className="text-gray-300 text-[10px] font-bold mt-1">made with ❤</p>
+                </div>
             </div>
           </motion.div>
         </>

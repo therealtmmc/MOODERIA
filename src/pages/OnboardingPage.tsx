@@ -12,18 +12,25 @@ export default function OnboardingPage() {
   
   const [name, setName] = useState("");
   const [citizenship, setCitizenship] = useState("");
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | Blob | null>(null);
   const [isFocused, setIsFocused] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+
+  const getPhotoUrl = (p: string | Blob | null) => {
+    if (!p) return null;
+    if (p instanceof Blob) return URL.createObjectURL(p);
+    return p;
+  };
 
   const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Check size (limit to 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        alert("Photo file is too large. Please choose a photo under 50MB.");
+        return;
+      }
+      setPhoto(file);
     }
   };
 
@@ -120,7 +127,7 @@ export default function OnboardingPage() {
               <label className="relative inline-block cursor-pointer group">
                 <div className="w-28 h-28 bg-gray-100 rounded-2xl mx-auto border-4 border-white shadow-xl flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform relative">
                   {photo ? (
-                    <img src={photo} alt="Profile" className="w-full h-full object-cover" />
+                    <img src={getPhotoUrl(photo)!} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-12 h-12 text-gray-300" />
                   )}

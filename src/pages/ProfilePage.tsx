@@ -71,6 +71,12 @@ export default function ProfilePage() {
     { subject: 'AGI', A: agility, fullMark: 100 },
   ];
 
+  const getPhotoUrl = (p: string | Blob | undefined) => {
+    if (!p) return null;
+    if (p instanceof Blob) return URL.createObjectURL(p);
+    return p;
+  };
+
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
       <header>
@@ -97,7 +103,7 @@ export default function ProfilePage() {
               "border-white"
             )}>
                {userProfile.photo ? (
-                 <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
+                 <img src={getPhotoUrl(userProfile.photo)!} alt="Profile" className="w-full h-full object-cover" />
                ) : (
                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
                     <User className="w-10 h-10 text-gray-400" />
