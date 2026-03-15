@@ -161,6 +161,7 @@ export type AppState = {
   showRankUpPopup: boolean;
   isNightMode: boolean;
   isStarkTheme: boolean;
+  isLoaded: boolean;
   cityLevel: number;
   tasks: Task[];
   marketItems: MarketItem[];
@@ -214,7 +215,8 @@ type Action =
   | { type: "ADD_COINS"; payload: number }
   | { type: "BUY_SHOP_ITEM"; payload: { id: string; name: string; icon: string; price: number } }
   | { type: "DAMAGE_BOSS"; payload: number }
-  | { type: "LEVEL_UP_BOSS" };
+  | { type: "LEVEL_UP_BOSS" }
+  | { type: "SET_LOADED" };
 
 const initialState: AppState = {
   userProfile: null,
@@ -234,6 +236,7 @@ const initialState: AppState = {
   showRankUpPopup: false,
   isNightMode: false,
   isStarkTheme: false,
+  isLoaded: false,
   cityLevel: 1,
   tasks: [],
   marketItems: [],
@@ -589,6 +592,8 @@ function reducer(state: AppState, action: Action): AppState {
         },
         coins: state.coins + 50, // Reward for defeating boss
       };
+    case "SET_LOADED":
+      return { ...state, isLoaded: true };
     case "LOAD_STATE":
       // Backfill IDs for old entries
       const moodsWithIds = (action.payload.moods || []).map((m) => ({
@@ -622,6 +627,7 @@ function reducer(state: AppState, action: Action): AppState {
         extraXP: action.payload.extraXP || 0,
         streakSavers: action.payload.streakSavers || 0,
         profileBorder: action.payload.profileBorder || null,
+        isLoaded: true,
       };
     default:
       return state;
@@ -639,19 +645,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const idbSaved = await get("mooderia-state");
         if (idbSaved) {
           dispatch({ type: "LOAD_STATE", payload: idbSaved });
-          return;
-        }
-
-        // 2. Fallback to localStorage (migration)
-        const lsSaved = localStorage.getItem("mooderia-state");
-        if (lsSaved) {
-          const parsed = JSON.parse(lsSaved);
-          dispatch({ type: "LOAD_STATE", payload: parsed });
-          // Migrate to IDB immediately
-          await set("mooderia-state", parsed);
+        } else {
+          // 2. Fallback to localStorage (migration)
+          const lsSaved = localStorage.getItem("mooderia-state");
+          if (lsSaved) {
+            const parsed = JSON.parse(lsSaved);
+            dispatch({ type: "LOAD_STATE", payload: parsed });
+            // Migrate to IDB immediately
+            await set("mooderia-state", parsed);
+          } else {
+            dispatch({ type: "SET_LOADED" });
+          }
         }
       } catch (e) {
         console.error("Failed to load state from storage", e);
+        dispatch({ type: "SET_LOADED" });
       }
     };
     loadData();

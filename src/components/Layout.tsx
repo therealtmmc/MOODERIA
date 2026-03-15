@@ -25,13 +25,13 @@ export function Layout() {
   const prevThemeRef = useRef(state.isStarkTheme);
 
   useEffect(() => {
-    if (state.isStarkTheme !== prevThemeRef.current) {
+    if (state.isLoaded && state.isStarkTheme !== prevThemeRef.current) {
       setIsTransitioning(true);
       prevThemeRef.current = state.isStarkTheme;
       const timer = setTimeout(() => setIsTransitioning(false), 6500);
       return () => clearTimeout(timer);
     }
-  }, [state.isStarkTheme]);
+  }, [state.isStarkTheme, state.isLoaded]);
 
   // Determine current theme based on district
   const district = useMemo(() => DISTRICTS[location.pathname], [location.pathname]);
