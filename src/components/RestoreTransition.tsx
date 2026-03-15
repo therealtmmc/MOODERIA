@@ -23,24 +23,24 @@ export function RestoreTransition() {
       <AnimatePresence>
         {phase === 'rays' && (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 3 }}
-            transition={{ duration: 2.5, ease: "easeIn" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
             className="absolute inset-0 overflow-hidden"
           >
-            {/* Rotating Rays */}
-            <motion.div 
-              initial={{ x: "-50%", y: "-50%", rotate: 0 }}
-              animate={{ x: "-50%", y: "-50%", rotate: 360 }}
-              transition={{ rotate: { duration: 12, repeat: Infinity, ease: "linear" } }}
-              className="absolute top-0 left-1/2 w-[250vw] h-[250vw] opacity-80 origin-center"
-              style={{
-                background: 'conic-gradient(from 0deg, transparent 0deg, #8b5cf6 45deg, transparent 90deg, #8b5cf6 135deg, transparent 180deg, #8b5cf6 225deg, transparent 270deg, #8b5cf6 315deg, transparent 360deg)'
-              }}
-            />
-            {/* Bright glow at the source */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] bg-white rounded-full blur-[100px] opacity-60" />
+            {/* 5 Vertical Light Beams */}
+            <div className="absolute inset-0 flex justify-evenly items-start px-4">
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ scaleY: 0, opacity: 0 }}
+                  animate={{ scaleY: 1, opacity: 0.8 }}
+                  transition={{ duration: 1.5, delay: i * 0.15, ease: "easeOut" }}
+                  className="w-[12%] h-[120%] origin-top bg-gradient-to-b from-white via-[#8b5cf6]/80 to-transparent blur-2xl"
+                />
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -49,9 +49,9 @@ export function RestoreTransition() {
       <AnimatePresence>
         {(phase === 'fill' || phase === 'loading') && (
           <motion.div
-            initial={{ opacity: 0, y: "-100%" }}
-            animate={{ opacity: 1, y: "0%" }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, ease: "easeInOut" }}
             className="absolute inset-0 bg-[#46178f]"
           />
         )}
