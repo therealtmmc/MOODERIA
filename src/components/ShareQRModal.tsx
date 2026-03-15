@@ -124,10 +124,10 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
 
               {/* Stamp of specific section */}
               <div className={cn(
-                "absolute top-32 right-2 w-20 h-20 rounded-full border-4 flex items-center justify-center font-black text-[10px] rotate-12 z-20 opacity-90",
+                "absolute top-24 right-4 w-16 h-16 rounded-full border-4 flex items-center justify-center font-black text-[9px] rotate-12 z-20 opacity-90",
                 state.isStarkTheme ? "border-green-500 text-green-500 bg-black" : "border-[#ff3b30] text-[#ff3b30] bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               )}>
-                <div className="border-2 border-current rounded-full w-[68px] h-[68px] flex items-center justify-center text-center leading-none p-1 uppercase tracking-tighter">
+                <div className="border-2 border-current rounded-full w-[52px] h-[52px] flex items-center justify-center text-center leading-none p-1 uppercase tracking-tighter">
                   {type}
                 </div>
               </div>
