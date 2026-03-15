@@ -108,7 +108,7 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
                   "px-3 py-1 rounded-full text-[10px] font-black border-2 mt-1 uppercase tracking-wider", 
                   state.isStarkTheme ? "border-green-500 text-green-400 bg-black" : "border-black text-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -rotate-2"
                 )}>
-                  FROM: {state.userProfile?.displayName || "MYSTERY SENDER"}
+                  From: {state.userProfile?.name || "MYSTERY SENDER"}
                 </div>
               </div>
 
