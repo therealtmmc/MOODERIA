@@ -25,7 +25,7 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
   useEffect(() => {
     if (isOpen) {
       const isMedia = (val: any) => val instanceof Blob || (typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:')));
-      const hasMedia = isMedia(data.image) || isMedia(data.video) || isMedia(data.audio);
+      const hasMedia = isMedia(data.image) || isMedia(data.audio);
       
       if (hasMedia) {
         const startCloudShare = async () => {
@@ -35,7 +35,7 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
 
           // Check if any file exceeds 20MB
           const MAX_SIZE = 20 * 1024 * 1024; // 20MB
-          const files = [data.image, data.video, data.audio].filter(f => f instanceof Blob) as Blob[];
+          const files = [data.image, data.audio].filter(f => f instanceof Blob) as Blob[];
           if (files.some(f => f.size > MAX_SIZE)) {
             setError("Media file is too large (max 20MB).");
             setIsUploading(false);
@@ -118,18 +118,19 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
             <div 
               ref={cardRef} 
               className={cn(
-                "p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-500",
-                "bg-gradient-to-br from-purple-500 to-indigo-600"
+                "p-8 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-500 border-4 border-white/20",
+                "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500"
               )}
             >
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
               
               <div className="relative z-10 text-center">
-                <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-4 backdrop-blur-sm">
+                <div className="inline-block px-4 py-1 bg-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-6 backdrop-blur-md shadow-sm">
                   Mooderia Memory
                 </div>
-                <h3 className="text-white font-black text-3xl leading-tight drop-shadow-md break-words mb-2">{title}</h3>
-                <p className="text-indigo-200 text-sm font-bold uppercase tracking-widest">Tap to View</p>
+                <h3 className="text-white font-black text-4xl leading-tight drop-shadow-lg break-words mb-4 px-2">{title}</h3>
+                <div className="w-16 h-1 bg-white/30 rounded-full mx-auto mb-4"></div>
+                <p className="text-white/80 text-sm font-bold uppercase tracking-widest">Tap to View</p>
               </div>
             </div>
 

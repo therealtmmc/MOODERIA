@@ -262,13 +262,18 @@ export default function ShareReceiverPage() {
             className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden z-10 flex flex-col max-h-[90vh]"
           >
             {/* Header */}
-            <div className={cn(
-              "p-6 text-white flex justify-between items-center",
-              payload.type === 'diary' ? 'bg-purple-600' :
-              payload.type === 'workout' ? 'bg-red-500' :
-              payload.type === 'market' ? 'bg-amber-500' : 
-              payload.type === 'passport' ? 'bg-indigo-600' : 'bg-blue-500'
-            )}>
+            <motion.div 
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className={cn(
+                "p-6 text-white flex justify-between items-center",
+                payload.type === 'diary' ? 'bg-purple-600' :
+                payload.type === 'workout' ? 'bg-red-500' :
+                payload.type === 'market' ? 'bg-amber-500' : 
+                payload.type === 'passport' ? 'bg-indigo-600' : 'bg-blue-500'
+              )}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
                   {payload.type === 'diary' && <Mail className="w-5 h-5" />}
@@ -282,10 +287,15 @@ export default function ShareReceiverPage() {
               <button onClick={() => navigate('/')} className="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors">
                 <X className="w-5 h-5" />
               </button>
-            </div>
+            </motion.div>
 
             {/* Content */}
-            <div className="p-6 sm:p-8 overflow-y-auto flex-1">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="p-6 sm:p-8 overflow-y-auto flex-1"
+            >
               {payload.type === 'diary' && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b-2 border-gray-100 pb-4">
@@ -466,10 +476,15 @@ export default function ShareReceiverPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Footer Actions */}
-            <div className="p-6 bg-gray-50 border-t-2 border-gray-100">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="p-6 bg-gray-50 border-t-2 border-gray-100"
+            >
               <button
                 onClick={handleSave}
                 disabled={payload.type === 'market' && state.walletBalance < payload.data.items.reduce((acc: number, item: any) => acc + (item.price || 0), 0)}
@@ -499,7 +514,7 @@ export default function ShareReceiverPage() {
                   </>
                 )}
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

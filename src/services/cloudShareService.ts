@@ -49,7 +49,7 @@ export const createCloudShare = async (
 ): Promise<string> => {
   const processedData = { ...data };
   
-  const mediaKeys = ['image', 'video', 'audio'];
+  const mediaKeys = ['image', 'audio'];
   const mediaToUpload = mediaKeys.filter(key => data[key] instanceof Blob || (typeof data[key] === 'string' && data[key].startsWith('data:')));
   
   const progressMap = new Map<string, number>();
@@ -67,29 +67,14 @@ export const createCloudShare = async (
       blob = await dataUrlToBlob(data[key]);
     }
     
-    // Compress video if it's a video and larger than 5MB
-    if (key === 'video' && blob.size > 5 * 1024 * 1024) {
-      progressMap.set(key, 0); // Start progress at 0 for compression
-      blob = await compressVideo(blob, (p) => {
-        // Compression is roughly 50% of the total task
-        progressMap.set(key, p * 0.5);
-        updateProgress();
-      });
-      // Compression done, now upload
-      progressMap.set(key, 50);
-    } else if (key === 'video') {
-      // Skipping compression, set progress to 50% to align with upload logic
-      progressMap.set(key, 50);
-    }
-    
     processedData[key] = await uploadMedia(blob, `shares/${folder}/${crypto.randomUUID()}`, (p) => {
-      // Upload is the other 50%
-      progressMap.set(key, 50 + p * 0.5);
+      // Upload is the full task
+      progressMap.set(key, p);
       updateProgress();
     });
   };
 
-  await Promise.all(mediaToUpload.map(key => processMedia(key, key === 'image' ? 'images' : key === 'video' ? 'videos' : 'audio')));
+  await Promise.all(mediaToUpload.map(key => processMedia(key, key === 'image' ? 'images' : 'audio')));
 
   const docRef = await addDoc(collection(db, 'shared_memories'), {
     type,

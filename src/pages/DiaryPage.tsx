@@ -478,6 +478,13 @@ export default function DiaryPage() {
               className="hidden" 
               onChange={handleVideoUpload}
             />
+            <input 
+              type="file" 
+              accept="video/*" 
+              ref={videoInputRef} 
+              className="hidden" 
+              onChange={handleVideoUpload}
+            />
             
             <button 
               onClick={() => fileInputRef.current?.click()}
@@ -485,13 +492,6 @@ export default function DiaryPage() {
             >
               <Camera className="w-5 h-5" />
               <span className="font-bold text-xs">Photo</span>
-            </button>
-            <button 
-              onClick={() => videoInputRef.current?.click()}
-              className="flex-1 h-12 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center gap-2 text-gray-400 hover:text-[#1368ce] hover:border-[#1368ce] hover:bg-blue-50 transition-all"
-            >
-              <Video className="w-5 h-5" />
-              <span className="font-bold text-xs">Video</span>
             </button>
           </div>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">
