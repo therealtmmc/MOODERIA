@@ -8,19 +8,27 @@ export const uploadMedia = async (blob: Blob, path: string): Promise<string> => 
   return getDownloadURL(storageRef);
 };
 
+const dataUrlToBlob = async (dataUrl: string): Promise<Blob> => {
+  const response = await fetch(dataUrl);
+  return await response.blob();
+};
+
 export const createCloudShare = async (type: string, data: any): Promise<string> => {
   // 1. Handle media uploads if any
   const processedData = { ...data };
   
-  if (data.image instanceof Blob) {
-    processedData.image = await uploadMedia(data.image, `shares/images/${crypto.randomUUID()}`);
-  }
-  if (data.video instanceof Blob) {
-    processedData.video = await uploadMedia(data.video, `shares/videos/${crypto.randomUUID()}`);
-  }
-  if (data.audio instanceof Blob) {
-    processedData.audio = await uploadMedia(data.audio, `shares/audio/${crypto.randomUUID()}`);
-  }
+  const processMedia = async (key: string, folder: string) => {
+    if (data[key] instanceof Blob) {
+      processedData[key] = await uploadMedia(data[key], `shares/${folder}/${crypto.randomUUID()}`);
+    } else if (typeof data[key] === 'string' && data[key].startsWith('data:')) {
+      const blob = await dataUrlToBlob(data[key]);
+      processedData[key] = await uploadMedia(blob, `shares/${folder}/${crypto.randomUUID()}`);
+    }
+  };
+
+  await processMedia('image', 'images');
+  await processMedia('video', 'videos');
+  await processMedia('audio', 'audio');
 
   // 2. Save to Firestore
   const docRef = await addDoc(collection(db, 'shared_memories'), {

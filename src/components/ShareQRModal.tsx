@@ -23,8 +23,9 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
 
   useEffect(() => {
     if (isOpen) {
-      // Check if we need cloud sharing (if data has Blobs)
-      const hasMedia = data.image instanceof Blob || data.video instanceof Blob || data.audio instanceof Blob;
+      // Check if we need cloud sharing (if data has Blobs or URLs)
+      const isMedia = (val: any) => val instanceof Blob || (typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:')));
+      const hasMedia = isMedia(data.image) || isMedia(data.video) || isMedia(data.audio);
       
       if (hasMedia) {
         const startCloudShare = async () => {

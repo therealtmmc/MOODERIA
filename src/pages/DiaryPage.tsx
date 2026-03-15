@@ -913,10 +913,8 @@ export default function DiaryPage() {
               <div className="p-6 bg-gray-50 border-t-2 border-gray-100 flex gap-3">
                 <button
                   onClick={() => {
-                    if(confirm("Delete this memory?")) {
-                      dispatch({ type: "DELETE_DIARY", payload: selectedEntry.id });
-                      setSelectedEntry(null);
-                    }
+                    dispatch({ type: "DELETE_DIARY", payload: selectedEntry.id });
+                    setSelectedEntry(null);
                   }}
                   className="flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-black uppercase tracking-widest hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
                 >
