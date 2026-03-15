@@ -132,20 +132,22 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
                 </div>
               </div>
 
-              {/* Bottom Section: QR + Date */}
+              {/* Bottom Section: Date + QR */}
               <div className="relative z-10 flex flex-col items-center mt-auto w-full mb-2">
+                {/* Date Stamp */}
                 <div className={cn(
-                  "p-3 rounded-2xl mb-3",
-                  state.isStarkTheme ? "bg-black border-2 border-green-500" : "bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-1"
-                )}>
-                  <QRCodeSVG value={shareUrl} size={130} level="H" includeMargin={false} fgColor={state.isStarkTheme ? "#22c55e" : "#000000"} bgColor={state.isStarkTheme ? "#000000" : "#ffffff"} />
-                </div>
-                
-                <div className={cn(
-                  "mt-2 px-3 py-1 border-2 font-black text-[10px] uppercase tracking-widest",
+                  "mb-3 px-3 py-1 border-2 font-black text-[10px] uppercase tracking-widest",
                   state.isStarkTheme ? "border-green-500 text-green-500 bg-black" : "border-black text-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 )}>
                   {format(new Date(), 'MMM dd, yyyy')}
+                </div>
+
+                {/* QR Code */}
+                <div className={cn(
+                  "p-3 rounded-2xl",
+                  state.isStarkTheme ? "bg-black border-2 border-green-500" : "bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-1"
+                )}>
+                  <QRCodeSVG value={shareUrl} size={130} level="H" includeMargin={false} fgColor={state.isStarkTheme ? "#22c55e" : "#000000"} bgColor={state.isStarkTheme ? "#000000" : "#ffffff"} />
                 </div>
               </div>
             </div>
