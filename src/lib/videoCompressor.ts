@@ -35,8 +35,8 @@ export const compressVideo = async (
     const compressionPromise = ffmpegInstance.exec([
       '-i', inputName,
       '-vcodec', 'libx264',
-      '-crf', '28',
-      '-preset', 'veryfast',
+      '-crf', '30',
+      '-preset', 'ultrafast',
       '-vf', 'scale=-2:480',
       outputName
     ]);

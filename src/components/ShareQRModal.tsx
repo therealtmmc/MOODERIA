@@ -32,6 +32,16 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
           setIsUploading(true);
           setUploadProgress(0);
           setError(null);
+
+          // Check if any file exceeds 30MB
+          const MAX_SIZE = 30 * 1024 * 1024; // 30MB
+          const files = [data.image, data.video, data.audio].filter(f => f instanceof Blob) as Blob[];
+          if (files.some(f => f.size > MAX_SIZE)) {
+            setError("Media file is too large (max 30MB).");
+            setIsUploading(false);
+            return;
+          }
+
           try {
             const id = await createCloudShare(type, data, (progress) => {
               setUploadProgress(progress);

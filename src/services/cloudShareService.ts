@@ -57,8 +57,8 @@ export const createCloudShare = async (
       blob = await dataUrlToBlob(data[key]);
     }
     
-    // Compress video if it's a video
-    if (key === 'video') {
+    // Compress video if it's a video and larger than 5MB
+    if (key === 'video' && blob.size > 5 * 1024 * 1024) {
       progressMap.set(key, 0); // Start progress at 0 for compression
       blob = await compressVideo(blob, (p) => {
         // Compression is roughly 50% of the total task
@@ -66,6 +66,9 @@ export const createCloudShare = async (
         updateProgress();
       });
       // Compression done, now upload
+      progressMap.set(key, 50);
+    } else if (key === 'video') {
+      // Skipping compression, set progress to 50% to align with upload logic
       progressMap.set(key, 50);
     }
     
