@@ -129,8 +129,20 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
                   Mooderia Memory
                 </div>
                 <h3 className="text-white font-black text-3xl leading-tight drop-shadow-md break-words mb-2">{title}</h3>
-                <p className="text-indigo-200 text-sm font-bold uppercase tracking-widest">Scan to View</p>
+                <p className="text-indigo-200 text-sm font-bold uppercase tracking-widest">Tap to View</p>
               </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="mt-6 bg-purple-50 p-4 rounded-2xl border border-purple-100">
+              <h4 className="text-purple-900 font-bold text-sm mb-2 uppercase tracking-wide">How to Share to Story:</h4>
+              <ol className="text-purple-700 text-xs space-y-1 list-decimal list-inside">
+                <li>Click <strong>"Copy Link"</strong> to copy the memory URL.</li>
+                <li>Click <strong>"Save Card"</strong> to download the image.</li>
+                <li>Open Instagram/Facebook Story.</li>
+                <li>Upload the saved image.</li>
+                <li>Add a <strong>"Link" sticker</strong> and paste the URL.</li>
+              </ol>
             </div>
 
             {error && (
