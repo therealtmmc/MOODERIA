@@ -7,6 +7,7 @@ import { createCloudShare } from '@/services/cloudShareService';
 import { cn } from '@/lib/utils';
 import { QRCodeSVG } from 'qrcode.react';
 import { useStore } from '@/context/StoreContext';
+import { format } from 'date-fns';
 
 interface ShareQRModalProps {
   isOpen: boolean;
@@ -88,27 +89,64 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
             <div 
               ref={cardRef} 
               className={cn(
-                "p-8 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-500 bg-[#fdfbf7]"
+                "p-6 rounded-3xl flex flex-col items-center relative overflow-hidden transition-colors duration-500 mx-auto",
+                state.isStarkTheme ? "bg-black border-4 border-green-500" : "bg-[#ffde59] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
               )}
+              style={{ width: '100%', maxWidth: '320px', minHeight: '460px' }}
             >
-              {/* Airmail Border */}
-              {!state.isStarkTheme && <div className="absolute inset-0 pointer-events-none" style={{ border: '12px solid transparent', borderImage: 'repeating-linear-gradient(45deg, #e53e3e 0, #e53e3e 10px, transparent 10px, transparent 20px, #3182ce 20px, #3182ce 30px, transparent 30px, transparent 40px) 12' }}></div>}
-              {state.isStarkTheme && <div className="absolute inset-0 border-[12px] border-green-500 pointer-events-none"></div>}
-              
-              {/* Mail Envelope Flap Design */}
-              {!state.isStarkTheme && <div className="absolute top-0 left-0 right-0 h-16 bg-red-500/5 border-b border-dashed border-red-500/20" style={{ clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }}></div>}
+              {/* Background pattern for cartoony feel */}
+              {!state.isStarkTheme && (
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 2px, transparent 2px)', backgroundSize: '16px 16px' }}></div>
+              )}
 
-              <div className="relative z-10 text-center w-full flex flex-col items-center mt-4">
-                <div className="inline-block px-4 py-1 bg-red-100 rounded-full text-red-600 text-[10px] font-black uppercase tracking-widest mb-4 border border-red-200 shadow-sm">
-                  {state.isStarkTheme ? "SECURE_PACKET" : "Mooderia Post"}
+              {/* Top Section: Mooderia + Name */}
+              <div className="w-full relative z-10 flex flex-col items-center mt-2 mb-6">
+                <h1 className={cn("text-4xl font-black uppercase tracking-tighter", state.isStarkTheme ? "text-green-500" : "text-black")}>
+                  MOODERIA
+                </h1>
+                <div className={cn(
+                  "px-3 py-1 rounded-full text-[10px] font-black border-2 mt-1 uppercase tracking-wider", 
+                  state.isStarkTheme ? "border-green-500 text-green-400 bg-black" : "border-black text-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -rotate-2"
+                )}>
+                  FROM: {state.userProfile?.displayName || "MYSTERY SENDER"}
                 </div>
-                <h3 className={cn("text-gray-800 font-black text-2xl leading-tight break-words mb-6 px-2", !state.isStarkTheme && "font-serif italic")}>{title}</h3>
-                
-                <div className="bg-white p-3 rounded-2xl shadow-md border-2 border-gray-100 mb-4">
-                  <QRCodeSVG value={shareUrl} size={140} level="H" includeMargin={false} fgColor={state.isStarkTheme ? "#22c55e" : "#000000"} bgColor={state.isStarkTheme ? "#000000" : "#ffffff"} />
+              </div>
+
+              {/* Title / Content */}
+              <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center text-center px-4 mb-8">
+                <h3 className={cn(
+                  "font-black text-2xl leading-tight break-words", 
+                  state.isStarkTheme ? "text-green-400" : "text-black"
+                )}>
+                  {title}
+                </h3>
+              </div>
+
+              {/* Stamp of specific section */}
+              <div className={cn(
+                "absolute top-32 right-2 w-20 h-20 rounded-full border-4 flex items-center justify-center font-black text-[10px] rotate-12 z-20 opacity-90",
+                state.isStarkTheme ? "border-green-500 text-green-500 bg-black" : "border-[#ff3b30] text-[#ff3b30] bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              )}>
+                <div className="border-2 border-current rounded-full w-[68px] h-[68px] flex items-center justify-center text-center leading-none p-1 uppercase tracking-tighter">
+                  {type}
+                </div>
+              </div>
+
+              {/* Bottom Section: QR + Date */}
+              <div className="relative z-10 flex flex-col items-center mt-auto w-full mb-2">
+                <div className={cn(
+                  "p-3 rounded-2xl mb-3",
+                  state.isStarkTheme ? "bg-black border-2 border-green-500" : "bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-1"
+                )}>
+                  <QRCodeSVG value={shareUrl} size={130} level="H" includeMargin={false} fgColor={state.isStarkTheme ? "#22c55e" : "#000000"} bgColor={state.isStarkTheme ? "#000000" : "#ffffff"} />
                 </div>
                 
-                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{state.isStarkTheme ? "> DECRYPTING MEMORY..." : "Scan to Open Letter"}</p>
+                <p className={cn(
+                  "text-[10px] font-black uppercase tracking-widest mt-1", 
+                  state.isStarkTheme ? "text-green-600" : "text-black/60"
+                )}>
+                  {format(new Date(), 'MMM dd, yyyy')}
+                </p>
               </div>
             </div>
 
