@@ -41,3 +41,8 @@ export const generateShareUrl = (type: ShareType, data: any): string => {
   const baseUrl = window.location.origin;
   return `${baseUrl}/share?d=${encoded}`;
 };
+
+export const generateCloudShareUrl = (cloudId: string): string => {
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/share?c=${cloudId}`;
+};

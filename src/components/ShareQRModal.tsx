@@ -1,9 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { toPng } from 'html-to-image';
-import { X, Download, Share2 } from 'lucide-react';
-import { generateShareUrl, ShareType } from '@/lib/shareUtils';
+import { X, Download, Share2, Loader2, Cloud } from 'lucide-react';
+import { generateShareUrl, generateCloudShareUrl, ShareType } from '@/lib/shareUtils';
 import { motion, AnimatePresence } from 'motion/react';
+import { createCloudShare } from '@/services/cloudShareService';
+import { cn } from '@/lib/utils';
 
 interface ShareQRModalProps {
   isOpen: boolean;
@@ -15,6 +17,36 @@ interface ShareQRModalProps {
 
 export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModalProps) {
   const qrRef = useRef<HTMLDivElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [cloudId, setCloudId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Check if we need cloud sharing (if data has Blobs)
+      const hasMedia = data.image instanceof Blob || data.video instanceof Blob || data.audio instanceof Blob;
+      
+      if (hasMedia) {
+        const startCloudShare = async () => {
+          setIsUploading(true);
+          setError(null);
+          try {
+            const id = await createCloudShare(type, data);
+            setCloudId(id);
+          } catch (err) {
+            console.error("Cloud share failed", err);
+            setError("Failed to upload media to cloud. Sharing without media.");
+          } finally {
+            setIsUploading(false);
+          }
+        };
+        startCloudShare();
+      } else {
+        setCloudId(null);
+        setError(null);
+      }
+    }
+  }, [isOpen, data, type]);
 
   const handleDownload = async () => {
     if (!qrRef.current) return;
@@ -33,7 +65,7 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
     }
   };
 
-  const shareUrl = generateShareUrl(type, data);
+  const shareUrl = cloudId ? generateCloudShareUrl(cloudId) : generateShareUrl(type, data);
 
   return (
     <AnimatePresence>
@@ -54,44 +86,62 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
 
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-purple-600 shadow-inner">
-                <Share2 className="w-8 h-8" />
+                {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : cloudId ? <Cloud className="w-8 h-8" /> : <Share2 className="w-8 h-8" />}
               </div>
-              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Share {type}</h2>
-              <p className="text-sm font-bold text-gray-500 mt-1">Scan to open in Mooderia</p>
+              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
+                {isUploading ? "Uploading..." : cloudId ? "Cloud Link Ready" : `Share ${type}`}
+              </h2>
+              <p className="text-sm font-bold text-gray-500 mt-1">
+                {isUploading ? "Preparing your playable link..." : "Scan to open in Mooderia"}
+              </p>
             </div>
 
             {/* QR Code Container (This is what gets captured) */}
             <div 
               ref={qrRef} 
-              className="bg-gradient-to-br from-purple-500 to-indigo-600 p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center relative overflow-hidden"
+              className={cn(
+                "p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center relative overflow-hidden transition-colors duration-500",
+                isUploading ? "bg-gray-200" : cloudId ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-gradient-to-br from-purple-500 to-indigo-600"
+              )}
               style={{
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #4338ca 100%)',
+                background: isUploading ? '#e5e7eb' : cloudId ? 'linear-gradient(135deg, #3b82f6 0%, #4338ca 100%)' : 'linear-gradient(135deg, #8b5cf6 0%, #4338ca 100%)',
               }}
             >
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
               
               <div className="bg-white p-4 rounded-2xl shadow-lg relative z-10 mb-4">
-                <QRCodeCanvas 
-                  value={shareUrl} 
-                  size={180} 
-                  level="H"
-                  includeMargin={false}
-                  fgColor="#4338ca"
-                />
+                {isUploading ? (
+                  <div className="w-[180px] h-[180px] flex items-center justify-center bg-gray-50 rounded-lg">
+                    <Loader2 className="w-12 h-12 text-gray-300 animate-spin" />
+                  </div>
+                ) : (
+                  <QRCodeCanvas 
+                    value={shareUrl} 
+                    size={180} 
+                    level="H"
+                    includeMargin={false}
+                    fgColor={cloudId ? "#1e40af" : "#4338ca"}
+                  />
+                )}
               </div>
               
               <div className="mt-2 text-center relative z-10 w-full">
                 <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-2 backdrop-blur-sm">
-                  {type}
+                  {isUploading ? "Processing" : cloudId ? "Cloud Link" : type}
                 </div>
                 <h3 className="text-white font-black text-xl leading-tight drop-shadow-md break-words line-clamp-2">{title}</h3>
                 <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest mt-2">Mooderia Republic</p>
               </div>
             </div>
 
+            {error && (
+              <p className="text-red-500 text-[10px] font-bold text-center mt-4 uppercase">{error}</p>
+            )}
+
             <button
               onClick={handleDownload}
-              className="w-full mt-6 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-95"
+              disabled={isUploading}
+              className="w-full mt-6 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50"
             >
               <Download className="w-5 h-5" />
               Save Photo

@@ -1,0 +1,36 @@
+{
+  "entities": {
+    "SharedMemory": {
+      "title": "Shared Memory",
+      "description": "A memory shared via cloud link",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The type of shared data (diary, workout, event, market, passport)"
+        },
+        "data": {
+          "type": "object",
+          "description": "The actual data being shared"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this share was created"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this share link expires"
+        }
+      },
+      "required": ["type", "data", "createdAt"]
+    }
+  },
+  "firestore": {
+    "shared_memories/{memoryId}": {
+      "schema": "SharedMemory",
+      "description": "Collection of shared memories accessible via QR links"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isValidSharedMemory(data) {
+      return data.keys().hasAll(['type', 'data', 'createdAt']) &&
+             data.type is string &&
+             data.data is map &&
+             data.createdAt is string;
+    }
+
+    match /shared_memories/{memoryId} {
+      // Allow anyone to read a shared memory if they have the ID (from QR)
+      allow read: if true;
+      
+      // Allow anyone to create a shared memory (for now, since we don't have mandatory auth)
+      // but enforce strict schema and size limits
+      allow create: if isValidSharedMemory(request.resource.data) &&
+                      request.resource.data.data.toString().size() < 1048576; // 1MB limit for the data map
+      
+      // No updates or deletes allowed for shared memories once created
+      allow update, delete: if false;
+    }
+  }
+}

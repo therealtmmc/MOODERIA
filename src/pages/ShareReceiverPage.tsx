@@ -3,8 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { decodeShareData, SharePayload } from '@/lib/shareUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '@/context/StoreContext';
-import { Mail, Dumbbell, Calendar, Save, X, AlertTriangle, ArrowRight, ShoppingCart, Database } from 'lucide-react';
+import { Mail, Dumbbell, Calendar, Save, X, AlertTriangle, ArrowRight, ShoppingCart, Database, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCloudShare } from '@/services/cloudShareService';
 
 export default function ShareReceiverPage() {
   const [searchParams] = useSearchParams();
@@ -13,21 +14,42 @@ export default function ShareReceiverPage() {
   
   const [payload, setPayload] = useState<SharePayload | null>(null);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [animationState, setAnimationState] = useState<'initial' | 'opening' | 'opened'>('initial');
   const [showNotice, setShowNotice] = useState(false);
 
   useEffect(() => {
     const dataParam = searchParams.get('d');
-    if (dataParam) {
-      const decoded = decodeShareData(dataParam);
-      if (decoded) {
-        setPayload(decoded);
+    const cloudParam = searchParams.get('c');
+
+    const loadData = async () => {
+      setLoading(true);
+      if (cloudParam) {
+        try {
+          const cloudData = await getCloudShare(cloudParam);
+          if (cloudData) {
+            setPayload(cloudData as SharePayload);
+          } else {
+            setError(true);
+          }
+        } catch (err) {
+          console.error("Failed to load cloud share", err);
+          setError(true);
+        }
+      } else if (dataParam) {
+        const decoded = decodeShareData(dataParam);
+        if (decoded) {
+          setPayload(decoded);
+        } else {
+          setError(true);
+        }
       } else {
         setError(true);
       }
-    } else {
-      setError(true);
-    }
+      setLoading(false);
+    };
+
+    loadData();
   }, [searchParams]);
 
   const handleOpen = () => {
@@ -112,6 +134,17 @@ export default function ShareReceiverPage() {
         break;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#46178f] flex items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="w-16 h-16 text-white animate-spin mx-auto mb-4 opacity-50" />
+          <p className="text-white/60 font-black uppercase tracking-widest text-sm">Accessing Cloud Link...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -265,23 +298,33 @@ export default function ShareReceiverPage() {
                     {payload.data.note}
                   </p>
                   {payload.data.image && (
-                    payload.data.image.startsWith('[') ? (
+                    payload.data.image.startsWith('http') ? (
+                      <img src={payload.data.image} alt="Diary" className="w-full rounded-2xl shadow-md mt-4" />
+                    ) : (
                       <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
                         {payload.data.image}
                       </div>
-                    ) : (
-                      <img src={payload.data.image} alt="Diary" className="w-full rounded-2xl shadow-md mt-4" />
                     )
                   )}
                   {payload.data.video && (
-                    <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
-                      {payload.data.video.startsWith('[') ? payload.data.video : 'Video Attachment'}
-                    </div>
+                    payload.data.video.startsWith('http') ? (
+                      <video src={payload.data.video} controls playsInline className="w-full rounded-2xl shadow-md mt-4 bg-black" />
+                    ) : (
+                      <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
+                        {payload.data.video}
+                      </div>
+                    )
                   )}
                   {payload.data.audio && (
-                    <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
-                      {payload.data.audio.startsWith('[') ? payload.data.audio : 'Audio Attachment'}
-                    </div>
+                    payload.data.audio.startsWith('http') ? (
+                      <div className="bg-gray-50 p-4 rounded-2xl border-2 border-gray-100 mt-4">
+                        <audio src={payload.data.audio} controls className="w-full" />
+                      </div>
+                    ) : (
+                      <div className="bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-200 text-center text-xs font-bold text-gray-400 mt-4">
+                        {payload.data.audio}
+                      </div>
+                    )
                   )}
                 </div>
               )}
