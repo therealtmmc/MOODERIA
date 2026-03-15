@@ -40,6 +40,7 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
         quality: 1,
         pixelRatio: 3, // High resolution
         skipFonts: false,
+        cacheBust: true,
       });
       const link = document.createElement('a');
       link.download = `Mooderia-${type}-${title.replace(/\s+/g, '-')}.png`;
