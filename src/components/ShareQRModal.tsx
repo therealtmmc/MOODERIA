@@ -18,21 +18,24 @@ interface ShareQRModalProps {
 export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModalProps) {
   const qrRef = useRef<HTMLDivElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [cloudId, setCloudId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      // Check if we need cloud sharing (if data has Blobs or URLs)
       const isMedia = (val: any) => val instanceof Blob || (typeof val === 'string' && (val.startsWith('http') || val.startsWith('data:')));
       const hasMedia = isMedia(data.image) || isMedia(data.video) || isMedia(data.audio);
       
       if (hasMedia) {
         const startCloudShare = async () => {
           setIsUploading(true);
+          setUploadProgress(0);
           setError(null);
           try {
-            const id = await createCloudShare(type, data);
+            const id = await createCloudShare(type, data, (progress) => {
+              setUploadProgress(progress);
+            });
             setCloudId(id);
           } catch (err) {
             console.error("Cloud share failed", err);
@@ -90,11 +93,17 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
                 {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : cloudId ? <Cloud className="w-8 h-8" /> : <Share2 className="w-8 h-8" />}
               </div>
               <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
-                {isUploading ? "Uploading..." : cloudId ? "Cloud Link Ready" : `Share ${type}`}
+                {isUploading ? (uploadProgress < 50 ? "Compressing Video..." : "Uploading...") : cloudId ? "Cloud Link Ready" : `Share ${type}`}
               </h2>
-              <p className="text-sm font-bold text-gray-500 mt-1">
-                {isUploading ? "Preparing your playable link..." : "Scan to open in Mooderia"}
-              </p>
+              {isUploading ? (
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+                  <div className="bg-purple-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                </div>
+              ) : (
+                <p className="text-sm font-bold text-gray-500 mt-1">
+                  {cloudId ? "Scan to open in Mooderia" : "Scan to open in Mooderia"}
+                </p>
+              )}
             </div>
 
             {/* QR Code Container (This is what gets captured) */}
