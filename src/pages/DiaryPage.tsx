@@ -46,6 +46,10 @@ export default function DiaryPage() {
   const [viewMode, setViewMode] = useState<"list" | "gallery">("list");
   const [filterMode, setFilterMode] = useState<"all" | "wins">("all");
   const [dailyPrompt, setDailyPrompt] = useState("");
+
+  const filteredMoods = React.useMemo(() => {
+    return state.moods.filter(m => m.note || m.image || m.video || m.audio);
+  }, [state.moods]);
   
   const [isRecording, setIsRecording] = useState(false);
   const [showRecordingPopup, setShowRecordingPopup] = useState(false);
@@ -123,9 +127,9 @@ export default function DiaryPage() {
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check size (limit to 10MB for base64 safety in localstorage)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("Video file is too large. Please choose a video under 10MB.");
+      // Check size (limit to 5MB for base64 safety in localstorage and performance)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Video file is too large. Please choose a video under 5MB to ensure smooth playback and prevent crashes.");
         return;
       }
       const reader = new FileReader();
@@ -183,30 +187,37 @@ export default function DiaryPage() {
   };
 
   // Mood Insights Calculation (Last 7 Days)
-  const last7DaysMoods = state.moods
-    .filter(m => {
+  const last7DaysMoods = React.useMemo(() => {
+    return state.moods.filter(m => {
       const date = parseISO(m.date);
       const sevenDaysAgo = subDays(new Date(), 7);
       return date >= sevenDaysAgo;
     });
+  }, [state.moods]);
   
-  const moodCounts = last7DaysMoods.reduce((acc, curr) => {
-    acc[curr.mood] = (acc[curr.mood] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const moodCounts = React.useMemo(() => {
+    return last7DaysMoods.reduce((acc, curr) => {
+      acc[curr.mood] = (acc[curr.mood] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [last7DaysMoods]);
 
-  const sortedMoods = Object.entries(moodCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1]);
+  const sortedMoods = React.useMemo(() => {
+    return Object.entries(moodCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1]);
+  }, [moodCounts]);
 
   // On This Day Logic
-  const onThisDayEntries = state.moods.filter(m => {
-    const entryDate = parseISO(m.date);
-    const todayDate = new Date();
-    return (
-      entryDate.getDate() === todayDate.getDate() &&
-      entryDate.getMonth() === todayDate.getMonth() &&
-      entryDate.getFullYear() !== todayDate.getFullYear()
-    );
-  });
+  const onThisDayEntries = React.useMemo(() => {
+    return state.moods.filter(m => {
+      const entryDate = parseISO(m.date);
+      const todayDate = new Date();
+      return (
+        entryDate.getDate() === todayDate.getDate() &&
+        entryDate.getMonth() === todayDate.getMonth() &&
+        entryDate.getFullYear() !== todayDate.getFullYear()
+      );
+    });
+  }, [state.moods]);
 
   return (
     <div className="p-4 pt-8 pb-24 space-y-6">
@@ -495,7 +506,7 @@ export default function DiaryPage() {
               )}
               {selectedVideo && (
                 <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 group aspect-video bg-black">
-                  <video src={selectedVideo} controls className="w-full h-full object-cover" />
+                  <video src={selectedVideo} controls playsInline className="w-full h-full object-cover" />
                   <button 
                     onClick={() => setSelectedVideo(null)}
                     className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors z-10"
@@ -639,8 +650,7 @@ export default function DiaryPage() {
           <div className="space-y-6">
             {/* Bookshelf Layout */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {state.moods
-                .filter(m => m.note || m.image || m.video || m.audio)
+              {filteredMoods
                 .filter(m => filterMode === "all" || m.isHighlight)
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((entry, index) => {
@@ -725,7 +735,7 @@ export default function DiaryPage() {
         ) : (
           <div className="space-y-8">
             {Object.entries(
-              state.moods
+              filteredMoods
                 .filter(m => m.image || m.video || m.audio)
                 .filter(m => filterMode === "all" || m.isHighlight)
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -815,7 +825,7 @@ export default function DiaryPage() {
           </div>
         )}
         
-        {state.moods.filter(m => m.note || m.image || m.video || m.audio).length === 0 && (
+        {filteredMoods.length === 0 && (
           <div className="text-center py-12 opacity-50">
             <Book className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-400 font-bold">No memories saved yet.</p>
@@ -868,7 +878,7 @@ export default function DiaryPage() {
                 )}
 
                 {selectedEntry.video && (
-                  <video src={selectedEntry.video} controls className="w-full rounded-2xl shadow-md" />
+                  <video src={selectedEntry.video} controls playsInline className="w-full rounded-2xl shadow-md" />
                 )}
 
                 {selectedEntry.audio && (

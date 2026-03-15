@@ -1,8 +1,9 @@
+import { useMemo, memo } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { DistrictTheme } from "@/constants/districts";
 
-export function CityBackground({ isNight, district, weather, cityLevel = 1 }: { isNight: boolean, district?: DistrictTheme, weather: string, cityLevel?: number }) {
+export const CityBackground = memo(function CityBackground({ isNight, district, weather, cityLevel = 1 }: { isNight: boolean, district?: DistrictTheme, weather: string, cityLevel?: number }) {
   const sunMoonPos = () => {
     const d = new Date();
     const hour = d.getHours() + d.getMinutes() / 60;
@@ -38,8 +39,8 @@ export function CityBackground({ isNight, district, weather, cityLevel = 1 }: { 
   };
 
   // Generate buildings based on city level
-  const getBuildings = () => {
-    const buildings = [];
+  const buildings = useMemo(() => {
+    const bList = [];
     const count = Math.min(12 + Math.floor(cityLevel / 2), 24); // More buildings as you level up
     
     for (let i = 0; i < count; i++) {
@@ -58,17 +59,23 @@ export function CityBackground({ isNight, district, weather, cityLevel = 1 }: { 
         type = Math.random() > 0.3 ? "skyscraper" : "midrise";
       }
 
-      buildings.push({
+      const windowCount = type === "skyscraper" ? 12 : type === "midrise" ? 6 : 2;
+      const windows = Array.from({ length: windowCount }).map((_, j) => ({
+        id: j,
+        duration: 2 + Math.random() * 2,
+        delay: Math.random() * 2
+      }));
+
+      bList.push({
         id: i,
         width: `${(Math.random() * 8 + 5) * widthMultiplier}%`,
         height: `${(Math.random() * 30 + 10) * heightMultiplier}%`,
         type,
+        windows
       });
     }
-    return buildings;
-  };
-
-  const buildings = getBuildings();
+    return bList;
+  }, [cityLevel]);
 
   return (
     <div className={cn("fixed inset-0 z-0 pointer-events-none overflow-hidden transition-colors duration-1000 bg-gradient-to-b", getAtmosphere())}>
@@ -131,12 +138,12 @@ export function CityBackground({ isNight, district, weather, cityLevel = 1 }: { 
               "grid gap-2 p-2 w-full",
               b.type === "skyscraper" ? "grid-cols-3" : b.type === "midrise" ? "grid-cols-2" : "grid-cols-1"
             )}>
-                {[...Array(b.type === "skyscraper" ? 12 : b.type === "midrise" ? 6 : 2)].map((_, j) => (
+                {b.windows.map((w) => (
                     <motion.div 
-                        key={j} 
+                        key={w.id} 
                         className={cn("w-full h-3 rounded-sm", isNight ? "bg-yellow-500/80" : "bg-white/60")}
                         animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ repeat: Infinity, duration: 2 + Math.random() * 2, delay: Math.random() * 2 }}
+                        transition={{ repeat: Infinity, duration: w.duration, delay: w.delay }}
                     />
                 ))}
             </div>
@@ -145,4 +152,4 @@ export function CityBackground({ isNight, district, weather, cityLevel = 1 }: { 
       </div>
     </div>
   );
-}
+});

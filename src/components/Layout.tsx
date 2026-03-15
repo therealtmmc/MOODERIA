@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -22,21 +22,27 @@ export function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Determine current theme based on district
-  const district = DISTRICTS[location.pathname];
+  const district = useMemo(() => DISTRICTS[location.pathname], [location.pathname]);
   const moodTheme = district ? district.bgColor : "bg-[#f2f2f2]";
   
   // Determine if it's day or night
-  const currentHour = new Date().getHours();
-  const isNightTime = currentHour < 6 || currentHour >= 18;
+  const isNightTime = useMemo(() => {
+    const currentHour = new Date().getHours();
+    return currentHour < 6 || currentHour >= 18;
+  }, []); // Only calculate once on mount or when state changes if needed
   
   // Override with Night Mode if active, or use time-based theme
-  const currentTheme = state.isNightMode || isNightTime
-    ? "bg-slate-950 text-slate-100" 
-    : moodTheme;
+  const currentTheme = useMemo(() => {
+    return state.isNightMode || isNightTime
+      ? "bg-slate-950 text-slate-100" 
+      : moodTheme;
+  }, [state.isNightMode, isNightTime, moodTheme]);
 
   // Determine weather based on last mood
-  const lastMood = state.moods[state.moods.length - 1]?.mood || "Neutral";
-  const weather = lastMood === "Sad" ? "Rainy" : lastMood === "Energetic" ? "Sunny" : "Cloudy";
+  const weather = useMemo(() => {
+    const lastMood = state.moods[state.moods.length - 1]?.mood || "Neutral";
+    return lastMood === "Sad" ? "Rainy" : lastMood === "Energetic" ? "Sunny" : "Cloudy";
+  }, [state.moods]);
 
   // Redirect to Onboarding if no profile
   useEffect(() => {
@@ -90,6 +96,8 @@ export function Layout() {
     return <LoadingScreen onComplete={handleLoadingComplete} />;
   }
 
+  const toggleSidebar = useMemo(() => () => setIsSidebarOpen(true), []);
+
   return (
     <div className={cn("min-h-screen font-sans text-gray-800 overflow-x-hidden transition-colors duration-1000", currentTheme)}>
       <CityBackground isNight={state.isNightMode || isNightTime} district={district} weather={weather} cityLevel={state.cityLevel} />
@@ -109,7 +117,7 @@ export function Layout() {
             className="relative z-10"
           >
             {state.userProfile && location.pathname !== "/onboarding" && (
-              <Header onMenuClick={() => setIsSidebarOpen(true)} />
+              <Header onMenuClick={toggleSidebar} />
             )}
             <Outlet />
           </motion.div>

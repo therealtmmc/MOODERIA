@@ -637,9 +637,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save to localStorage on change
+  // Save to localStorage on change with debounce to prevent lag with large data (like videos)
   useEffect(() => {
-    localStorage.setItem("mooderia-state", JSON.stringify(state));
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem("mooderia-state", JSON.stringify(state));
+      } catch (e) {
+        console.error("Failed to save state to localStorage", e);
+        if (e instanceof Error && e.name === 'QuotaExceededError') {
+          alert("Storage limit reached! Try deleting some old diary entries with large videos.");
+        }
+      }
+    }, 1000); // 1 second debounce
+    return () => clearTimeout(timeoutId);
   }, [state]);
 
   // Automatic Day/Night Theme Switcher
