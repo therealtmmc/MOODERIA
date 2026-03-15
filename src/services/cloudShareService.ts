@@ -1,6 +1,6 @@
 import { db, storage } from '../lib/firebase';
 import { collection, addDoc, getDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, UploadTaskSnapshot } from 'firebase/storage';
+import { ref, uploadBytesResumable, uploadBytes, getDownloadURL, UploadTaskSnapshot } from 'firebase/storage';
 import { compressVideo } from '../lib/videoCompressor';
 
 export const uploadMedia = async (
@@ -9,6 +9,16 @@ export const uploadMedia = async (
   onProgress: (progress: number) => void
 ): Promise<string> => {
   const storageRef = ref(storage, path);
+  
+  // Use uploadBytes for small files (< 5MB) for faster upload
+  if (blob.size < 5 * 1024 * 1024) {
+    onProgress(50); // Jump to 50%
+    await uploadBytes(storageRef, blob);
+    onProgress(100);
+    return getDownloadURL(storageRef);
+  }
+
+  // Use uploadBytesResumable for larger files
   const uploadTask = uploadBytesResumable(storageRef, blob);
 
   return new Promise((resolve, reject) => {
