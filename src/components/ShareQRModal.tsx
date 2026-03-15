@@ -141,12 +141,12 @@ export function ShareQRModal({ isOpen, onClose, type, data, title }: ShareQRModa
                   <QRCodeSVG value={shareUrl} size={130} level="H" includeMargin={false} fgColor={state.isStarkTheme ? "#22c55e" : "#000000"} bgColor={state.isStarkTheme ? "#000000" : "#ffffff"} />
                 </div>
                 
-                <p className={cn(
-                  "text-[10px] font-black uppercase tracking-widest mt-1", 
-                  state.isStarkTheme ? "text-green-600" : "text-black/60"
+                <div className={cn(
+                  "mt-2 px-3 py-1 border-2 font-black text-[10px] uppercase tracking-widest",
+                  state.isStarkTheme ? "border-green-500 text-green-500 bg-black" : "border-black text-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 )}>
                   {format(new Date(), 'MMM dd, yyyy')}
-                </p>
+                </div>
               </div>
             </div>
 
