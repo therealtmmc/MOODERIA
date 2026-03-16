@@ -1,9 +1,10 @@
-import { X, Calendar, Dumbbell, Briefcase, Smile, User, Book, PiggyBank, Globe, ShoppingCart } from "lucide-react";
+import { X, Calendar, Dumbbell, Briefcase, Smile, User, Book, PiggyBank, Globe, ShoppingCart, Terminal } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useStore } from "@/context/StoreContext";
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { path: "/mood", label: "Mood Station", icon: Smile, color: "text-[#eb6123]" },
   { path: "/diary", label: "City Archives", icon: Book, color: "text-[#1368ce]" },
   { path: "/work", label: "Dept. of Labor", icon: Briefcase, color: "text-[#1368ce]" },
@@ -17,6 +18,11 @@ const NAV_ITEMS = [
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const location = useLocation();
+  const { state } = useStore();
+
+  const navItems = state.isStarkTheme 
+    ? [{ path: "/home", label: "Hacker Terminal", icon: Terminal, color: "text-green-500" }, ...BASE_NAV_ITEMS]
+    : BASE_NAV_ITEMS;
 
   return (
     <AnimatePresence>
@@ -47,7 +53,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             </div>
 
             <div className="space-y-4 flex-1 overflow-y-auto pr-2">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const isActive = location.pathname.startsWith(item.path);
                 return (
                   <Link

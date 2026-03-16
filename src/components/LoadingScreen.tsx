@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
-import { Smile, Heart, Zap, Star, Cloud, Sun, Moon, Music, Coffee, Book, Sparkles, Flame } from "lucide-react";
+import { Smile, Heart, Zap, Star, Cloud, Sun, Moon, Music, Coffee, Book, Sparkles, Flame, Terminal } from "lucide-react";
+import { useStore } from "@/context/StoreContext";
 
 const BACKGROUND_ICONS = [
   Smile, Heart, Zap, Star, Cloud, Sun, Moon, Music, Coffee, Book, Sparkles, Flame
@@ -12,6 +13,8 @@ interface LoadingScreenProps {
 
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const [progress, setProgress] = useState(0);
+  const { state } = useStore();
+  const isStark = state.isStarkTheme;
 
   useEffect(() => {
     const duration = 2500; // 2.5 seconds total load time
@@ -35,6 +38,36 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
     return () => clearInterval(timer);
   }, [onComplete]);
+
+  if (isStark) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center text-[#00ff41] font-mono overflow-hidden">
+        <div className="relative z-10 w-full max-w-xs flex flex-col items-center">
+          <Terminal className="w-16 h-16 mb-6 animate-pulse" />
+          <motion.h1 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-4xl font-black tracking-tighter mb-10 text-center"
+          >
+            CODE MOODERIA
+          </motion.h1>
+
+          <div className="w-full h-2 bg-[#00ff41]/20 rounded-none relative overflow-hidden border border-[#00ff41]">
+            <motion.div 
+              className="h-full bg-[#00ff41]"
+              initial={{ width: "0%" }}
+              animate={{ width: `${progress}%` }}
+            />
+          </div>
+          
+          <div className="mt-3 flex justify-between w-full px-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest">LOADING_CORE</span>
+              <span className="text-[10px] font-bold font-mono">{Math.round(progress)}%</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] bg-[#46178f] flex flex-col items-center justify-center text-white overflow-hidden">

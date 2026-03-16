@@ -172,6 +172,7 @@ export type AppState = {
   extraXP: number;
   streakSavers: number;
   profileBorder: string | null;
+  hasSeenBankTutorial: boolean;
 };
 
 type Action =
@@ -216,7 +217,8 @@ type Action =
   | { type: "BUY_SHOP_ITEM"; payload: { id: string; name: string; icon: string; price: number } }
   | { type: "DAMAGE_BOSS"; payload: number }
   | { type: "LEVEL_UP_BOSS" }
-  | { type: "SET_LOADED" };
+  | { type: "SET_LOADED" }
+  | { type: "SET_BANK_TUTORIAL_SEEN" };
 
 const initialState: AppState = {
   userProfile: null,
@@ -247,6 +249,7 @@ const initialState: AppState = {
   extraXP: 0,
   streakSavers: 0,
   profileBorder: null,
+  hasSeenBankTutorial: false,
 };
 
 const StoreContext = createContext<{
@@ -594,6 +597,8 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "SET_LOADED":
       return { ...state, isLoaded: true };
+    case "SET_BANK_TUTORIAL_SEEN":
+      return { ...state, hasSeenBankTutorial: true };
     case "LOAD_STATE":
       // Backfill IDs for old entries
       const moodsWithIds = (action.payload.moods || []).map((m) => ({

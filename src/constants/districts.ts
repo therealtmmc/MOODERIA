@@ -7,6 +7,13 @@ export type DistrictTheme = {
 };
 
 export const DISTRICTS: Record<string, DistrictTheme> = {
+  "/home": {
+    name: "Citizen Home",
+    accentColor: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    icon: "🏠",
+    description: "Your personal dashboard."
+  },
   "/mood": {
     name: "Central Park",
     accentColor: "text-emerald-600",

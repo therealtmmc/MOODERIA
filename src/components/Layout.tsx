@@ -23,13 +23,23 @@ export function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const prevThemeRef = useRef(state.isStarkTheme);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (state.isLoaded && state.isStarkTheme !== prevThemeRef.current) {
-      setIsTransitioning(true);
-      prevThemeRef.current = state.isStarkTheme;
-      const timer = setTimeout(() => setIsTransitioning(false), 6500);
-      return () => clearTimeout(timer);
+    if (state.isLoaded) {
+      if (!initializedRef.current) {
+        prevThemeRef.current = state.isStarkTheme;
+        initializedRef.current = true;
+        return;
+      }
+      
+      if (state.isStarkTheme !== prevThemeRef.current) {
+        setIsTransitioning(true);
+        prevThemeRef.current = state.isStarkTheme;
+        const duration = state.isStarkTheme ? 6000 : 10000; // 6s for boot, 10s for restore
+        const timer = setTimeout(() => setIsTransitioning(false), duration);
+        return () => clearTimeout(timer);
+      }
     }
   }, [state.isStarkTheme, state.isLoaded]);
 

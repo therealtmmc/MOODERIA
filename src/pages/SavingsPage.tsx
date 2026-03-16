@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore, SavingsGoal, Transaction } from "@/context/StoreContext";
-import { Plus, Trash2, X, PiggyBank, TrendingUp, History, DollarSign, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, PieChart, Target, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, X, PiggyBank, TrendingUp, History, DollarSign, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, PieChart, Target, AlertTriangle, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -11,10 +11,22 @@ export default function SavingsPage() {
   const { state, dispatch } = useStore();
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
   const [addAmount, setAddAmount] = useState("");
   const [successType, setSuccessType] = useState<"savings" | "savings_goal" | "transaction" | null>(null);
   const [successStats, setSuccessStats] = useState("");
+
+  useEffect(() => {
+    if (!state.hasSeenBankTutorial) {
+      setShowTutorial(true);
+    }
+  }, [state.hasSeenBankTutorial]);
+
+  const handleCloseTutorial = () => {
+    setShowTutorial(false);
+    dispatch({ type: "SET_BANK_TUTORIAL_SEEN" });
+  };
 
   // Transaction State
   const [transactionAmount, setTransactionAmount] = useState("");
@@ -137,7 +149,48 @@ export default function SavingsPage() {
           <h1 className="text-3xl font-black text-[#d4af37]">City Bank</h1>
           <p className="text-gray-500 font-bold">Manage Your Wealth</p>
         </div>
+        <button
+          onClick={() => setShowTutorial(true)}
+          className="bg-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-300 transition-colors"
+        >
+          <HelpCircle className="w-6 h-6" />
+        </button>
       </header>
+
+      {/* Tutorial Modal */}
+      <AnimatePresence>
+        {showTutorial && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border-4 border-[#d4af37]"
+            >
+              <div className="bg-[#d4af37] p-4 flex justify-between items-center">
+                <h3 className="text-white font-black text-xl">Welcome to City Bank!</h3>
+                <button onClick={handleCloseTutorial} className="text-white/80 hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4 text-gray-700">
+                <p className="font-bold">Here you can manage your finances:</p>
+                <ul className="list-disc list-inside space-y-2 text-sm font-medium">
+                  <li>Track your income and expenses.</li>
+                  <li>Set savings goals and watch them grow.</li>
+                  <li>See your total net worth.</li>
+                </ul>
+                <button
+                  onClick={handleCloseTutorial}
+                  className="w-full mt-4 bg-[#d4af37] text-white py-3 rounded-xl font-black shadow-md active:scale-95 transition-transform"
+                >
+                  Got it!
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Net Worth Card */}
       <div className="bg-gradient-to-br from-[#d4af37] to-[#b4941f] p-6 rounded-3xl shadow-xl text-white relative overflow-hidden">

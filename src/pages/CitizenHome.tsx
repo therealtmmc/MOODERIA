@@ -1,80 +1,57 @@
 import { useStore } from "@/context/StoreContext";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { TaskComponent } from "@/components/TaskComponent";
+import { TerminalInterface } from "@/components/code-mooderia/TerminalInterface";
+import { ContrabandMarket } from "@/components/code-mooderia/ContrabandMarket";
+import { SurveillanceGrid } from "@/components/code-mooderia/SurveillanceGrid";
+import { useState } from "react";
+import { Navigate } from "react-router-dom";
 
 export default function CitizenHome() {
   const { state } = useStore();
+  const [activeDystopianView, setActiveDystopianView] = useState<'terminal' | 'market' | 'surveillance'>('terminal');
+
+  if (!state.isStarkTheme) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <motion.h1 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="text-4xl font-black uppercase tracking-tighter mb-8 text-gray-900 drop-shadow-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-2xl sm:text-4xl font-black uppercase tracking-widest text-[#00ff41] mb-4 font-mono"
       >
-        Citizen Home
+        [ ROOT_ACCESS ]
       </motion.h1>
 
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.01, rotate: -1 }}
-        className="bg-white rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-8 border-4 border-black/5 mb-8 transition-transform"
-      >
-        <div className="flex items-center gap-4 mb-6">
-          <div className={cn(
-            "w-16 h-16 bg-purple-100 rounded-2xl border-4 flex items-center justify-center text-3xl shadow-inner rotate-3 overflow-hidden",
-            state.profileBorder === "border_gold" ? "border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.5)]" :
-            state.profileBorder === "border_diamond" ? "border-[#b9f2ff] shadow-[0_0_15px_rgba(185,242,255,0.8)]" :
-            "border-purple-200"
-          )}>
-            {state.userProfile?.photo ? (
-              <img src={state.userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              '👤'
-            )}
-          </div>
-          <div>
-            <h2 className="text-2xl font-black uppercase tracking-tight text-gray-800">Welcome, {state.userProfile?.name}</h2>
-            <p className="text-gray-500 font-bold text-sm">This is your personal space in Mooderia.</p>
-          </div>
-        </div>
+      <div className="border-2 border-[#00ff41] bg-black/90 p-1 shadow-[0_0_20px_rgba(0,255,65,0.2)] rounded-none relative overflow-hidden">
+        {/* Scanline effect */}
+        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] z-50 opacity-20"></div>
+        
+        <div className="p-4 sm:p-6 min-h-[60vh]">
+          {activeDystopianView === 'terminal' && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <TerminalInterface 
+                onOpenMarket={() => setActiveDystopianView('market')} 
+                onOpenSurveillance={() => setActiveDystopianView('surveillance')} 
+              />
+            </motion.div>
+          )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <motion.div 
-            whileHover={{ scale: 1.05, rotate: 2 }}
-            className="bg-indigo-50 p-6 rounded-[2rem] border-4 border-indigo-100 shadow-sm"
-          >
-            <h3 className="font-black text-indigo-900 uppercase tracking-widest text-xs mb-2">City Level</h3>
-            <p className="text-5xl font-black text-indigo-600">{state.cityLevel}</p>
-          </motion.div>
-          
-          <motion.div 
-            whileHover={{ scale: 1.05, rotate: -2 }}
-            className="bg-orange-50 p-6 rounded-[2rem] border-4 border-orange-100 shadow-sm"
-          >
-            <h3 className="font-black text-orange-900 uppercase tracking-widest text-xs mb-2">Streak</h3>
-            <p className="text-5xl font-black text-orange-600">{state.streak} <span className="text-3xl">🔥</span></p>
-          </motion.div>
-          
-          <motion.div 
-            whileHover={{ scale: 1.05, rotate: 2 }}
-            className="bg-blue-50 p-6 rounded-[2rem] border-4 border-blue-100 shadow-sm"
-          >
-            <h3 className="font-black text-blue-900 uppercase tracking-widest text-xs mb-2">Intellect</h3>
-            <p className="text-5xl font-black text-blue-600">{state.userProfile?.intellect || 0} <span className="text-3xl">🧠</span></p>
-          </motion.div>
-        </div>
-      </motion.div>
+          {activeDystopianView === 'market' && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <ContrabandMarket onClose={() => setActiveDystopianView('terminal')} />
+            </motion.div>
+          )}
 
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <TaskComponent />
-      </motion.div>
+          {activeDystopianView === 'surveillance' && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <SurveillanceGrid onClose={() => setActiveDystopianView('terminal')} />
+            </motion.div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
