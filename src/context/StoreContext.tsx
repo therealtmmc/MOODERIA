@@ -557,14 +557,20 @@ function reducer(state: AppState, action: Action): AppState {
         };
         
         if (action.payload.id === "exp_small") {
-          newState.extraXP = (newState.extraXP || 0) + 10;
-          newState = checkRankUp(newState);
-        } else if (action.payload.id === "exp_medium") {
           newState.extraXP = (newState.extraXP || 0) + 50;
           newState = checkRankUp(newState);
-        } else if (action.payload.id === "exp_large") {
-          newState.extraXP = (newState.extraXP || 0) + 100;
+        } else if (action.payload.id === "exp_medium") {
+          newState.extraXP = (newState.extraXP || 0) + 200;
           newState = checkRankUp(newState);
+        } else if (action.payload.id === "exp_large") {
+          newState.extraXP = (newState.extraXP || 0) + 600;
+          newState = checkRankUp(newState);
+        } else if (action.payload.id === "rank_up") {
+          newState.currentRank = newState.currentRank + 1;
+          newState.cityLevel = newState.cityLevel + 1;
+          newState.showRankUpPopup = true;
+        } else if (action.payload.id === "rename_token") {
+          // Handled via SET_PROFILE before this action, just deduct coins
         } else if (action.payload.id === "streak_saver") {
           newState.streakSavers = (newState.streakSavers || 0) + 1;
         } else if (action.payload.id.startsWith("border_")) {

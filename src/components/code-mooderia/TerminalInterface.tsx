@@ -8,12 +8,13 @@ type CommandHistory = {
 };
 
 const FILE_SYSTEM = {
-  '/': ['logs', 'market.exe', 'surveillance.exe', 'readme.txt'],
+  '/': ['logs', 'market.exe', 'surveillance.exe', 'readme.txt', 'cc_guide.txt'],
   '/logs': ['truth.txt', 'project_mk.txt', 'citizen_4921.log'],
 };
 
 const FILE_CONTENTS: Record<string, string> = {
-  'readme.txt': 'Welcome to the Underground.\n\nTo survive, you must learn to navigate the system.\n- Use `ls` to see what files are around you.\n- Use `read <filename>` to read text files (like `read truth.txt`).\n- Use `cd <directory>` to move into folders (like `cd logs`).\n- Use `run <program.exe>` to launch software.\n\nSYSTEM MAP:\n/\n├── market.exe\n├── surveillance.exe\n├── readme.txt\n└── logs/\n    ├── truth.txt\n    ├── project_mk.txt\n    └── citizen_4921.log\n\nTry typing `run market.exe` to access the black market, or `run surveillance.exe` to hijack the city cameras. Stay hidden.',
+  'readme.txt': 'Welcome to the Underground.\n\nTo survive, you must learn to navigate the system.\n- Use `ls` to see what files are around you.\n- Use `read <filename>` to read text files (like `read truth.txt`).\n- Use `cd <directory>` to move into folders (like `cd logs`).\n- Use `run <program.exe>` to launch software.\n\nSYSTEM MAP:\n/\n├── market.exe\n├── surveillance.exe\n├── readme.txt\n├── cc_guide.txt\n└── logs/\n    ├── truth.txt\n    ├── project_mk.txt\n    └── citizen_4921.log\n\nTry typing `run market.exe` to access the black market, or `run surveillance.exe` to hijack the city cameras. Stay hidden.',
+  'cc_guide.txt': 'CODE COINS (CC) ACQUISITION GUIDE\n\nCode Coins (CC) are the untraceable currency of the Underground.\n\nHow to earn CC:\n1. Complete Daily Tasks in the Utopian "Dept. of Labor" or "Citizen Home".\n2. Log your daily mood in the "Mood Station".\n3. Defeat the productivity bosses (e.g., The Slump) by completing tasks.\n4. Maintain your daily streak.\n\nUse CC to purchase contraband, forged identities, and system overrides in the Underground Market.',
   'truth.txt': 'The "Aura" is a lie. They are siphoning our energy to power the Spire. Do not trust the Overseer.',
   'project_mk.txt': 'ENCRYPTED. Requires ROOT access.',
   'citizen_4921.log': 'Subject showing signs of resistance. Recommend immediate harmony adjustment.',
@@ -45,7 +46,7 @@ export function TerminalInterface({ onOpenMarket, onOpenSurveillance }: { onOpen
 
     switch (command) {
       case 'help':
-        newHistory.push({ type: 'output', text: 'COMMAND DIRECTORY:\n------------------\n  help       - Show this message\n  clear      - Clear terminal output\n  ls         - List files in current directory\n  cd <dir>   - Change directory (e.g., cd logs)\n  read <file>- Read text file (e.g., read readme.txt)\n  run <exe>  - Execute program (e.g., run market.exe)\n\nAVAILABLE EXECUTABLES (.exe):\n-----------------------------\n  market.exe       - Access the Underground Contraband Market\n  surveillance.exe - Override Optic-Net Camera Grid\n\nAVAILABLE TEXT FILES (.txt / .log):\n-----------------------------------\n  /readme.txt            - Survival guide for the Underground\n  /logs/truth.txt        - Encrypted whistleblower manifesto\n  /logs/project_mk.txt   - Highly classified Overseer project (ROOT REQUIRED)\n  /logs/citizen_4921.log - Intercepted surveillance log' });
+        newHistory.push({ type: 'output', text: 'COMMAND DIRECTORY:\n------------------\n  help       - Show this message\n  clear      - Clear terminal output\n  ls         - List files in current directory\n  cd <dir>   - Change directory (e.g., cd logs)\n  read <file>- Read text file (e.g., read readme.txt)\n  run <exe>  - Execute program (e.g., run market.exe)\n\nAVAILABLE EXECUTABLES (.exe):\n-----------------------------\n  market.exe       - Access the Underground Contraband Market\n  surveillance.exe - Override Optic-Net Camera Grid\n\nAVAILABLE TEXT FILES (.txt / .log):\n-----------------------------------\n  /readme.txt            - Survival guide for the Underground\n  /cc_guide.txt          - Guide on acquiring Code Coins (CC)\n  /logs/truth.txt        - Encrypted whistleblower manifesto\n  /logs/project_mk.txt   - Highly classified Overseer project (ROOT REQUIRED)\n  /logs/citizen_4921.log - Intercepted surveillance log' });
         break;
       case 'clear':
         setHistory([]);

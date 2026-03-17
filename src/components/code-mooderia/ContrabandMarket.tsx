@@ -1,22 +1,29 @@
 import { useState } from "react";
-import { ShoppingCart, Skull, Key, FileText, ShieldAlert } from "lucide-react";
+import { ShoppingCart, Skull, Zap, ArrowUpCircle, UserCircle } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 
 const MARKET_ITEMS = [
-  { id: "root_key", name: "Root Access Key", price: 500, icon: Key, desc: "Decrypts project_mk.txt" },
-  { id: "lore_doc_1", name: "Encrypted Lore: The Fall", price: 150, icon: FileText, desc: "A hidden document from the old world." },
-  { id: "ad_blocker", name: "Neural Ad-Blocker", price: 300, icon: ShieldAlert, desc: "Blocks Overseer broadcasts for 24 hours." },
-  { id: "fake_id", name: "Forged Passport", price: 1000, icon: Skull, desc: "Change your citizen ID." },
+  { id: "rename_token", name: "Forged Identity (Rename)", price: 500, icon: UserCircle, desc: "Change your citizen name." },
+  { id: "rank_up", name: "System Override (+1 Rank)", price: 2000, icon: ArrowUpCircle, desc: "Instantly rank up your city level." },
+  { id: "exp_small", name: "Data Packet (Small EXP)", price: 100, icon: Zap, desc: "Grants +50 EXP." },
+  { id: "exp_medium", name: "Data Drive (Medium EXP)", price: 300, icon: Zap, desc: "Grants +200 EXP." },
+  { id: "exp_large", name: "Data Core (Large EXP)", price: 800, icon: Zap, desc: "Grants +600 EXP." },
 ];
 
 export function ContrabandMarket({ onClose }: { onClose: () => void }) {
   const { state, dispatch } = useStore();
-  const [purchased, setPurchased] = useState<string[]>([]);
 
   const handleBuy = (item: typeof MARKET_ITEMS[0]) => {
-    if (state.coins >= item.price && !purchased.includes(item.id)) {
-      dispatch({ type: "BUY_SHOP_ITEM", payload: { id: item.id, name: item.name, icon: item.icon.name, price: item.price } });
-      setPurchased([...purchased, item.id]);
+    if (state.coins >= item.price) {
+      if (item.id === "rename_token") {
+        const newName = prompt("Enter your new forged identity (name):");
+        if (newName && newName.trim()) {
+          dispatch({ type: "SET_PROFILE", payload: { ...state.userProfile, name: newName.trim() } as any });
+          dispatch({ type: "BUY_SHOP_ITEM", payload: { id: item.id, name: item.name, icon: "UserCircle", price: item.price } });
+        }
+      } else {
+        dispatch({ type: "BUY_SHOP_ITEM", payload: { id: item.id, name: item.name, icon: "Zap", price: item.price } });
+      }
     }
   };
 
@@ -36,7 +43,7 @@ export function ContrabandMarket({ onClose }: { onClose: () => void }) {
         <div className="flex flex-col items-end">
           <div className="text-sm font-bold text-yellow-500 flex items-center gap-2">
             <ShoppingCart className="w-4 h-4" />
-            {state.coins} CREDITS
+            {state.coins} CC
           </div>
           <button onClick={onClose} className="text-xs text-red-500/50 hover:text-red-500 mt-1 uppercase tracking-widest">
             [ EXIT ]
@@ -47,7 +54,6 @@ export function ContrabandMarket({ onClose }: { onClose: () => void }) {
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4 relative z-20">
         {MARKET_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isOwned = state.inventory.some(i => i.id === item.id) || purchased.includes(item.id);
           const canAfford = state.coins >= item.price;
 
           return (
@@ -63,19 +69,17 @@ export function ContrabandMarket({ onClose }: { onClose: () => void }) {
               </div>
               
               <div className="flex flex-col items-end gap-2">
-                <div className="text-yellow-500 font-bold font-mono">{item.price} CR</div>
+                <div className="text-yellow-500 font-bold font-mono">{item.price} CC</div>
                 <button
                   onClick={() => handleBuy(item)}
-                  disabled={isOwned || !canAfford}
+                  disabled={!canAfford}
                   className={`px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded border transition-all ${
-                    isOwned 
-                      ? 'bg-red-900/50 border-red-900/50 text-red-500/50 cursor-not-allowed'
-                      : canAfford
-                        ? 'bg-transparent border-red-500 text-red-500 hover:bg-red-500 hover:text-black'
-                        : 'bg-transparent border-red-900 text-red-900 cursor-not-allowed'
+                    canAfford
+                      ? 'bg-transparent border-red-500 text-red-500 hover:bg-red-500 hover:text-black'
+                      : 'bg-transparent border-red-900 text-red-900 cursor-not-allowed'
                   }`}
                 >
-                  {isOwned ? 'Acquired' : 'Purchase'}
+                  Purchase
                 </button>
               </div>
             </div>
