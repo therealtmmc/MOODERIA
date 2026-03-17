@@ -33,6 +33,7 @@ export function TerminalInterface({ onOpenMarket, onOpenSurveillance }: { onOpen
   const [currentDir, setCurrentDir] = useState('/');
   const [isHacking, setIsHacking] = useState(false);
   const [hackWord, setHackWord] = useState('');
+  const [hackAttempts, setHackAttempts] = useState(0);
   const [isClassifiedUnlocked, setIsClassifiedUnlocked] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,13 +54,27 @@ export function TerminalInterface({ onOpenMarket, onOpenSurveillance }: { onOpen
     const newHistory: CommandHistory[] = [...history, { type: 'input', text: `${currentDir}> ${trimmed}` }];
     
     if (isHacking) {
-      if (trimmed.toUpperCase() === hackWord) {
-        newHistory.push({ type: 'success', text: 'BREACH SUCCESSFUL. +25 CC extracted.' });
-        dispatch({ type: 'ADD_COINS', payload: 25 });
+      const guess = trimmed.toUpperCase();
+      if (guess === hackWord) {
+        newHistory.push({ type: 'success', text: 'BREACH SUCCESSFUL. +50 CC extracted.' });
+        dispatch({ type: 'ADD_COINS', payload: 50 });
+        setIsHacking(false);
       } else {
-        newHistory.push({ type: 'error', text: 'BREACH FAILED. Connection terminated.' });
+        let likeness = 0;
+        for (let i = 0; i < Math.min(guess.length, hackWord.length); i++) {
+          if (guess[i] === hackWord[i]) likeness++;
+        }
+        
+        const remaining = hackAttempts - 1;
+        setHackAttempts(remaining);
+        
+        if (remaining <= 0) {
+          newHistory.push({ type: 'error', text: `BREACH FAILED. Terminal locked. Correct code was: ${hackWord}` });
+          setIsHacking(false);
+        } else {
+          newHistory.push({ type: 'error', text: `Entry denied. Likeness: ${likeness}/${hackWord.length}. Attempts remaining: ${remaining}` });
+        }
       }
-      setIsHacking(false);
       setHistory(newHistory);
       setInput('');
       return;
@@ -126,11 +141,19 @@ export function TerminalInterface({ onOpenMarket, onOpenSurveillance }: { onOpen
           newHistory.push({ type: 'success', text: 'Bypassing camera feeds...' });
           setTimeout(onOpenSurveillance, 500);
         } else if (exe === 'hack.exe') {
-          const words = ["WIPE", "ROOT", "NODE", "DATA", "VOID", "NULL", "CORE"];
-          const target = words[Math.floor(Math.random() * words.length)];
+          const words = ["WIPE", "ROOT", "NODE", "DATA", "VOID", "NULL", "CORE", "BYTE", "CODE", "FILE", "USER", "PASS", "LOCK", "SAFE", "DOOR", "WALL", "FIRE", "WIRE", "CHIP", "DISK"];
+          const shuffled = [...words].sort(() => 0.5 - Math.random());
+          const selectedWords = shuffled.slice(0, 6);
+          const target = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+          
           setHackWord(target);
+          setHackAttempts(4);
           setIsHacking(true);
-          newHistory.push({ type: 'output', text: `BREACH PROTOCOL INITIATED.\nType the bypass code to extract CC: ${target}` });
+          
+          newHistory.push({ 
+            type: 'output', 
+            text: `BREACH PROTOCOL INITIATED.\n\nAVAILABLE NODES:\n${selectedWords.join('  ')}\n\nFind the correct 4-letter bypass code to extract CC.\nYou have 4 attempts.` 
+          });
         } else if (exe === 'weapon.exe') {
           if (currentDir === '/classified') {
             newHistory.push({ type: 'success', text: 'WEAPON DEPLOYED.\n\nThe Overseer\'s grip weakens.\n\n+1000 CC extracted from the central bank.' });
