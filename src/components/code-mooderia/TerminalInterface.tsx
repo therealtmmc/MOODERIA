@@ -71,14 +71,18 @@ export function TerminalInterface({ onOpenMarket, onOpenSurveillance }: { onOpen
         const file = args[1];
         if (!file) {
           newHistory.push({ type: 'error', text: 'read: missing filename' });
-        } else if (FILE_CONTENTS[file]) {
-          if (file === 'project_mk.txt' && !state.inventory.find(i => i.id === 'root_key')) {
-            newHistory.push({ type: 'error', text: 'ACCESS DENIED: Root key required.' });
-          } else {
-            newHistory.push({ type: 'success', text: FILE_CONTENTS[file] });
-          }
         } else {
-          newHistory.push({ type: 'error', text: `read: ${file}: No such file` });
+          // Allow reading by just filename or full path
+          const fileName = file.split('/').pop() || file;
+          if (FILE_CONTENTS[fileName]) {
+            if (fileName === 'project_mk.txt' && !state.inventory.find(i => i.id === 'root_key')) {
+              newHistory.push({ type: 'error', text: 'ACCESS DENIED: Root key required.' });
+            } else {
+              newHistory.push({ type: 'success', text: FILE_CONTENTS[fileName] });
+            }
+          } else {
+            newHistory.push({ type: 'error', text: `read: ${file}: No such file` });
+          }
         }
         break;
       case 'run':
