@@ -161,6 +161,7 @@ export type AppState = {
   showRankUpPopup: boolean;
   isNightMode: boolean;
   isStarkTheme: boolean;
+  terminalTheme?: "green" | "amber" | "cyan";
   isLoaded: boolean;
   cityLevel: number;
   tasks: Task[];
@@ -204,6 +205,7 @@ type Action =
   | { type: "CLEAR_ALL_DIARY" }
   | { type: "CLOSE_RANK_POPUP" }
   | { type: "SET_THEME"; payload: boolean }
+  | { type: "SET_TERMINAL_THEME"; payload: "green" | "amber" | "cyan" }
   | { type: "TOGGLE_STARK_THEME" }
   | { type: "LOAD_STATE"; payload: AppState }
   | { type: "INCREMENT_CITY_LEVEL" }
@@ -498,6 +500,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, showRankUpPopup: false };
     case "SET_THEME":
       return { ...state, isNightMode: action.payload };
+    case "SET_TERMINAL_THEME":
+      return { ...state, terminalTheme: action.payload };
     case "TOGGLE_STARK_THEME":
       return { ...state, isStarkTheme: !state.isStarkTheme };
     case "INCREMENT_CITY_LEVEL":
@@ -571,6 +575,12 @@ function reducer(state: AppState, action: Action): AppState {
           newState.showRankUpPopup = true;
         } else if (action.payload.id === "rename_token") {
           // Handled via SET_PROFILE before this action, just deduct coins
+        } else if (action.payload.id === "theme_amber") {
+          newState.terminalTheme = "amber";
+        } else if (action.payload.id === "theme_cyan") {
+          newState.terminalTheme = "cyan";
+        } else if (action.payload.id === "theme_green") {
+          newState.terminalTheme = "green";
         } else if (action.payload.id === "streak_saver") {
           newState.streakSavers = (newState.streakSavers || 0) + 1;
         } else if (action.payload.id.startsWith("border_")) {

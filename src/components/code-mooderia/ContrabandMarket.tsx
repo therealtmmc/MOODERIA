@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { ShoppingCart, Skull, Zap, ArrowUpCircle, UserCircle, Key } from "lucide-react";
+import { ShoppingCart, Skull, Zap, ArrowUpCircle, UserCircle, Key, Palette } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 
 const MARKET_ITEMS = [
   { id: "root_key", name: "Root Access Key", price: 500, icon: Key, desc: "Decrypts project_mk.txt" },
   { id: "rename_token", name: "Forged Identity (Rename)", price: 500, icon: UserCircle, desc: "Change your citizen name." },
+  { id: "theme_amber", name: "Amber Monochrome Theme", price: 1500, icon: Palette, desc: "Terminal cosmetic override." },
+  { id: "theme_cyan", name: "Cyan Override Theme", price: 1500, icon: Palette, desc: "Terminal cosmetic override." },
   { id: "rank_up", name: "System Override (+1 Rank)", price: 2000, icon: ArrowUpCircle, desc: "Instantly rank up your city level." },
   { id: "exp_small", name: "Data Packet (Small EXP)", price: 100, icon: Zap, desc: "Grants +50 EXP." },
   { id: "exp_medium", name: "Data Drive (Medium EXP)", price: 300, icon: Zap, desc: "Grants +200 EXP." },
@@ -20,6 +22,7 @@ export function ContrabandMarket({ onClose }: { onClose: () => void }) {
       if (item.id === "rename_token") iconName = "UserCircle";
       if (item.id === "rank_up") iconName = "ArrowUpCircle";
       if (item.id === "root_key") iconName = "Key";
+      if (item.id.startsWith("theme_")) iconName = "Palette";
 
       if (item.id === "rename_token") {
         const newName = prompt("Enter your new forged identity (name):");
@@ -60,7 +63,9 @@ export function ContrabandMarket({ onClose }: { onClose: () => void }) {
       <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3 sm:space-y-4 relative z-20">
         {MARKET_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isOwned = item.id === "root_key" && state.inventory.some(i => i.id === "root_key");
+          const isOwned = (item.id === "root_key" && state.inventory.some(i => i.id === "root_key")) ||
+                          (item.id === "theme_amber" && state.terminalTheme === "amber") ||
+                          (item.id === "theme_cyan" && state.terminalTheme === "cyan");
           const canAfford = state.coins >= item.price;
           const isDisabled = isOwned || !canAfford;
 
