@@ -1,5 +1,5 @@
 import { useStore } from "@/context/StoreContext";
-import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown, DollarSign, Database } from "lucide-react";
+import { User, Globe, Calendar, Hash, Trophy, Star, Lock, Book, Briefcase, Dumbbell, Check, Flame, Sword, Brain, Heart, Zap, Shield, Crown, DollarSign, Database, Key, Palette, UserCircle, ArrowUpCircle, Terminal } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
@@ -77,58 +77,126 @@ export default function ProfilePage() {
     return p;
   };
 
+  const assets = [];
+
+  if (state.streakSavers > 0) {
+    assets.push({
+      id: 'streak_saver',
+      name: 'Streak Saver',
+      icon: Flame,
+      count: state.streakSavers,
+      color: 'text-red-500',
+      bg: 'bg-red-50',
+      border: 'border-red-200'
+    });
+  }
+
+  if (state.terminalTheme && state.terminalTheme !== 'green') {
+    assets.push({
+      id: `theme_${state.terminalTheme}`,
+      name: `${state.terminalTheme.charAt(0).toUpperCase() + state.terminalTheme.slice(1)} Terminal`,
+      icon: Palette,
+      color: state.terminalTheme === 'amber' ? 'text-amber-500' : 'text-cyan-500',
+      bg: state.terminalTheme === 'amber' ? 'bg-amber-50' : 'bg-cyan-50',
+      border: state.terminalTheme === 'amber' ? 'border-amber-200' : 'border-cyan-200'
+    });
+  }
+
+  if (state.profileBorder) {
+    const isGold = state.profileBorder === 'border_gold';
+    assets.push({
+      id: state.profileBorder,
+      name: isGold ? 'Gold Border' : 'Diamond Border',
+      icon: Crown,
+      color: isGold ? 'text-yellow-600' : 'text-cyan-500',
+      bg: isGold ? 'bg-yellow-50' : 'bg-cyan-50',
+      border: isGold ? 'border-yellow-200' : 'border-cyan-200'
+    });
+  }
+
+  state.inventory.forEach(item => {
+    let Icon = Zap;
+    if (item.icon === "Key") Icon = Key;
+    if (item.icon === "Palette") Icon = Palette;
+    if (item.icon === "UserCircle") Icon = UserCircle;
+    if (item.icon === "ArrowUpCircle") Icon = ArrowUpCircle;
+
+    assets.push({
+      id: item.id,
+      name: item.name,
+      icon: Icon,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200'
+    });
+  });
+
+  const totalSlots = Math.max(4, assets.length + (4 - (assets.length % 4)) % 4);
+
   return (
-    <div className="p-4 pt-8 pb-24 space-y-6">
+    <div className={cn("p-4 pt-8 pb-24 space-y-6 transition-colors duration-500", state.isStarkTheme && "stark-theme")}>
       <header>
-        <h1 className="text-3xl font-black text-[#46178f]">Citizen ID</h1>
-        <p className="text-gray-500 font-bold">Official Mooderia Records</p>
+        <h1 className={cn("text-3xl font-black", state.isStarkTheme ? "text-green-500 font-mono uppercase tracking-tighter" : "text-[#46178f]")}>
+          {state.isStarkTheme ? "USER.PROFILE" : "Citizen ID"}
+        </h1>
+        <p className={cn("font-bold", state.isStarkTheme ? "text-green-600/70 font-mono text-xs uppercase tracking-widest" : "text-gray-500")}>
+          {state.isStarkTheme ? "SYSTEM.RECORDS.READ()" : "Official Mooderia Records"}
+        </p>
       </header>
 
       {/* Merged Rank & Passport Card */}
       <div className={cn(
-        "bg-white rounded-[2.5rem] shadow-xl overflow-hidden border-4 relative p-6 space-y-6",
-        currentRankData.border || "border-[#46178f]"
+        "relative p-6 space-y-6 overflow-hidden",
+        state.isStarkTheme 
+          ? "bg-black/90 backdrop-blur-md rounded-none border border-green-500/30 shadow-[0_0_20px_rgba(0,255,65,0.1)] font-mono"
+          : cn("bg-white rounded-[2.5rem] shadow-xl border-4", currentRankData.border || "border-[#46178f]")
       )}>
         {/* Background Gradient */}
-        <div className={cn("absolute top-0 left-0 w-full h-32 bg-gradient-to-b opacity-20 pointer-events-none", currentRankData.bg.replace("bg-", "from-").replace("100", "500"), "to-transparent")} />
+        {!state.isStarkTheme && (
+          <div className={cn("absolute top-0 left-0 w-full h-32 bg-gradient-to-b opacity-20 pointer-events-none", currentRankData.bg.replace("bg-", "from-").replace("100", "500"), "to-transparent")} />
+        )}
+        {state.isStarkTheme && (
+          <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] z-10"></div>
+        )}
         
         {/* Top Section: User Info & Rank Icon */}
-        <div className="flex justify-between items-start relative z-10">
+        <div className="flex justify-between items-start relative z-20">
           <div className="flex gap-4 items-center">
             {/* User Photo */}
             <div className={cn(
-              "w-24 h-24 bg-gray-200 rounded-3xl border-4 shadow-md overflow-hidden shrink-0 relative",
-              state.profileBorder === "border_gold" ? "border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.5)]" :
-              state.profileBorder === "border_diamond" ? "border-[#b9f2ff] shadow-[0_0_15px_rgba(185,242,255,0.8)]" :
-              "border-white"
+              "w-24 h-24 rounded-3xl border-4 shadow-md overflow-hidden shrink-0 relative",
+              state.isStarkTheme ? "bg-black border-green-500/50 rounded-none shadow-[0_0_15px_rgba(0,255,65,0.2)]" : "bg-gray-200",
+              !state.isStarkTheme && state.profileBorder === "border_gold" ? "border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.5)]" :
+              !state.isStarkTheme && state.profileBorder === "border_diamond" ? "border-[#b9f2ff] shadow-[0_0_15px_rgba(185,242,255,0.8)]" :
+              !state.isStarkTheme ? "border-white" : ""
             )}>
                {userProfile.photo ? (
-                 <img src={getPhotoUrl(userProfile.photo)!} alt="Profile" className="w-full h-full object-cover" />
+                 <img src={getPhotoUrl(userProfile.photo)!} alt="Profile" className={cn("w-full h-full object-cover", state.isStarkTheme && "opacity-80 grayscale contrast-150")} />
                ) : (
-                 <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <User className="w-10 h-10 text-gray-400" />
+                 <div className={cn("w-full h-full flex items-center justify-center", state.isStarkTheme ? "bg-black" : "bg-gray-100")}>
+                    <User className={cn("w-10 h-10", state.isStarkTheme ? "text-green-500/50" : "text-gray-400")} />
                  </div>
                )}
-               <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-sm">
-                 <div className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
-                   <Flame className="w-3 h-3 fill-white" /> {streak}
+               <div className="absolute -bottom-2 -right-2 bg-transparent rounded-full p-1 shadow-sm">
+                 <div className={cn("text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1", state.isStarkTheme ? "bg-black border border-green-500 text-green-400 rounded-none" : "bg-orange-500 text-white")}>
+                   <Flame className={cn("w-3 h-3", state.isStarkTheme ? "text-green-400" : "fill-white")} /> {streak}
                  </div>
                </div>
             </div>
             
             {/* User Details */}
             <div>
-              <h2 className="font-black text-2xl text-gray-800 leading-tight">{userProfile.name}</h2>
-              <div className="flex items-center gap-1 text-gray-500 font-bold text-xs uppercase mt-1">
+              <h2 className={cn("font-black text-2xl leading-tight", state.isStarkTheme ? "text-green-400 tracking-widest" : "text-gray-800")}>{userProfile.name}</h2>
+              <div className={cn("flex items-center gap-1 font-bold text-xs uppercase mt-1", state.isStarkTheme ? "text-green-500/70" : "text-gray-500")}>
                 <Globe className="w-3 h-3" />
                 {userProfile.citizenship}
               </div>
               <div className="flex gap-2 mt-2">
-                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase border border-blue-200">
+                 <span className={cn("px-2 py-1 text-[10px] font-black uppercase border", state.isStarkTheme ? "bg-green-900/20 text-green-400 border-green-500/30 rounded-none" : "bg-blue-100 text-blue-600 rounded-lg border-blue-200")}>
                     Lvl {Math.floor(totalTasks / 10) + 1}
                  </span>
-                 <span className="bg-purple-100 text-purple-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase border border-purple-200">
-                    {currentRankData.name}
+                 <span className={cn("px-2 py-1 text-[10px] font-black uppercase border", state.isStarkTheme ? "bg-green-900/20 text-green-400 border-green-500/30 rounded-none" : "bg-purple-100 text-purple-600 rounded-lg border-purple-200")}>
+                    {state.isStarkTheme ? `CLASS_${currentRank + 1}` : currentRankData.name}
                  </span>
               </div>
             </div>
@@ -139,10 +207,10 @@ export default function ProfilePage() {
             <motion.div 
               initial={{ scale: 0.8, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
-              className={cn("w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg border-4 border-white bg-white relative z-10", currentRankData.bg)}
+              className={cn("w-20 h-20 flex items-center justify-center text-4xl shadow-lg border-4 relative z-10", state.isStarkTheme ? "bg-black border-green-500/50 rounded-none" : cn("rounded-full border-white bg-white", currentRankData.bg))}
             >
-              {currentRankData.icon}
-              <div className="absolute -bottom-2 bg-black text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider border-2 border-white">
+              {state.isStarkTheme ? <Terminal className="w-8 h-8 text-green-500" /> : currentRankData.icon}
+              <div className={cn("absolute -bottom-2 text-[10px] font-black px-2 py-0.5 uppercase tracking-wider border-2", state.isStarkTheme ? "bg-black text-green-400 border-green-500 rounded-none" : "bg-black text-white rounded-full border-white")}>
                 Rank {currentRank + 1}
               </div>
             </motion.div>
@@ -150,53 +218,64 @@ export default function ProfilePage() {
         </div>
 
         {/* XP Bar */}
-        <div className="relative z-10 pt-4">
+        <div className="relative z-20 pt-4">
           <div className="flex justify-between items-end mb-1">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Experience Points</p>
-            <p className="font-black text-sm text-[#46178f]">{totalTasks} <span className="text-gray-300">/ {nextRankData ? nextRankData.threshold : "MAX"} XP</span></p>
+            <p className={cn("text-[10px] font-black uppercase tracking-wider", state.isStarkTheme ? "text-green-500/70" : "text-gray-400")}>{state.isStarkTheme ? "DATA.COLLECTED" : "Experience Points"}</p>
+            <p className={cn("font-black text-sm", state.isStarkTheme ? "text-green-400" : "text-[#46178f]")}>{totalTasks} <span className={state.isStarkTheme ? "text-green-500/50" : "text-gray-300"}>/ {nextRankData ? nextRankData.threshold : "MAX"} {state.isStarkTheme ? "BYTES" : "XP"}</span></p>
           </div>
           
-          <div className="h-6 w-full bg-gray-100 rounded-full overflow-hidden border-2 border-gray-200 relative shadow-inner">
+          <div className={cn("h-6 w-full overflow-hidden border-2 relative", state.isStarkTheme ? "bg-black border-green-500/30 rounded-none" : "bg-gray-100 rounded-full border-gray-200 shadow-inner")}>
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className={cn("h-full rounded-full relative overflow-hidden flex items-center justify-end pr-2", currentRankData.bg.replace('bg-', 'bg-').replace('100', '500'))}
+              className={cn("h-full relative overflow-hidden flex items-center justify-end pr-2", state.isStarkTheme ? "bg-green-500 rounded-none" : cn("rounded-full", currentRankData.bg.replace('bg-', 'bg-').replace('100', '500')))}
             >
               <div className="absolute top-0 left-0 w-full h-full bg-white/20 animate-[shimmer_2s_infinite]" />
-              <span className="text-[9px] font-black text-white drop-shadow-md">{Math.round(progress)}%</span>
+              <span className={cn("text-[9px] font-black drop-shadow-md", state.isStarkTheme ? "text-black" : "text-white")}>{Math.round(progress)}%</span>
             </motion.div>
           </div>
         </div>
       </div>
 
       {/* Stats Radar Chart */}
-      <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6 relative overflow-hidden">
+      <div className={cn(
+        "relative overflow-hidden p-6",
+        state.isStarkTheme 
+          ? "bg-black/90 backdrop-blur-md rounded-none border border-green-500/30 shadow-[0_0_20px_rgba(0,255,65,0.1)] font-mono"
+          : "bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100"
+      )}>
         <div className="absolute top-0 right-0 p-4 opacity-10">
-          <Crown className="w-32 h-32 text-gray-900" />
+          <Crown className={cn("w-32 h-32", state.isStarkTheme ? "text-green-500" : "text-gray-900")} />
         </div>
         
-        <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2 relative z-10">
-          <Zap className="w-5 h-5 text-yellow-500 fill-yellow-500" /> Ability Scores
+        <h3 className={cn("font-black text-lg mb-4 flex items-center gap-2 relative z-10", state.isStarkTheme ? "text-green-400 tracking-widest uppercase" : "text-gray-800")}>
+          <Zap className={cn("w-5 h-5", state.isStarkTheme ? "text-green-500 fill-green-500" : "text-yellow-500 fill-yellow-500")} /> 
+          {state.isStarkTheme ? "SYSTEM.METRICS" : "Ability Scores"}
         </h3>
 
         <div className="h-64 w-full relative z-10 -ml-4">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={statsData}>
-              <PolarGrid stroke="#e5e7eb" strokeWidth={2} />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 900 }} />
+              <PolarGrid stroke={state.isStarkTheme ? "#22c55e40" : "#e5e7eb"} strokeWidth={2} />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: state.isStarkTheme ? '#22c55e' : '#9ca3af', fontSize: 10, fontWeight: 900, fontFamily: state.isStarkTheme ? 'monospace' : 'inherit' }} />
               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
               <Radar
                 name="Stats"
                 dataKey="A"
-                stroke="#46178f"
+                stroke={state.isStarkTheme ? "#22c55e" : "#46178f"}
                 strokeWidth={3}
-                fill="#8b5cf6"
+                fill={state.isStarkTheme ? "#22c55e" : "#8b5cf6"}
                 fillOpacity={0.5}
               />
               <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                itemStyle={{ color: '#46178f', fontWeight: 'bold', fontSize: '12px' }}
+                contentStyle={{ 
+                  borderRadius: state.isStarkTheme ? '0px' : '12px', 
+                  border: state.isStarkTheme ? '1px solid #22c55e' : 'none', 
+                  backgroundColor: state.isStarkTheme ? '#000' : '#fff',
+                  boxShadow: state.isStarkTheme ? '0 0 10px rgba(34,197,94,0.2)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
+                }}
+                itemStyle={{ color: state.isStarkTheme ? '#22c55e' : '#46178f', fontWeight: 'bold', fontSize: '12px', fontFamily: state.isStarkTheme ? 'monospace' : 'inherit' }}
               />
             </RadarChart>
           </ResponsiveContainer>
@@ -204,71 +283,130 @@ export default function ProfilePage() {
 
         {/* Stat Breakdown */}
         <div className="grid grid-cols-2 gap-3 mt-2 relative z-10">
-           <div className="bg-red-50 p-3 rounded-2xl border border-red-100 flex items-center gap-3">
-              <div className="bg-red-100 p-2 rounded-xl text-red-600"><Sword className="w-4 h-4" /></div>
+           <div className={cn("p-3 flex items-center gap-3", state.isStarkTheme ? "bg-green-900/20 border border-green-500/30 rounded-none" : "bg-red-50 rounded-2xl border border-red-100")}>
+              <div className={cn("p-2", state.isStarkTheme ? "bg-black border border-green-500/50 text-green-500 rounded-none" : "bg-red-100 rounded-xl text-red-600")}><Sword className="w-4 h-4" /></div>
               <div>
-                <p className="text-[10px] font-bold text-red-400 uppercase">Strength</p>
-                <p className="font-black text-lg text-red-700">{strength}</p>
+                <p className={cn("text-[10px] font-bold uppercase", state.isStarkTheme ? "text-green-500/70" : "text-red-400")}>Strength</p>
+                <p className={cn("font-black text-lg", state.isStarkTheme ? "text-green-400" : "text-red-700")}>{strength}</p>
               </div>
            </div>
-           <div className="bg-blue-50 p-3 rounded-2xl border border-blue-100 flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-xl text-blue-600"><Brain className="w-4 h-4" /></div>
+           <div className={cn("p-3 flex items-center gap-3", state.isStarkTheme ? "bg-green-900/20 border border-green-500/30 rounded-none" : "bg-blue-50 rounded-2xl border border-blue-100")}>
+              <div className={cn("p-2", state.isStarkTheme ? "bg-black border border-green-500/50 text-green-500 rounded-none" : "bg-blue-100 rounded-xl text-blue-600")}><Brain className="w-4 h-4" /></div>
               <div>
-                <p className="text-[10px] font-bold text-blue-400 uppercase">Intellect</p>
-                <p className="font-black text-lg text-blue-700">{intellect}</p>
+                <p className={cn("text-[10px] font-bold uppercase", state.isStarkTheme ? "text-green-500/70" : "text-blue-400")}>Intellect</p>
+                <p className={cn("font-black text-lg", state.isStarkTheme ? "text-green-400" : "text-blue-700")}>{intellect}</p>
               </div>
            </div>
-           <div className="bg-green-50 p-3 rounded-2xl border border-green-100 flex items-center gap-3">
-              <div className="bg-green-100 p-2 rounded-xl text-green-600"><Shield className="w-4 h-4" /></div>
+           <div className={cn("p-3 flex items-center gap-3", state.isStarkTheme ? "bg-green-900/20 border border-green-500/30 rounded-none" : "bg-green-50 rounded-2xl border border-green-100")}>
+              <div className={cn("p-2", state.isStarkTheme ? "bg-black border border-green-500/50 text-green-500 rounded-none" : "bg-green-100 rounded-xl text-green-600")}><Shield className="w-4 h-4" /></div>
               <div>
-                <p className="text-[10px] font-bold text-green-400 uppercase">Vitality</p>
-                <p className="font-black text-lg text-green-700">{vitality}</p>
+                <p className={cn("text-[10px] font-bold uppercase", state.isStarkTheme ? "text-green-500/70" : "text-green-400")}>Vitality</p>
+                <p className={cn("font-black text-lg", state.isStarkTheme ? "text-green-400" : "text-green-700")}>{vitality}</p>
               </div>
            </div>
-           <div className="bg-orange-50 p-3 rounded-2xl border border-orange-100 flex items-center gap-3">
-              <div className="bg-orange-100 p-2 rounded-xl text-orange-600"><Zap className="w-4 h-4" /></div>
+           <div className={cn("p-3 flex items-center gap-3", state.isStarkTheme ? "bg-green-900/20 border border-green-500/30 rounded-none" : "bg-orange-50 rounded-2xl border border-orange-100")}>
+              <div className={cn("p-2", state.isStarkTheme ? "bg-black border border-green-500/50 text-green-500 rounded-none" : "bg-orange-100 rounded-xl text-orange-600")}><Zap className="w-4 h-4" /></div>
               <div>
-                <p className="text-[10px] font-bold text-orange-400 uppercase">Agility</p>
-                <p className="font-black text-lg text-orange-700">{agility}</p>
+                <p className={cn("text-[10px] font-bold uppercase", state.isStarkTheme ? "text-green-500/70" : "text-orange-400")}>Agility</p>
+                <p className={cn("font-black text-lg", state.isStarkTheme ? "text-green-400" : "text-orange-700")}>{agility}</p>
               </div>
            </div>
-            <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between col-span-2">
+            <div className={cn("p-4 flex items-center justify-between col-span-2", state.isStarkTheme ? "bg-green-900/20 border border-green-500/30 rounded-none" : "bg-emerald-50 rounded-2xl border border-emerald-100")}>
               <div className="flex items-center gap-3">
-                <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600"><DollarSign className="w-5 h-5" /></div>
+                <div className={cn("p-2", state.isStarkTheme ? "bg-black border border-green-500/50 text-green-500 rounded-none" : "bg-emerald-100 rounded-xl text-emerald-600")}><DollarSign className="w-5 h-5" /></div>
                 <div>
-                    <p className="text-[10px] font-bold text-emerald-400 uppercase">Net Worth</p>
-                    <p className="font-black text-xl text-emerald-700">{userProfile.currency} {totalWealth.toLocaleString()}</p>
+                    <p className={cn("text-[10px] font-bold uppercase", state.isStarkTheme ? "text-green-500/70" : "text-emerald-400")}>Net Worth</p>
+                    <p className={cn("font-black text-xl", state.isStarkTheme ? "text-green-400" : "text-emerald-700")}>{userProfile.currency} {totalWealth.toLocaleString()}</p>
                 </div>
               </div>
             </div>
         </div>
       </div>
 
-      {/* Inventory / Achievements (Placeholder for future RPG expansion) */}
-      <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6">
-        <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
-          <Briefcase className="w-5 h-5 text-amber-600" /> Citizen Assets
-        </h3>
-        <div className="grid grid-cols-4 gap-2">
-           {Array.from({ length: 4 }).map((_, i) => (
-             <div key={i} className="aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-gray-300" />
+      {/* Inventory / Achievements */}
+      {state.isStarkTheme ? (
+        <div className="bg-black/90 backdrop-blur-md rounded-none border border-green-500/30 p-6 font-mono shadow-[0_0_20px_rgba(0,255,65,0.1)]">
+          <h3 className="font-bold text-green-400 text-lg mb-4 flex items-center gap-2 tracking-widest uppercase">
+            <Terminal className="w-5 h-5" /> SYSTEM.ASSETS
+          </h3>
+          <div className="grid grid-cols-4 gap-2">
+             {assets.map((asset, i) => {
+               const Icon = asset.icon;
+               return (
+                 <div key={asset.id || i} className="aspect-square rounded-none border border-green-500/50 flex flex-col items-center justify-center p-1 relative group cursor-help bg-green-900/20 hover:bg-green-900/40 transition-colors">
+                    {asset.count && (
+                      <div className="absolute -top-2 -right-2 bg-green-500 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center border border-green-400 z-10">
+                        {asset.count}
+                      </div>
+                    )}
+                    <Icon className="w-6 h-6 mb-1 text-green-400" />
+                    <span className="text-[8px] font-bold text-center leading-tight line-clamp-2 text-green-400/80 uppercase">
+                      {asset.name}
+                    </span>
+                 </div>
+               );
+             })}
+             {Array.from({ length: Math.max(0, totalSlots - assets.length) }).map((_, i) => (
+               <div key={`empty-${i}`} className="aspect-square bg-black rounded-none border border-dashed border-green-500/30 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-green-500/30" />
+               </div>
+             ))}
+          </div>
+          {assets.length === 0 && (
+             <div className="text-center mt-4 border-t border-green-500/30 pt-4">
+               <p className="text-xs text-green-500/50 uppercase tracking-widest">No assets detected in local storage.</p>
              </div>
-           ))}
-           <div className="col-span-4 text-center mt-2">
-             <p className="text-xs font-bold text-gray-400">More slots unlock at Level 5</p>
-           </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6">
+          <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-amber-600" /> Citizen Assets
+          </h3>
+          <div className="grid grid-cols-4 gap-2">
+             {assets.map((asset, i) => {
+               const Icon = asset.icon;
+               return (
+                 <div key={asset.id || i} className={cn("aspect-square rounded-2xl border-2 flex flex-col items-center justify-center p-1 relative group cursor-help", asset.bg, asset.border)}>
+                    {asset.count && (
+                      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white z-10">
+                        {asset.count}
+                      </div>
+                    )}
+                    <Icon className={cn("w-6 h-6 mb-1", asset.color)} />
+                    <span className={cn("text-[8px] font-bold text-center leading-tight line-clamp-2", asset.color.replace('text-', 'text-').replace('500', '800').replace('600', '800'))}>
+                      {asset.name}
+                    </span>
+                 </div>
+               );
+             })}
+             {Array.from({ length: Math.max(0, totalSlots - assets.length) }).map((_, i) => (
+               <div key={`empty-${i}`} className="aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-gray-300" />
+               </div>
+             ))}
+          </div>
+          {assets.length === 0 && (
+             <div className="text-center mt-4">
+               <p className="text-xs font-bold text-gray-400">No assets acquired yet. Visit the Underground Market.</p>
+             </div>
+          )}
+        </div>
+      )}
 
       {/* Transfer Data Button */}
       <div className="pt-4">
         <button
           onClick={() => setIsTransferModalOpen(true)}
-          className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-indigo-700 active:scale-95 transition-transform flex items-center justify-center gap-2 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1"
+          className={cn(
+            "w-full py-4 font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2 active:translate-y-1",
+            state.isStarkTheme 
+              ? "bg-black text-green-500 border-2 border-green-500 rounded-none hover:bg-green-900/20 shadow-[0_0_15px_rgba(0,255,65,0.2)]" 
+              : "bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 border-b-4 border-indigo-800 active:border-b-0"
+          )}
         >
           <Database className="w-5 h-5" />
-          Account Passport
+          {state.isStarkTheme ? "EXPORT.DATA()" : "Account Passport"}
         </button>
       </div>
 
