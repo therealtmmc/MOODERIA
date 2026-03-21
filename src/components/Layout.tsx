@@ -15,6 +15,8 @@ import { DISTRICTS } from "@/constants/districts";
 import { HackingTransition } from "./HackingTransition";
 import { RestoreTransition } from "./RestoreTransition";
 
+import { BadgeManager } from "./BadgeManager";
+
 export function Layout() {
   const { state } = useStore();
   const navigate = useNavigate();
@@ -174,6 +176,7 @@ export function Layout() {
           state.isStarkTheme ? <HackingTransition /> : <RestoreTransition />
         )}
       </AnimatePresence>
+      <BadgeManager />
     </div>
   );
 }

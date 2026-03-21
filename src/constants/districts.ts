@@ -70,4 +70,11 @@ export const DISTRICTS: Record<string, DistrictTheme> = {
     icon: "🛒",
     description: "Fresh goods and supplies."
   },
+  "/school": {
+    name: "City Academy",
+    accentColor: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    icon: "🎓",
+    description: "Learn and grow."
+  },
 };

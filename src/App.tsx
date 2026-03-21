@@ -4,7 +4,9 @@
  */
 
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { StoreProvider } from "@/context/StoreContext";
+import { StoreProvider, useStore } from "@/context/StoreContext";
+import { useEffect } from "react";
+import { format } from "date-fns";
 import { Layout } from "@/components/Layout";
 import { MooderiaGatekeeper } from "@/components/MooderiaGatekeeper";
 import MapPage from "@/pages/MapPage";
@@ -21,10 +23,26 @@ import CitizenHome from "@/pages/CitizenHome";
 import GlobalPage from "@/pages/GlobalPage";
 import MarketPage from "@/pages/MarketPage";
 import ShareReceiverPage from "@/pages/ShareReceiverPage";
+import SchoolPage from "@/pages/SchoolPage";
+
+function UsageTracker() {
+  const { dispatch } = useStore();
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      dispatch({ type: "UPDATE_DAILY_USAGE", payload: { date: today, seconds: 10 } });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
+  return null;
+}
 
 export default function App() {
   return (
     <StoreProvider>
+      <UsageTracker />
       <BrowserRouter>
         <Routes>
           <Route path="/share" element={<ShareReceiverPage />} />
@@ -43,6 +61,7 @@ export default function App() {
             <Route path="savings" element={<SavingsPage />} />
             <Route path="archive" element={<ArchivePage />} />
             <Route path="market" element={<MarketPage />} />
+            <Route path="school" element={<SchoolPage />} />
             <Route path="home" element={<CitizenHome />} />
             <Route path="global" element={<GlobalPage />} />
             <Route path="onboarding" element={<OnboardingPage />} />

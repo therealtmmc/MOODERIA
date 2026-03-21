@@ -143,6 +143,52 @@ export type Boss = {
   level: number;
 };
 
+export type SchoolFolder = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  createdAt: number;
+};
+
+export type SchoolFile = {
+  id: string;
+  name: string;
+  folderId: string | null;
+  type: string;
+  size: number;
+  createdAt: number;
+};
+
+export type Flashcard = {
+  id: string;
+  question: string;
+  answer: string;
+};
+
+export type FlashcardDeck = {
+  id: string;
+  name: string;
+  folderId: string | null;
+  cards: Flashcard[];
+  createdAt: number;
+};
+
+export type Badge = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlockedAt: number;
+};
+
+export type Statistics = {
+  totalTasksCompleted: number;
+  totalCoinsEarned: number;
+  longestStreak: number;
+  filesUploaded: number;
+  dailyUsage?: Record<string, number>;
+};
+
 export type AppState = {
   userProfile: UserProfile | null;
   moods: MoodEntry[];
@@ -174,6 +220,11 @@ export type AppState = {
   streakSavers: number;
   profileBorder: string | null;
   hasSeenBankTutorial: boolean;
+  schoolFolders: SchoolFolder[];
+  schoolFiles: SchoolFile[];
+  flashcardDecks: FlashcardDeck[];
+  badges: Badge[];
+  statistics: Statistics;
 };
 
 type Action =
@@ -220,7 +271,19 @@ type Action =
   | { type: "DAMAGE_BOSS"; payload: number }
   | { type: "LEVEL_UP_BOSS" }
   | { type: "SET_LOADED" }
-  | { type: "SET_BANK_TUTORIAL_SEEN" };
+  | { type: "SET_BANK_TUTORIAL_SEEN" }
+  | { type: "ADD_SCHOOL_FOLDER"; payload: SchoolFolder }
+  | { type: "RENAME_SCHOOL_FOLDER"; payload: { id: string; name: string } }
+  | { type: "DELETE_SCHOOL_FOLDER"; payload: string }
+  | { type: "ADD_SCHOOL_FILE"; payload: SchoolFile }
+  | { type: "RENAME_SCHOOL_FILE"; payload: { id: string; name: string } }
+  | { type: "DELETE_SCHOOL_FILE"; payload: string }
+  | { type: "ADD_FLASHCARD_DECK"; payload: FlashcardDeck }
+  | { type: "UPDATE_FLASHCARD_DECK"; payload: FlashcardDeck }
+  | { type: "DELETE_FLASHCARD_DECK"; payload: string }
+  | { type: "UNLOCK_BADGE"; payload: Badge }
+  | { type: "UPDATE_STATISTIC"; payload: { key: keyof Statistics; amount: number } }
+  | { type: "UPDATE_DAILY_USAGE"; payload: { date: string; seconds: number } };
 
 const initialState: AppState = {
   userProfile: null,
@@ -252,6 +315,17 @@ const initialState: AppState = {
   streakSavers: 0,
   profileBorder: null,
   hasSeenBankTutorial: false,
+  schoolFolders: [],
+  schoolFiles: [],
+  flashcardDecks: [],
+  badges: [],
+  statistics: {
+    totalTasksCompleted: 0,
+    totalCoinsEarned: 0,
+    longestStreak: 0,
+    filesUploaded: 0,
+    dailyUsage: {},
+  },
 };
 
 const StoreContext = createContext<{
@@ -648,8 +722,87 @@ function reducer(state: AppState, action: Action): AppState {
         extraXP: action.payload.extraXP || 0,
         streakSavers: action.payload.streakSavers || 0,
         profileBorder: action.payload.profileBorder || null,
+        schoolFolders: action.payload.schoolFolders || [],
+        schoolFiles: action.payload.schoolFiles || [],
+        flashcardDecks: action.payload.flashcardDecks || [],
+        badges: action.payload.badges || [],
+        statistics: action.payload.statistics || {
+          totalTasksCompleted: 0,
+          totalCoinsEarned: 0,
+          longestStreak: 0,
+          filesUploaded: 0,
+          dailyUsage: {},
+        },
         isLoaded: true,
       };
+    case "ADD_SCHOOL_FOLDER":
+      return { ...state, schoolFolders: [...state.schoolFolders, action.payload] };
+    case "RENAME_SCHOOL_FOLDER":
+      return {
+        ...state,
+        schoolFolders: state.schoolFolders.map((f) =>
+          f.id === action.payload.id ? { ...f, name: action.payload.name } : f
+        ),
+      };
+    case "DELETE_SCHOOL_FOLDER":
+      return {
+        ...state,
+        schoolFolders: state.schoolFolders.filter((f) => f.id !== action.payload),
+        schoolFiles: state.schoolFiles.filter((f) => f.folderId !== action.payload),
+        flashcardDecks: state.flashcardDecks.filter((f) => f.folderId !== action.payload),
+      };
+    case "ADD_SCHOOL_FILE":
+      return { ...state, schoolFiles: [...state.schoolFiles, action.payload] };
+    case "RENAME_SCHOOL_FILE":
+      return {
+        ...state,
+        schoolFiles: state.schoolFiles.map((f) =>
+          f.id === action.payload.id ? { ...f, name: action.payload.name } : f
+        ),
+      };
+    case "DELETE_SCHOOL_FILE":
+      return {
+        ...state,
+        schoolFiles: state.schoolFiles.filter((f) => f.id !== action.payload),
+      };
+    case "ADD_FLASHCARD_DECK":
+      return { ...state, flashcardDecks: [...state.flashcardDecks, action.payload] };
+    case "UPDATE_FLASHCARD_DECK":
+      return {
+        ...state,
+        flashcardDecks: state.flashcardDecks.map((f) =>
+          f.id === action.payload.id ? action.payload : f
+        ),
+      };
+    case "DELETE_FLASHCARD_DECK":
+      return {
+        ...state,
+        flashcardDecks: state.flashcardDecks.filter((f) => f.id !== action.payload),
+      };
+    case "UNLOCK_BADGE":
+      if (state.badges.some((b) => b.id === action.payload.id)) return state;
+      return { ...state, badges: [...state.badges, action.payload] };
+    case "UPDATE_STATISTIC":
+      return {
+        ...state,
+        statistics: {
+          ...state.statistics,
+          [action.payload.key]: (state.statistics[action.payload.key] as number || 0) + action.payload.amount,
+        },
+      };
+    case "UPDATE_DAILY_USAGE": {
+      const currentUsage = state.statistics.dailyUsage || {};
+      return {
+        ...state,
+        statistics: {
+          ...state.statistics,
+          dailyUsage: {
+            ...currentUsage,
+            [action.payload.date]: (currentUsage[action.payload.date] || 0) + action.payload.seconds,
+          },
+        },
+      };
+    }
     default:
       return state;
   }

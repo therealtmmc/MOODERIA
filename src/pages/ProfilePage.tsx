@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
 import { useState } from "react";
 import { DataTransferModal } from "@/components/DataTransferModal";
+import { isThisWeek, eachDayOfInterval, startOfWeek, endOfWeek, format, isSameDay } from "date-fns";
 
 const RANKS = [
   { id: 0, name: "Novice Dreamer", icon: "🌱", color: "text-green-500", bg: "bg-green-100", border: "border-green-500", threshold: 0 },
@@ -132,6 +133,30 @@ export default function ProfilePage() {
   });
 
   const totalSlots = Math.max(4, assets.length + (4 - (assets.length % 4)) % 4);
+
+  const now = new Date();
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+  const thisWeekData = days.map(day => {
+    const works = state.workTasks.filter(t => t.completed && t.dateCompleted && isSameDay(new Date(t.dateCompleted), day)).length;
+    const hospital = state.workouts.filter(w => isSameDay(new Date(w.date), day)).length;
+    const reviewing = state.schoolFiles.filter(f => isSameDay(new Date(f.createdAt), day)).length + (state.flashcardDecks || []).filter(f => isSameDay(new Date(f.createdAt), day)).length;
+    const market = state.transactions.filter(t => t.type === 'expense' && (t.category === 'Food' || t.note?.includes('Market') || t.note?.includes('Shop')) && isSameDay(new Date(t.date), day)).reduce((acc, t) => acc + t.amount, 0);
+    const savings = state.transactions.filter(t => t.type === 'expense' && t.category === 'Savings Deposit' && isSameDay(new Date(t.date), day)).reduce((acc, t) => acc + t.amount, 0);
+    const expenses = state.transactions.filter(t => t.type === 'expense' && t.category !== 'Savings Deposit' && isSameDay(new Date(t.date), day)).reduce((acc, t) => acc + t.amount, 0);
+
+    return {
+      date: day,
+      works,
+      hospital,
+      reviewing,
+      market,
+      savings,
+      expenses
+    };
+  });
 
   return (
     <div className={cn("p-4 pt-8 pb-24 space-y-6 transition-colors duration-500", state.isStarkTheme && "stark-theme")}>
@@ -323,76 +348,92 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Inventory / Achievements */}
-      {state.isStarkTheme ? (
-        <div className="bg-black/90 backdrop-blur-md rounded-none border border-green-500/30 p-6 font-mono shadow-[0_0_20px_rgba(0,255,65,0.1)]">
-          <h3 className="font-bold text-green-400 text-lg mb-4 flex items-center gap-2 tracking-widest uppercase">
-            <Terminal className="w-5 h-5" /> SYSTEM.ASSETS
-          </h3>
-          <div className="grid grid-cols-4 gap-2">
-             {assets.map((asset, i) => {
-               const Icon = asset.icon;
-               return (
-                 <div key={asset.id || i} className="aspect-square rounded-none border border-green-500/50 flex flex-col items-center justify-center p-1 relative group cursor-help bg-green-900/20 hover:bg-green-900/40 transition-colors">
-                    {asset.count && (
-                      <div className="absolute -top-2 -right-2 bg-green-500 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center border border-green-400 z-10">
-                        {asset.count}
-                      </div>
-                    )}
-                    <Icon className="w-6 h-6 mb-1 text-green-400" />
-                    <span className="text-[8px] font-bold text-center leading-tight line-clamp-2 text-green-400/80 uppercase">
-                      {asset.name}
-                    </span>
-                 </div>
-               );
-             })}
-             {Array.from({ length: Math.max(0, totalSlots - assets.length) }).map((_, i) => (
-               <div key={`empty-${i}`} className="aspect-square bg-black rounded-none border border-dashed border-green-500/30 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-green-500/30" />
-               </div>
-             ))}
-          </div>
-          {assets.length === 0 && (
-             <div className="text-center mt-4 border-t border-green-500/30 pt-4">
-               <p className="text-xs text-green-500/50 uppercase tracking-widest">No assets detected in local storage.</p>
-             </div>
+      {/* Statistics */}
+      <div className={cn(
+        "relative overflow-hidden p-6",
+        state.isStarkTheme 
+          ? "bg-black/90 backdrop-blur-md rounded-none border border-green-500/30 shadow-[0_0_20px_rgba(0,255,65,0.1)] font-mono"
+          : "bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100"
+      )}>
+        <h3 className={cn("font-black text-lg mb-4 flex items-center gap-2 relative z-10", state.isStarkTheme ? "text-green-400 tracking-widest uppercase" : "text-gray-800")}>
+          <Hash className={cn("w-5 h-5", state.isStarkTheme ? "text-green-500" : "text-blue-500")} /> 
+          {state.isStarkTheme ? "SYSTEM.STATS.WEEKLY" : "Weekly Statistics"}
+        </h3>
+        
+        <div className="flex overflow-x-auto gap-4 pb-4 snap-x mt-4 -mx-4 px-4">
+          {thisWeekData.map(dayData => (
+            <div 
+              key={dayData.date.toString()} 
+              className={cn(
+                "min-w-[240px] p-5 rounded-2xl border-2 snap-center shrink-0 flex flex-col gap-3",
+                state.isStarkTheme ? "bg-black border-green-500/30" : "bg-white border-gray-100 shadow-sm"
+              )}
+            >
+              <h4 className={cn(
+                "font-bold text-lg border-b pb-2",
+                state.isStarkTheme ? "text-green-400 border-green-500/30 font-mono" : "text-gray-800 border-gray-100"
+              )}>
+                {format(dayData.date, 'EEEE, MMM d')}
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className={cn(state.isStarkTheme ? "text-green-600/70" : "text-gray-500")}>Works done</span>
+                  <span className={cn("font-bold", state.isStarkTheme ? "text-green-400" : "text-gray-800")}>{dayData.works}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={cn(state.isStarkTheme ? "text-green-600/70" : "text-gray-500")}>General Hospital</span>
+                  <span className={cn("font-bold", state.isStarkTheme ? "text-green-400" : "text-gray-800")}>{dayData.hospital}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={cn(state.isStarkTheme ? "text-green-600/70" : "text-gray-500")}>Reviewing</span>
+                  <span className={cn("font-bold", state.isStarkTheme ? "text-green-400" : "text-gray-800")}>{dayData.reviewing}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={cn(state.isStarkTheme ? "text-green-600/70" : "text-gray-500")}>Market district</span>
+                  <span className={cn("font-bold", state.isStarkTheme ? "text-green-400" : "text-gray-800")}>${dayData.market.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={cn(state.isStarkTheme ? "text-green-600/70" : "text-gray-500")}>Savings</span>
+                  <span className={cn("font-bold", state.isStarkTheme ? "text-green-500" : "text-green-600")}>${dayData.savings.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className={cn(state.isStarkTheme ? "text-green-600/70" : "text-gray-500")}>Expenses</span>
+                  <span className={cn("font-bold", state.isStarkTheme ? "text-red-500" : "text-red-500")}>${dayData.expenses.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Badges / Achievements */}
+      <div className={cn(
+        "relative overflow-hidden p-6",
+        state.isStarkTheme 
+          ? "bg-black/90 backdrop-blur-md rounded-none border border-green-500/30 shadow-[0_0_20px_rgba(0,255,65,0.1)] font-mono"
+          : "bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100"
+      )}>
+        <h3 className={cn("font-black text-lg mb-4 flex items-center gap-2 relative z-10", state.isStarkTheme ? "text-green-400 tracking-widest uppercase" : "text-gray-800")}>
+          <Trophy className={cn("w-5 h-5", state.isStarkTheme ? "text-green-500" : "text-yellow-500")} /> 
+          {state.isStarkTheme ? "ACHIEVEMENTS.LOG" : "Citizen Badges"}
+        </h3>
+        <div className="grid grid-cols-3 gap-3">
+          {state.badges?.map((badge) => (
+            <div key={badge.id} className={cn("p-3 flex flex-col items-center justify-center text-center gap-2", state.isStarkTheme ? "bg-green-900/20 border border-green-500/30" : "bg-yellow-50 rounded-2xl border border-yellow-100")}>
+              <span className="text-3xl">{badge.icon}</span>
+              <div>
+                <p className={cn("text-[10px] font-black uppercase leading-tight", state.isStarkTheme ? "text-green-400" : "text-yellow-800")}>{badge.name}</p>
+                <p className={cn("text-[8px] font-bold mt-1", state.isStarkTheme ? "text-green-500/70" : "text-yellow-600/70")}>{badge.description}</p>
+              </div>
+            </div>
+          ))}
+          {(!state.badges || state.badges.length === 0) && (
+            <div className="col-span-3 text-center py-4">
+              <p className={cn("text-xs font-bold", state.isStarkTheme ? "text-green-500/50 uppercase tracking-widest" : "text-gray-400")}>No badges unlocked yet.</p>
+            </div>
           )}
         </div>
-      ) : (
-        <div className="bg-white rounded-[2.5rem] shadow-lg border-4 border-gray-100 p-6">
-          <h3 className="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-amber-600" /> Citizen Assets
-          </h3>
-          <div className="grid grid-cols-4 gap-2">
-             {assets.map((asset, i) => {
-               const Icon = asset.icon;
-               return (
-                 <div key={asset.id || i} className={cn("aspect-square rounded-2xl border-2 flex flex-col items-center justify-center p-1 relative group cursor-help", asset.bg, asset.border)}>
-                    {asset.count && (
-                      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white z-10">
-                        {asset.count}
-                      </div>
-                    )}
-                    <Icon className={cn("w-6 h-6 mb-1", asset.color)} />
-                    <span className={cn("text-[8px] font-bold text-center leading-tight line-clamp-2", asset.color.replace('text-', 'text-').replace('500', '800').replace('600', '800'))}>
-                      {asset.name}
-                    </span>
-                 </div>
-               );
-             })}
-             {Array.from({ length: Math.max(0, totalSlots - assets.length) }).map((_, i) => (
-               <div key={`empty-${i}`} className="aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-                  <Lock className="w-5 h-5 text-gray-300" />
-               </div>
-             ))}
-          </div>
-          {assets.length === 0 && (
-             <div className="text-center mt-4">
-               <p className="text-xs font-bold text-gray-400">No assets acquired yet. Visit the Underground Market.</p>
-             </div>
-          )}
-        </div>
-      )}
+      </div>
 
       {/* Transfer Data Button */}
       <div className="pt-4">
