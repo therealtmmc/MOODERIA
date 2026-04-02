@@ -190,7 +190,7 @@ export function TerminalInterface({ onOpenMarket, onOpenSurveillance }: { onOpen
                            'placeholder-[#00ff41]/30';
 
   return (
-    <div className={`bg-black/90 backdrop-blur-md rounded-none sm:rounded-xl border ${themeBorder} p-4 font-mono ${themeColor} h-[500px] flex flex-col ${themeGlow}`}>
+    <div className={`clay-terminal backdrop-blur-md border ${themeBorder} p-4 font-mono ${themeColor} h-[500px] flex flex-col`}>
       <div className={`flex justify-between items-center border-b ${themeBorder} pb-2 mb-4`}>
         <div className="flex items-center gap-2">
           <Terminal className="w-5 h-5" />

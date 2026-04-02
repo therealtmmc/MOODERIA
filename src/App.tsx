@@ -24,6 +24,7 @@ import GlobalPage from "@/pages/GlobalPage";
 import MarketPage from "@/pages/MarketPage";
 import ShareReceiverPage from "@/pages/ShareReceiverPage";
 import SchoolPage from "@/pages/SchoolPage";
+import EmergencyHotlinesPage from "@/pages/EmergencyHotlinesPage";
 
 function UsageTracker() {
   const { dispatch } = useStore();
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="archive" element={<ArchivePage />} />
             <Route path="market" element={<MarketPage />} />
             <Route path="school" element={<SchoolPage />} />
+            <Route path="emergency" element={<EmergencyHotlinesPage />} />
             <Route path="home" element={<CitizenHome />} />
             <Route path="global" element={<GlobalPage />} />
             <Route path="onboarding" element={<OnboardingPage />} />

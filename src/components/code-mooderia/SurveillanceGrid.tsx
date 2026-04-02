@@ -33,13 +33,13 @@ export function SurveillanceGrid({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div className="bg-black/95 backdrop-blur-xl rounded-none sm:rounded-xl border border-blue-500/50 p-6 font-mono text-blue-500 h-[600px] flex flex-col shadow-[0_0_30px_rgba(0,100,255,0.15)] relative overflow-hidden">
+    <div className="clay-grid backdrop-blur-xl border border-blue-500/50 p-6 font-mono text-blue-500 h-[600px] flex flex-col relative overflow-hidden">
       {/* Scanline effect */}
       <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] z-10"></div>
       
       <div className="flex justify-between items-center border-b border-blue-500/30 pb-4 mb-6 relative z-20">
         <div className="flex items-center gap-3">
-          <Eye className="w-8 h-8 animate-pulse text-blue-400" />
+          <Eye className="w-8 h-8 text-blue-400" />
           <div>
             <h2 className="text-2xl font-black tracking-widest uppercase text-blue-500">Optic-Net Override</h2>
             <div className="text-xs text-blue-500/70 flex items-center gap-2">
@@ -57,7 +57,7 @@ export function SurveillanceGrid({ onClose }: { onClose: () => void }) {
         {CAMERAS.map((cam) => (
           <div 
             key={cam.id} 
-            className={`relative border ${activeCam === cam.id ? 'border-red-500 shadow-[0_0_15px_rgba(255,0,0,0.3)]' : 'border-blue-500/30'} bg-black/50 rounded-lg overflow-hidden cursor-pointer group`}
+            className={`relative border ${activeCam === cam.id ? 'border-red-500' : 'border-blue-500/30'} bg-black/50 rounded-lg overflow-hidden cursor-pointer group`}
             onClick={() => setActiveCam(activeCam === cam.id ? null : cam.id)}
           >
             <div className="absolute top-2 left-2 z-30 flex items-center gap-2 bg-black/70 px-2 py-1 rounded text-[10px] font-bold tracking-wider">

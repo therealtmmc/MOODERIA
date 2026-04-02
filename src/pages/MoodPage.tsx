@@ -78,7 +78,7 @@ export default function MoodPage() {
       </header>
 
       {/* Streak Display */}
-      <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 rounded-3xl shadow-lg text-white relative overflow-hidden border-b-8 border-red-700">
+      <div className="bg-gradient-to-r from-red-500 to-orange-500 p-6 clay-card text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 opacity-20 transform translate-x-1/4 -translate-y-1/4">
           <Flame className="w-48 h-48" />
         </div>
@@ -89,12 +89,12 @@ export default function MoodPage() {
             <h2 className="text-5xl font-black">{state.streak} <span className="text-2xl font-bold opacity-80">Days</span></h2>
           </div>
           <div className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm">
-             <Flame className="w-10 h-10 text-white animate-pulse" />
+             <Flame className="w-10 h-10 text-white" />
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-3xl shadow-xl border-b-8 border-gray-200">
+      <div className="bg-white p-4 clay-card">
         <h2 className="text-xl font-black text-gray-700 mb-4 flex items-center gap-2">
           <Smile className="w-6 h-6 text-[#eb6123]" />
           Mood Calendar
@@ -115,7 +115,7 @@ export default function MoodPage() {
       </button>
 
       {/* Daily Motivation */}
-      <div className="bg-white p-6 rounded-3xl shadow-lg border-l-8 border-[#46178f]">
+      <div className="bg-white p-6 clay-card">
         <h3 className="font-black text-[#46178f] text-sm uppercase tracking-widest mb-2">Daily Wisdom</h3>
         <p className="text-gray-700 font-bold text-lg italic leading-relaxed">
           "{dailyQuote}"

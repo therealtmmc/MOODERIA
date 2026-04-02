@@ -29,6 +29,14 @@ body {
   border-radius: 10px;
 }
 
+/* Claymorphism */
+.clay-card {
+  background: #ffffff;
+  border-radius: 32px;
+  /* Soft diagonal shadow (Y+X axis) */
+  box-shadow: 8px 12px 20px rgba(0, 0, 0, 0.15);
+}
+
 /* STARK AI THEME OVERRIDES (CODE MOODERIA) */
 .stark-theme, .stark-theme * {
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
