@@ -80,22 +80,22 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black text-primary mb-2">Mooderia</h1>
-          <p className="text-gray-500 font-bold">Welcome to your new life.</p>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">Welcome to your new life.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="clay-card p-8 space-y-6">
           {step === 1 ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-              <h2 className="text-2xl font-black text-center mb-6">Citizen Registration</h2>
+              <h2 className="text-2xl font-black text-center mb-6 dark:text-white">Citizen Registration</h2>
               
               <div className="flex justify-center">
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-32 h-32 rounded-full bg-gray-100 border-4 border-primary/20 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group"
+                  className="w-32 h-32 rounded-full bg-gray-100 dark:bg-gray-800 border-4 border-primary/20 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group"
                 >
                   {avatar ? (
                     <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
@@ -120,32 +120,32 @@ export default function SignUp() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                   <input 
                     type="text" 
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+                    className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
                     placeholder="John Doe"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Birthday</label>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Birthday</label>
                   <input 
                     type="date" 
                     value={birthday}
                     onChange={e => setBirthday(e.target.value)}
-                    className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+                    className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Citizenship</label>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Citizenship</label>
                   <select 
                     value={citizenship}
                     onChange={e => setCitizenship(e.target.value)}
-                    className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold appearance-none"
+                    className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold appearance-none"
                   >
                     {CITIZENSHIPS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -163,21 +163,21 @@ export default function SignUp() {
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-              <h2 className="text-2xl font-black text-center mb-6">Security PIN</h2>
-              <p className="text-center text-gray-500 font-bold text-sm mb-8">
+              <h2 className="text-2xl font-black text-center mb-6 dark:text-white">Security PIN</h2>
+              <p className="text-center text-gray-500 dark:text-gray-400 font-bold text-sm mb-8">
                 Set a 6-digit PIN to secure your Mooderia vault.
               </p>
               
               <div className="space-y-4">
                 <div onClick={() => setActivePinField('pin')} className="cursor-pointer">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">New PIN</label>
-                  <div className={cn("w-full p-4 bg-gray-50 rounded-2xl border-2 font-black text-2xl tracking-widest text-center min-h-[60px] flex items-center justify-center", activePinField === 'pin' ? "border-primary" : "border-gray-200")}>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">New PIN</label>
+                  <div className={cn("w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 font-black text-2xl tracking-widest text-center min-h-[60px] flex items-center justify-center", activePinField === 'pin' ? "border-primary" : "border-gray-200 dark:border-gray-700")}>
                     {pin.padEnd(6, '•')}
                   </div>
                 </div>
                 <div onClick={() => setActivePinField('confirmPin')} className="cursor-pointer">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Confirm PIN</label>
-                  <div className={cn("w-full p-4 bg-gray-50 rounded-2xl border-2 font-black text-2xl tracking-widest text-center min-h-[60px] flex items-center justify-center", activePinField === 'confirmPin' ? "border-primary" : "border-gray-200")}>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Confirm PIN</label>
+                  <div className={cn("w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 font-black text-2xl tracking-widest text-center min-h-[60px] flex items-center justify-center", activePinField === 'confirmPin' ? "border-primary" : "border-gray-200 dark:border-gray-700")}>
                     {confirmPin.padEnd(6, '•')}
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default function SignUp() {
                     key={num}
                     type="button"
                     onClick={() => handleKeypad(num.toString())}
-                    className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 font-black text-2xl transition-colors active:scale-95"
+                    className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-black text-2xl dark:text-white transition-colors active:scale-95"
                   >
                     {num}
                   </button>
@@ -199,14 +199,14 @@ export default function SignUp() {
                 <button
                   type="button"
                   onClick={() => handleKeypad('0')}
-                  className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 font-black text-2xl transition-colors active:scale-95"
+                  className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-black text-2xl dark:text-white transition-colors active:scale-95"
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={handleDelete}
-                  className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors active:scale-95"
+                  className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 transition-colors active:scale-95"
                 >
                   <Delete className="w-8 h-8" />
                 </button>
@@ -216,7 +216,7 @@ export default function SignUp() {
                 <button 
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 py-4 rounded-2xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors"
+                  className="w-1/3 py-4 rounded-2xl font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
                   Back
                 </button>

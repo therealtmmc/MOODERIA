@@ -31,6 +31,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 export default function App() {
   const { state } = useStore();
 
+  React.useEffect(() => {
+    if (state.isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [state.isDarkMode]);
+
   if (!state.isLoaded) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

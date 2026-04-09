@@ -38,27 +38,27 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-6 text-center font-sans transition-colors duration-300">
       <div className="w-full max-w-md clay-card p-8 space-y-8 animate-in zoom-in-95 duration-500">
-        <div className="w-24 h-24 bg-primary/10 rounded-[2rem] border-4 border-white shadow-xl flex items-center justify-center mx-auto">
+        <div className="w-24 h-24 bg-primary/10 rounded-[2rem] border-4 border-white dark:border-gray-800 shadow-xl flex items-center justify-center mx-auto">
           <Smartphone className="w-12 h-12 text-primary" />
         </div>
         
         <div>
-          <h1 className="text-3xl font-black text-gray-900 mb-2">Install Mooderia</h1>
-          <p className="text-gray-500 font-bold leading-relaxed">
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Install Mooderia</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-bold leading-relaxed">
             For security and the best experience, Mooderia must be installed to your home screen to work.
           </p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-sm border-2 border-gray-100 text-left space-y-6">
-          <h2 className="font-black text-gray-900 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border-2 border-gray-100 dark:border-gray-800 text-left space-y-6">
+          <h2 className="font-black text-gray-900 dark:text-white flex items-center gap-2">
             <Download className="w-5 h-5 text-primary" /> 
             How to Install
           </h2>
 
           {isIOS ? (
-            <ol className="space-y-4 text-sm font-bold text-gray-600">
+            <ol className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-300">
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">1</div>
                 <p>Tap the <Share className="w-4 h-4 inline mx-1" /> <strong>Share</strong> button at the bottom of Safari.</p>
@@ -73,7 +73,7 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
               </li>
             </ol>
           ) : (
-            <ol className="space-y-4 text-sm font-bold text-gray-600">
+            <ol className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-300">
               <li className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">1</div>
                 <p>Tap the <MoreVertical className="w-4 h-4 inline mx-1" /> <strong>Menu</strong> button in your browser.</p>
@@ -89,14 +89,6 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
             </ol>
           )}
         </div>
-
-        {/* Developer bypass for AI Studio Preview */}
-        <button 
-          onClick={() => setIsStandalone(true)}
-          className="text-xs font-bold text-gray-400 hover:text-gray-600 underline decoration-dotted underline-offset-4"
-        >
-          Developer Bypass (Preview Only)
-        </button>
       </div>
     </div>
   );

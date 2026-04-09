@@ -8,14 +8,14 @@
   "theme_color": "#8b5cf6",
   "icons": [
     {
-      "src": "https://api.dicebear.com/7.x/shapes/svg?seed=Mooderia&backgroundColor=8b5cf6",
+      "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "https://api.dicebear.com/7.x/shapes/svg?seed=Mooderia&backgroundColor=8b5cf6",
+      "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

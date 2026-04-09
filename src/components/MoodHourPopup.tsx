@@ -50,10 +50,10 @@ export function MoodHourPopup() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-[3rem] p-8 max-w-sm w-full shadow-2xl border-4 border-primary/20 text-center"
+            className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 max-w-sm w-full shadow-2xl border-4 border-primary/20 dark:border-primary/40 text-center transition-colors duration-300"
           >
-            <h2 className="text-3xl font-black text-primary mb-2">Mood Hour!</h2>
-            <p className="text-gray-500 font-bold mb-8">How are you feeling right now?</p>
+            <h2 className="text-3xl font-black text-primary dark:text-primary-light mb-2">Mood Hour!</h2>
+            <p className="text-gray-500 dark:text-gray-400 font-bold mb-8">How are you feeling right now?</p>
             
             <div className="grid grid-cols-2 gap-4">
               {MOODS.map((mood) => (
@@ -62,10 +62,10 @@ export function MoodHourPopup() {
                   onClick={() => handleSelect(mood.id)}
                   className="clay-card p-4 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform"
                 >
-                  <div className={cn("p-3 rounded-2xl", mood.bg)}>
+                  <div className={cn("p-3 rounded-2xl", mood.bg, "dark:bg-opacity-20")}>
                     <mood.icon className={cn("w-8 h-8", mood.color)} />
                   </div>
-                  <span className="font-bold text-xs uppercase">{mood.label}</span>
+                  <span className="font-bold text-xs uppercase dark:text-gray-200">{mood.label}</span>
                 </button>
               ))}
             </div>

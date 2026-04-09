@@ -48,8 +48,8 @@ export default function Home() {
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Hi, {state.profile?.name.split(' ')[0]}! 👋</h1>
-          <p className="text-gray-500 font-semibold">How are you today?</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Hi, {state.profile?.name.split(' ')[0]}! 👋</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-semibold">How are you today?</p>
         </div>
         {state.profile?.avatar ? (
           <img src={state.profile.avatar} alt="Profile" className="w-12 h-12 rounded-2xl object-cover border-2 border-primary/20" />
@@ -83,7 +83,7 @@ export default function Home() {
 
       {/* Mood Graph */}
       <section className="clay-card p-6">
-        <h2 className="text-xl font-black mb-6">Mood Tracker</h2>
+        <h2 className="text-xl font-black mb-6 dark:text-white">Mood Tracker</h2>
         {graphData.length > 0 ? (
           <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -108,15 +108,15 @@ export default function Home() {
 
       {/* Recent Activity */}
       <section>
-        <h2 className="text-xl font-black mb-4">Recent Moods</h2>
+        <h2 className="text-xl font-black mb-4 dark:text-white">Recent Moods</h2>
         <div className="space-y-4">
           {state.moods.slice(-3).reverse().map((item) => (
             <div key={item.id} className="clay-card p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-gray-50">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-gray-50 dark:bg-gray-800">
                 {MOOD_EMOJIS[item.emotion]}
               </div>
               <div>
-                <h4 className="font-bold capitalize">{item.emotion}</h4>
+                <h4 className="font-bold capitalize dark:text-white">{item.emotion}</h4>
                 <p className="text-xs text-gray-400 font-bold">{format(item.timestamp, 'MMM d, h:mm a')}</p>
               </div>
             </div>

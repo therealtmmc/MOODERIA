@@ -76,10 +76,10 @@ export default function Vault() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-2">
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2">
             <Lock className="w-8 h-8 text-primary" /> Vault
           </h1>
-          <p className="text-gray-500 font-bold">Private Media ({state.vault.length}/{MAX_ITEMS})</p>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">Private Media ({state.vault.length}/{MAX_ITEMS})</p>
         </div>
         <button 
           onClick={() => fileInputRef.current?.click()}
@@ -97,12 +97,12 @@ export default function Vault() {
         />
       </header>
 
-      <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl">
+      <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
         {['all', 'image', 'video'].map(f => (
           <button
             key={f}
             onClick={() => setFilter(f as any)}
-            className={`flex-1 py-2 rounded-xl font-bold text-sm transition-colors capitalize ${filter === f ? "bg-white shadow text-primary" : "text-gray-500"}`}
+            className={`flex-1 py-2 rounded-xl font-bold text-sm transition-colors capitalize ${filter === f ? "bg-white dark:bg-gray-700 shadow text-primary dark:text-primary-light" : "text-gray-500 dark:text-gray-400"}`}
           >
             {f}
           </button>

@@ -32,20 +32,20 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-6 transition-colors duration-300">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-24 h-24 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Lock className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-500 font-bold">Enter your 6-digit PIN</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">Welcome Back</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">Enter your 6-digit PIN</p>
         </div>
 
         <form onSubmit={handleSubmit} className="clay-card p-8">
           <div className="space-y-6">
             <div>
-              <div className={`w-full p-4 bg-gray-50 rounded-2xl border-2 font-black text-3xl tracking-[0.5em] text-center min-h-[70px] flex items-center justify-center ${error ? 'border-red-500 text-red-500 animate-shake' : 'border-gray-200 focus:border-primary'}`}>
+              <div className={`w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 font-black text-3xl tracking-[0.5em] text-center min-h-[70px] flex items-center justify-center ${error ? 'border-red-500 text-red-500 animate-shake' : 'border-gray-200 dark:border-gray-700 focus:border-primary'}`}>
                 {pin.padEnd(6, '•')}
               </div>
               {error && <p className="text-red-500 text-sm font-bold text-center mt-2">Incorrect PIN</p>}
@@ -58,7 +58,7 @@ export default function Login() {
                   key={num}
                   type="button"
                   onClick={() => handleKeypad(num.toString())}
-                  className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 font-black text-2xl transition-colors active:scale-95"
+                  className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-black text-2xl dark:text-white transition-colors active:scale-95"
                 >
                   {num}
                 </button>
@@ -67,14 +67,14 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => handleKeypad('0')}
-                className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 font-black text-2xl transition-colors active:scale-95"
+                className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-black text-2xl dark:text-white transition-colors active:scale-95"
               >
                 0
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="p-4 rounded-2xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors active:scale-95"
+                className="p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400 transition-colors active:scale-95"
               >
                 <Delete className="w-8 h-8" />
               </button>

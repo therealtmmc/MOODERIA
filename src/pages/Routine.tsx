@@ -91,8 +91,8 @@ export default function Routine() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Routine</h1>
-          <p className="text-gray-500 font-bold">What are we doing today?</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Routine</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">What are we doing today?</p>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
@@ -109,19 +109,19 @@ export default function Routine() {
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Task name..."
-            className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+            className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
           />
           
-          <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl">
+          <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
             <button
               onClick={() => setType('repetitive')}
-              className={cn("flex-1 py-2 rounded-xl font-bold text-sm transition-colors", type === 'repetitive' ? "bg-white shadow text-primary" : "text-gray-500")}
+              className={cn("flex-1 py-2 rounded-xl font-bold text-sm transition-colors", type === 'repetitive' ? "bg-white dark:bg-gray-700 shadow text-primary dark:text-primary-light" : "text-gray-500 dark:text-gray-400")}
             >
               Repetitive
             </button>
             <button
               onClick={() => setType('one-time')}
-              className={cn("flex-1 py-2 rounded-xl font-bold text-sm transition-colors", type === 'one-time' ? "bg-white shadow text-primary" : "text-gray-500")}
+              className={cn("flex-1 py-2 rounded-xl font-bold text-sm transition-colors", type === 'one-time' ? "bg-white dark:bg-gray-700 shadow text-primary dark:text-primary-light" : "text-gray-500 dark:text-gray-400")}
             >
               One-Time
             </button>
@@ -130,8 +130,8 @@ export default function Routine() {
           {type === 'repetitive' ? (
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-xs font-bold text-gray-500 uppercase">Days of Week</span>
-                <button onClick={() => setSelectedDays([0,1,2,3,4,5,6])} className="text-xs font-bold text-primary">All Days</button>
+                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Days of Week</span>
+                <button onClick={() => setSelectedDays([0,1,2,3,4,5,6])} className="text-xs font-bold text-primary dark:text-primary-light">All Days</button>
               </div>
               <div className="flex gap-1 justify-between">
                 {DAYS.map((day, i) => (
@@ -140,7 +140,7 @@ export default function Routine() {
                     onClick={() => toggleDay(i)}
                     className={cn(
                       "w-10 h-10 rounded-full font-bold text-xs flex items-center justify-center transition-colors",
-                      selectedDays.includes(i) ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
+                      selectedDays.includes(i) ? "bg-primary text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
                     )}
                   >
                     {day[0]}
@@ -150,23 +150,23 @@ export default function Routine() {
             </div>
           ) : (
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Specific Date</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Specific Date</label>
               <input 
                 type="date" 
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+                className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Time (Optional)</label>
+            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">Time (Optional)</label>
             <input 
               type="time" 
               value={time}
               onChange={e => setTime(e.target.value)}
-              className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+              className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
             />
           </div>
 
@@ -189,14 +189,14 @@ export default function Routine() {
           <>
             {pendingTasks.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xl font-black text-gray-800">To Do</h2>
+                <h2 className="text-xl font-black text-gray-800 dark:text-gray-100">To Do</h2>
                 {pendingTasks.map(task => renderTask(task, false))}
               </div>
             )}
             
             {completedTasks.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xl font-black text-gray-800">Completed</h2>
+                <h2 className="text-xl font-black text-gray-800 dark:text-gray-100">Completed</h2>
                 {completedTasks.map(task => renderTask(task, true))}
               </div>
             )}

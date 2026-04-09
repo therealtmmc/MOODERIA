@@ -40,8 +40,8 @@ export default function Diary() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Diary Vault</h1>
-          <p className="text-gray-500 font-bold">Your private timeline</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Diary Vault</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">Your private timeline</p>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
@@ -57,7 +57,7 @@ export default function Diary() {
             value={content}
             onChange={e => setContent(e.target.value)}
             placeholder="Dear Diary..."
-            className="w-full h-32 p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-medium resize-none"
+            className="w-full h-32 p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-medium resize-none"
           />
           <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
             {EMOTIONS.map(emo => (
@@ -66,7 +66,7 @@ export default function Diary() {
                 onClick={() => setEmotion(emo.id)}
                 className={cn(
                   "p-3 rounded-2xl transition-all flex-shrink-0",
-                  emotion === emo.id ? "bg-primary/10 border-2 border-primary" : "bg-gray-50 border-2 border-transparent"
+                  emotion === emo.id ? "bg-primary/10 border-2 border-primary" : "bg-gray-50 dark:bg-gray-800 border-2 border-transparent"
                 )}
               >
                 <emo.icon className={cn("w-6 h-6", emo.color)} />
@@ -83,28 +83,28 @@ export default function Diary() {
         </div>
       )}
 
-      <div className="space-y-6 relative before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+      <div className="space-y-6 relative before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-gray-800 before:to-transparent">
         {state.diary.map(entry => {
           const emo = EMOTIONS.find(e => e.id === entry.emotion) || EMOTIONS[2];
           return (
             <div key={entry.id} className="relative flex items-start justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-white bg-white shadow-sm shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 mt-2">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full border-4 border-white dark:border-gray-950 bg-white dark:bg-gray-900 shadow-sm shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 mt-2">
                 <emo.icon className={cn("w-6 h-6", emo.color)} />
               </div>
               <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] clay-card p-4 relative group/card">
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div>
-                    <span className="font-bold text-gray-900 block">{format(entry.timestamp, 'MMM d, yyyy')}</span>
+                    <span className="font-bold text-gray-900 dark:text-white block">{format(entry.timestamp, 'MMM d, yyyy')}</span>
                     <span className="text-xs font-bold text-gray-400">{format(entry.timestamp, 'h:mm a')}</span>
                   </div>
                   <button 
                     onClick={() => dispatch({ type: 'DELETE_DIARY', payload: entry.id })}
-                    className="p-2 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors shrink-0"
+                    className="p-2 bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-colors shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{entry.content}</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{entry.content}</p>
               </div>
             </div>
           );

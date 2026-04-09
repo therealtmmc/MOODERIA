@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useStore } from '@/context/StoreContext';
-import { Settings, LogOut, Camera, X, Edit2, Shield, Trash2 } from 'lucide-react';
+import { Settings, LogOut, Camera, X, Edit2, Shield, Trash2, Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { differenceInYears, parseISO, format } from 'date-fns';
@@ -29,6 +29,7 @@ export default function Profile() {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // Settings state
   const [editName, setEditName] = useState(state.profile?.name || '');
@@ -41,10 +42,8 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone and all your data will be lost.")) {
-      dispatch({ type: 'DELETE_ACCOUNT' });
-      navigate('/signup');
-    }
+    dispatch({ type: 'DELETE_ACCOUNT' });
+    navigate('/signup');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,17 +78,17 @@ export default function Profile() {
     <div className="space-y-8 relative">
       <button 
         onClick={() => setShowSettings(true)}
-        className="absolute top-0 right-0 p-3 bg-white rounded-full shadow-md text-gray-400 hover:text-primary transition-colors z-10"
+        className="absolute top-0 right-0 p-3 bg-white dark:bg-gray-800 rounded-full shadow-md text-gray-400 hover:text-primary transition-colors z-10"
       >
         <Settings className="w-6 h-6" />
       </button>
 
       <header className="flex flex-col items-center text-center pt-8">
-        <div className="w-32 h-32 bg-primary/10 rounded-[3rem] border-4 border-white shadow-xl flex items-center justify-center mb-6 overflow-hidden">
+        <div className="w-32 h-32 bg-primary/10 rounded-[3rem] border-4 border-white dark:border-gray-800 shadow-xl flex items-center justify-center mb-6 overflow-hidden">
           {state.profile.avatar ? (
             <img src={state.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gray-200" />
+            <div className="w-full h-full bg-gray-200 dark:bg-gray-700" />
           )}
         </div>
       </header>
@@ -97,7 +96,7 @@ export default function Profile() {
       <div className="grid grid-cols-2 gap-4">
         <div className="clay-card p-4 col-span-2 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-400">Name</span>
-          <span className="font-black text-gray-900">{state.profile.name}</span>
+          <span className="font-black text-gray-900 dark:text-white">{state.profile.name}</span>
         </div>
         <div className="clay-card p-4 col-span-2 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-400">Citizenship</span>
@@ -105,38 +104,57 @@ export default function Profile() {
         </div>
         <div className="clay-card p-4 flex flex-col items-center justify-center text-center">
           <span className="text-xs font-bold text-gray-400 uppercase mb-1">Age</span>
-          <span className="text-xl font-black text-gray-800">{age}</span>
+          <span className="text-xl font-black text-gray-800 dark:text-gray-100">{age}</span>
         </div>
         <div className="clay-card p-4 flex flex-col items-center justify-center text-center">
           <span className="text-xs font-bold text-gray-400 uppercase mb-1">Zodiac</span>
-          <span className="text-xl font-black text-gray-800">{zodiac}</span>
+          <span className="text-xl font-black text-gray-800 dark:text-gray-100">{zodiac}</span>
         </div>
         <div className="clay-card p-4 col-span-2 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-400">Birthday</span>
-          <span className="font-black text-gray-800">{format(parseISO(state.profile.birthday), 'MMM d, yyyy')}</span>
+          <span className="font-black text-gray-800 dark:text-gray-100">{format(parseISO(state.profile.birthday), 'MMM d, yyyy')}</span>
         </div>
       </div>
 
       <div className="text-center pt-8">
-        <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Mooderia</p>
+        <p className="text-[10px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em]">Mooderia</p>
       </div>
 
       {showSettings && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white w-full max-w-md rounded-3xl p-6 space-y-6 animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-6 space-y-6 animate-in zoom-in-95">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black text-gray-900">Settings</h2>
-              <button onClick={() => setShowSettings(false)} className="p-2 bg-gray-100 rounded-full text-gray-500">
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white">Settings</h2>
+              <button onClick={() => setShowSettings(false)} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  {state.isDarkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
+                  <span className="font-bold text-gray-700 dark:text-gray-200">Dark Mode</span>
+                </div>
+                <button 
+                  onClick={() => dispatch({ type: 'TOGGLE_DARK_MODE' })}
+                  className={cn(
+                    "w-12 h-6 rounded-full transition-colors relative",
+                    state.isDarkMode ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"
+                  )}
+                >
+                  <div className={cn(
+                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform",
+                    state.isDarkMode ? "translate-x-6" : "translate-x-0"
+                  )} />
+                </button>
+              </div>
+
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Change Avatar</label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Change Avatar</label>
                 <button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 font-bold text-gray-600 flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors"
+                  className="w-full p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <Camera className="w-5 h-5" /> Upload New Photo
                 </button>
@@ -150,20 +168,20 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Change Name</label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Change Name</label>
                 <div className="relative">
                   <Edit2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input 
                     type="text" 
                     value={editName}
                     onChange={e => setEditName(e.target.value)}
-                    className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+                    className="w-full p-4 pl-12 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Change PIN (6 digits)</label>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Change PIN (6 digits)</label>
                 <div className="relative">
                   <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input 
@@ -174,7 +192,7 @@ export default function Profile() {
                     value={editPin}
                     onChange={e => setEditPin(e.target.value)}
                     placeholder="Leave blank to keep current"
-                    className="w-full p-4 pl-12 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold tracking-widest"
+                    className="w-full p-4 pl-12 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold tracking-widest"
                   />
                 </div>
               </div>
@@ -188,20 +206,48 @@ export default function Profile() {
                 </button>
               </div>
 
-              <div className="pt-4 border-t-2 border-gray-100 space-y-2">
+              <div className="pt-4 border-t-2 border-gray-100 dark:border-gray-800 space-y-2">
                 <button 
                   onClick={handleLogout}
-                  className="w-full p-4 bg-orange-50 text-orange-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
+                  className="w-full p-4 bg-orange-50 dark:bg-orange-500/10 text-orange-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors"
                 >
                   <LogOut className="w-5 h-5" /> Lock App (Log Out)
                 </button>
                 <button 
-                  onClick={handleDeleteAccount}
-                  className="w-full p-4 bg-red-50 text-red-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-red-100 transition-colors"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full p-4 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
                 >
                   <Trash2 className="w-5 h-5" /> Delete Account
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[110] bg-black/50 flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-gray-900 w-full max-w-sm rounded-3xl p-6 space-y-6 animate-in zoom-in-95 text-center">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white">Delete Account?</h2>
+            <p className="text-gray-500 dark:text-gray-400 font-bold">
+              Are you sure you want to delete your account? This action cannot be undone and all your data will be lost.
+            </p>
+            <div className="flex gap-4 pt-4">
+              <button 
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-4 rounded-2xl font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleDeleteAccount}
+                className="flex-1 py-4 rounded-2xl font-bold text-white bg-red-500 hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

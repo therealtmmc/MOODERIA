@@ -55,6 +55,7 @@ export interface AppState {
   vault: VaultItem[];
   events: EventItem[];
   lastMoodHourPrompt: number;
+  isDarkMode: boolean;
 }
 
 type Action =
@@ -73,6 +74,7 @@ type Action =
   | { type: 'ADD_EVENT'; payload: EventItem }
   | { type: 'DELETE_EVENT'; payload: string }
   | { type: 'SET_LAST_MOOD_PROMPT'; payload: number }
+  | { type: 'TOGGLE_DARK_MODE' }
   | { type: 'LOGOUT' }
   | { type: 'DELETE_ACCOUNT' };
 
@@ -86,6 +88,7 @@ const initialState: AppState = {
   vault: [],
   events: [],
   lastMoodHourPrompt: 0,
+  isDarkMode: false,
 };
 
 const StoreContext = createContext<{
@@ -157,11 +160,14 @@ function storeReducer(state: AppState, action: Action): AppState {
     case 'SET_LAST_MOOD_PROMPT':
       newState = { ...state, lastMoodHourPrompt: action.payload };
       break;
+    case 'TOGGLE_DARK_MODE':
+      newState = { ...state, isDarkMode: !state.isDarkMode };
+      break;
     case 'LOGOUT':
       newState = { ...state, isAuthenticated: false };
       break;
     case 'DELETE_ACCOUNT':
-      localforage.removeItem('mooderia_v2_state');
+      localforage.clear();
       return { ...initialState, isLoaded: true };
     default:
       return state;

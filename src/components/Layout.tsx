@@ -18,7 +18,7 @@ export function Layout() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden transition-colors duration-300">
       <MoodHourPopup />
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-24 p-6">
@@ -26,7 +26,7 @@ export function Layout() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[400px] bg-white/90 backdrop-blur-lg border-4 border-gray-100 rounded-[2.5rem] p-2 flex items-center justify-between shadow-xl z-50 overflow-x-auto no-scrollbar">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[400px] bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-4 border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-2 flex items-center justify-between shadow-xl z-50 overflow-x-auto no-scrollbar transition-colors duration-300">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -35,7 +35,7 @@ export function Layout() {
               to={item.path}
               className={cn(
                 "relative flex flex-col items-center justify-center min-w-[3.5rem] h-14 rounded-full transition-all duration-300 flex-shrink-0",
-                isActive ? "text-primary" : "text-gray-400"
+                isActive ? "text-primary dark:text-primary-light" : "text-gray-400 dark:text-gray-500"
               )}
             >
               {isActive && (

@@ -34,8 +34,8 @@ export default function Events() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Events</h1>
-          <p className="text-gray-500 font-bold">Look forward to it!</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white">Events</h1>
+          <p className="text-gray-500 dark:text-gray-400 font-bold">Look forward to it!</p>
         </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
@@ -63,13 +63,13 @@ export default function Events() {
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="Event name..."
-            className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+            className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
           />
           <input 
             type="date" 
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-gray-200 focus:border-primary focus:outline-none font-bold"
+            className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold"
           />
           <button 
             onClick={handleSave}
@@ -82,7 +82,7 @@ export default function Events() {
       )}
 
       <div className="space-y-4">
-        <h3 className="font-black text-xl text-gray-800">All Events</h3>
+        <h3 className="font-black text-xl text-gray-800 dark:text-gray-100">All Events</h3>
         {state.events.length === 0 ? (
           <div className="text-center py-8 text-gray-400 font-bold">
             <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -98,12 +98,12 @@ export default function Events() {
                   <span className="text-xl font-black leading-none">{format(parseISO(event.date), 'd')}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-lg text-gray-900 truncate">{event.title}</h4>
-                  <p className="text-sm font-bold text-gray-500">{format(parseISO(event.date), 'EEEE, yyyy')}</p>
+                  <h4 className="font-bold text-lg text-gray-900 dark:text-white truncate">{event.title}</h4>
+                  <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{format(parseISO(event.date), 'EEEE, yyyy')}</p>
                 </div>
                 <button 
                   onClick={() => dispatch({ type: 'DELETE_EVENT', payload: event.id })}
-                  className="p-2 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors shrink-0"
+                  className="p-2 bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-colors shrink-0"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>
