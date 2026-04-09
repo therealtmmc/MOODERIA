@@ -1,0 +1,21 @@
+{
+  "name": "Mooderia",
+  "short_name": "Mooderia",
+  "description": "Your personal mood tracker and diary vault.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/shapes/svg?seed=Mooderia&backgroundColor=8b5cf6",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/shapes/svg?seed=Mooderia&backgroundColor=8b5cf6",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

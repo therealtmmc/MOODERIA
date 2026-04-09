@@ -1,182 +1,56 @@
-import { useState, useEffect, useMemo, useRef } from"react";
-import { Outlet, useNavigate, useLocation } from"react-router-dom";
-import { Header } from"./Header";
-import { Sidebar } from"./Sidebar";
-import { DailyMoodPopup } from"./DailyMoodPopup";
-import { LoadingScreen } from"./LoadingScreen";
-import { RankUpModal } from"./RankUpModal";
-import { useStore } from"@/context/StoreContext";
-import { format } from"date-fns";
-import { cn } from"@/lib/utils";
-import { CityBackground } from"./CityBackground";
-import { WeatherOverlay } from"./WeatherOverlay";
-import { motion, AnimatePresence } from"motion/react";
-import { DISTRICTS } from"@/constants/districts";
-import { HackingTransition } from"./HackingTransition";
-import { RestoreTransition } from"./RestoreTransition";
-
-import { BadgeManager } from"./BadgeManager";
+import React from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Home, Smile, User, Plus, Book, Calendar, Lock, ListTodo } from 'lucide-react';
+import { motion } from 'motion/react';
+import { cn } from '@/lib/utils';
+import { MoodHourPopup } from './MoodHourPopup';
 
 export function Layout() {
- const { state } = useStore();
- const navigate = useNavigate();
- const location = useLocation();
- const [loading, setLoading] = useState(true);
- const [isSidebarOpen, setIsSidebarOpen] = useState(false);
- const [isTransitioning, setIsTransitioning] = useState(false);
- const prevThemeRef = useRef(state.isStarkTheme);
- const initializedRef = useRef(false);
+  const location = useLocation();
 
- useEffect(() => {
- if (state.isLoaded) {
- if (!initializedRef.current) {
- prevThemeRef.current = state.isStarkTheme;
- initializedRef.current = true;
- return;
- }
- 
- if (state.isStarkTheme !== prevThemeRef.current) {
- setIsTransitioning(true);
- prevThemeRef.current = state.isStarkTheme;
- const duration = state.isStarkTheme ? 6000 : 10000; // 6s for boot, 10s for restore
- const timer = setTimeout(() => setIsTransitioning(false), duration);
- return () => clearTimeout(timer);
- }
- }
- }, [state.isStarkTheme, state.isLoaded]);
+  const navItems = [
+    { path: '/', icon: Home, label: 'Home' },
+    { path: '/diary', icon: Book, label: 'Diary' },
+    { path: '/routine', icon: ListTodo, label: 'Routine' },
+    { path: '/vault', icon: Lock, label: 'Vault' },
+    { path: '/events', icon: Calendar, label: 'Events' },
+    { path: '/profile', icon: User, label: 'Profile' },
+  ];
 
- // Determine current theme based on district
- const district = useMemo(() => DISTRICTS[location.pathname], [location.pathname]);
- const moodTheme = district ? district.bgColor :"bg-[#f2f2f2]";
- 
- // Determine if it's day or night
- const isNightTime = useMemo(() => {
- const currentHour = new Date().getHours();
- return currentHour < 6 || currentHour >= 18;
- }, []); // Only calculate once on mount or when state changes if needed
- 
- // Override with Night Mode if active, or use time-based theme
- const currentTheme = useMemo(() => {
- if (state.isStarkTheme) {
- return"bg-black text-green-400 font-mono";
- }
- return state.isNightMode || isNightTime
- ?"bg-slate-950 text-slate-100" 
- : moodTheme;
- }, [state.isStarkTheme, state.isNightMode, isNightTime, moodTheme]);
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden">
+      <MoodHourPopup />
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto pb-24 p-6">
+        <Outlet />
+      </main>
 
- // Determine weather based on last mood
- const weather = useMemo(() => {
- const lastMood = state.moods[state.moods.length - 1]?.mood ||"Neutral";
- return lastMood ==="Sad" ?"Rainy" : lastMood ==="Energetic" ?"Sunny" :"Cloudy";
- }, [state.moods]);
-
- // Redirect to Onboarding if no profile
- useEffect(() => {
- if (!loading && !state.userProfile && location.pathname !=="/onboarding") {
- navigate("/onboarding");
- }
- }, [loading, state.userProfile, navigate, location.pathname]);
-
- // Request Notification Permission on mount
- useEffect(() => {
- if ("Notification" in window && Notification.permission !=="granted") {
- Notification.requestPermission();
- }
- }, []);
-
- // Check for routine alarms every minute
- useEffect(() => {
- const checkAlarms = () => {
- const now = new Date();
- const currentTime = format(now,"HH:mm");
- const currentDay = format(now,"EEE"); // Mon, Tue, etc.
-
- state.routines.forEach((routine) => {
- // Check if routine is active, time matches, and day matches
- if (
- routine.active &&
- routine.startTime === currentTime && // Changed from routine.time to routine.startTime based on type definition
- routine.days.includes(currentDay)
- ) {
- if (Notification.permission ==="granted") {
- new Notification(`Time for ${routine.name}!`, {
- body: `It's ${routine.startTime}. Let's do this!`,
- });
- }
- }
- });
- };
-
- // Check immediately on load, then every minute
- checkAlarms();
- const interval = setInterval(checkAlarms, 60000); 
- return () => clearInterval(interval);
- }, [state.routines]);
-
- // Simulate loading screen on first visit
- const handleLoadingComplete = () => {
- setLoading(false);
- };
-
- const toggleSidebar = useMemo(() => () => setIsSidebarOpen(true), []);
-
- if (loading) {
- return <LoadingScreen onComplete={handleLoadingComplete} />;
- }
-
- return (
- <div className={cn("min-h-screen overflow-x-hidden transition-colors duration-[3000ms]", 
- state.isStarkTheme ?"stark-theme" :"font-sans text-gray-800",
- currentTheme
- )}>
- <AnimatePresence>
- {!state.isStarkTheme && (
- <motion.div
- initial={{ opacity: 0 }}
- animate={{ opacity: 1 }}
- exit={{ opacity: 0 }}
- transition={{ duration: 3 }}
- className="fixed inset-0 z-0 pointer-events-none"
- >
- <CityBackground isNight={state.isNightMode || isNightTime} district={district} weather={weather} cityLevel={state.cityLevel} />
- {state.userProfile && location.pathname !=="/onboarding" && <WeatherOverlay weather={weather} />}
- </motion.div>
- )}
- </AnimatePresence>
- {state.userProfile && location.pathname !=="/onboarding" && <DailyMoodPopup />}
- {state.userProfile && location.pathname !=="/onboarding" && <RankUpModal />}
- 
- <main className="max-w-md mx-auto min-h-screen relative pb-32">
- <AnimatePresence mode="wait">
- <motion.div
- key={location.pathname}
- initial={{ opacity: 0, scale: 0.95 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 1.05 }}
- transition={{ duration: 0.2 }}
- className="relative z-10"
- >
- {state.userProfile && location.pathname !=="/onboarding" && (
- <Header onMenuClick={toggleSidebar} />
- )}
- <Outlet />
- </motion.div>
- </AnimatePresence>
- </main>
- 
- {state.userProfile && location.pathname !=="/onboarding" && (
- <>
- <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
- </>
- )}
-
- <AnimatePresence>
- {isTransitioning && (
- state.isStarkTheme ? <HackingTransition /> : <RestoreTransition />
- )}
- </AnimatePresence>
- <BadgeManager />
- </div>
- );
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[400px] bg-white/90 backdrop-blur-lg border-4 border-gray-100 rounded-[2.5rem] p-2 flex items-center justify-between shadow-xl z-50 overflow-x-auto no-scrollbar">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "relative flex flex-col items-center justify-center min-w-[3.5rem] h-14 rounded-full transition-all duration-300 flex-shrink-0",
+                isActive ? "text-primary" : "text-gray-400"
+              )}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="nav-pill"
+                  className="absolute inset-0 bg-primary/10 rounded-full"
+                  transition={{ type: "spring", bounce: 0.3, duration: 0.6 }}
+                />
+              )}
+              <item.icon className={cn("w-5 h-5 relative z-10", isActive && "stroke-[3px]")} />
+              <span className="text-[9px] font-bold mt-1 relative z-10">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
+  );
 }
