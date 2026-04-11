@@ -4,6 +4,7 @@ import { Settings, LogOut, Camera, X, Edit2, Shield, Trash2, Moon, Sun } from 'l
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { differenceInYears, parseISO, format } from 'date-fns';
+import { LegalModal } from '@/components/LegalModal';
 
 function getZodiacSign(dateString: string) {
   const date = new Date(dateString);
@@ -30,6 +31,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [legalType, setLegalType] = useState<'terms' | 'privacy' | null>(null);
   
   // Settings state
   const [editName, setEditName] = useState(state.profile?.name || '');
@@ -208,6 +210,21 @@ export default function Profile() {
 
               <div className="pt-4 border-t-2 border-gray-100 dark:border-gray-800 space-y-2">
                 <button 
+                  onClick={() => setLegalType('terms')}
+                  className="w-full p-4 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Terms & Conditions
+                </button>
+                <button 
+                  onClick={() => setLegalType('privacy')}
+                  className="w-full p-4 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </div>
+
+              <div className="pt-4 border-t-2 border-gray-100 dark:border-gray-800 space-y-2">
+                <button 
                   onClick={handleLogout}
                   className="w-full p-4 bg-orange-50 dark:bg-orange-500/10 text-orange-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors"
                 >
@@ -252,6 +269,8 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      <LegalModal type={legalType} onClose={() => setLegalType(null)} />
     </div>
   );
 }

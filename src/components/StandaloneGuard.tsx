@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Share, MoreVertical, Smile, Book, ListTodo, Lock, Calendar, ArrowDown } from 'lucide-react';
+import { LegalModal } from './LegalModal';
 
 export function StandaloneGuard({ children }: { children: React.ReactNode }) {
   const [isStandalone, setIsStandalone] = useState(true); // Default to true to prevent flash
   const [isIOS, setIsIOS] = useState(false);
+  const [legalType, setLegalType] = useState<'terms' | 'privacy' | null>(null);
 
   useEffect(() => {
     // Check if running as a standalone PWA
@@ -139,6 +141,18 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-white py-12 text-center text-gray-400 font-medium text-sm border-t border-gray-100">
+        <div className="flex items-center justify-center gap-6 mb-4">
+          <button onClick={() => setLegalType('terms')} className="hover:text-primary transition-colors">Terms & Conditions</button>
+          <span>•</span>
+          <button onClick={() => setLegalType('privacy')} className="hover:text-primary transition-colors">Privacy Policy</button>
+        </div>
+        <p>© {new Date().getFullYear()} Mooderia. All rights reserved.</p>
+      </footer>
+
+      <LegalModal type={legalType} onClose={() => setLegalType(null)} />
     </div>
   );
 }
