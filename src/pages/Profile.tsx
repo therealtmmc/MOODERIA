@@ -118,6 +118,36 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Ecosystem Section */}
+      <section className="pt-4">
+        <h2 className="text-xl font-black mb-4 dark:text-white">Ecosystem</h2>
+        <a 
+          href="https://therealtmmc.github.io/Mooderia-Coin/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="clay-card p-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all group block"
+        >
+          <div className="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center border-2 border-gray-100 dark:border-gray-700 group-hover:border-primary/20 transition-colors">
+            <img 
+              src="/mooderiacoin.png" 
+              alt="Mooderia Coin" 
+              className="w-8 h-8 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="w-8 h-8 bg-yellow-400 rounded-full hidden items-center justify-center text-white font-black shadow-inner">
+              $
+            </div>
+          </div>
+          <div className="flex-1">
+            <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">Mooderia Coin</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold">Earn rewards and track coins</p>
+          </div>
+        </a>
+      </section>
+
       <div className="text-center pt-8">
         <p className="text-[10px] font-black text-gray-300 dark:text-gray-600 uppercase tracking-[0.2em]">Mooderia</p>
       </div>
