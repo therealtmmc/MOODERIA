@@ -11,6 +11,7 @@ import Diary from './pages/Diary';
 import Routine from './pages/Routine';
 import Vault from './pages/Vault';
 import Events from './pages/Events';
+import CoinPage from './pages/CoinPage';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { state } = useStore();
@@ -48,22 +49,27 @@ export default function App() {
   }
 
   return (
-    <StandaloneGuard>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/signup" element={state.profile ? <Navigate to="/login" replace /> : <SignUp />} />
-          <Route path="/login" element={state.isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
-          
-          <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
-            <Route index element={<Home />} />
-            <Route path="diary" element={<Diary />} />
-            <Route path="routine" element={<Routine />} />
-            <Route path="vault" element={<Vault />} />
-            <Route path="events" element={<Events />} />
-            <Route path="profile" element={<Profile />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </StandaloneGuard>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/coin" element={<CoinPage />} />
+        <Route path="*" element={
+          <StandaloneGuard>
+            <Routes>
+              <Route path="/signup" element={state.profile ? <Navigate to="/login" replace /> : <SignUp />} />
+              <Route path="/login" element={state.isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+              
+              <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
+                <Route index element={<Home />} />
+                <Route path="diary" element={<Diary />} />
+                <Route path="routine" element={<Routine />} />
+                <Route path="vault" element={<Vault />} />
+                <Route path="events" element={<Events />} />
+                <Route path="profile" element={<Profile />} />
+              </Route>
+            </Routes>
+          </StandaloneGuard>
+        } />
+      </Routes>
+    </BrowserRouter>
   );
 }

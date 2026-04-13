@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Share, MoreVertical, Smile, Book, ListTodo, Lock, Calendar, ArrowDown } from 'lucide-react';
 import { LegalModal } from './LegalModal';
+import { Link } from 'react-router-dom';
 
 export function StandaloneGuard({ children }: { children: React.ReactNode }) {
   const [isStandalone, setIsStandalone] = useState(true); // Default to true to prevent flash
@@ -146,10 +147,8 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
       <div className="bg-white py-16 px-6 border-t border-gray-100">
         <div className="max-w-md mx-auto text-center">
           <h2 className="text-2xl font-black mb-8 text-gray-900">Explore our ecosystem</h2>
-          <a 
-            href="#" 
-            target="_blank" 
-            rel="noopener noreferrer"
+          <Link 
+            to="/coin"
             className="inline-flex flex-col items-center group"
           >
             <div className="w-24 h-24 bg-gray-50 rounded-[2rem] border-2 border-gray-100 flex items-center justify-center mb-4 group-hover:border-primary/30 group-hover:shadow-xl group-hover:shadow-primary/10 transition-all duration-300 group-hover:-translate-y-2">
@@ -168,7 +167,7 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
             </div>
             <span className="font-black text-gray-600 group-hover:text-primary transition-colors">Mooderia Coin</span>
             <span className="text-xs font-bold text-gray-400 mt-1">Coming Soon</span>
-          </a>
+          </Link>
         </div>
       </div>
 
