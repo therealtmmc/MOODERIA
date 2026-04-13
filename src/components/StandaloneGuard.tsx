@@ -142,8 +142,38 @@ export function StandaloneGuard({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
+      {/* Ecosystem Section */}
+      <div className="bg-white py-16 px-6 border-t border-gray-100">
+        <div className="max-w-md mx-auto text-center">
+          <h2 className="text-2xl font-black mb-8 text-gray-900">Explore our ecosystem</h2>
+          <a 
+            href="#" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex flex-col items-center group"
+          >
+            <div className="w-24 h-24 bg-gray-50 rounded-[2rem] border-2 border-gray-100 flex items-center justify-center mb-4 group-hover:border-primary/30 group-hover:shadow-xl group-hover:shadow-primary/10 transition-all duration-300 group-hover:-translate-y-2">
+              <img 
+                src="/mooderiacoin.png" 
+                alt="Mooderia Coin" 
+                className="w-16 h-16 object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              <div className="w-12 h-12 bg-yellow-400 rounded-full hidden items-center justify-center text-white font-black text-2xl shadow-inner">
+                $
+              </div>
+            </div>
+            <span className="font-black text-gray-600 group-hover:text-primary transition-colors">Mooderia Coin</span>
+            <span className="text-xs font-bold text-gray-400 mt-1">Coming Soon</span>
+          </a>
+        </div>
+      </div>
+
       {/* Footer */}
-      <footer className="bg-white py-12 text-center text-gray-400 font-medium text-sm border-t border-gray-100">
+      <footer className="bg-gray-50 py-12 text-center text-gray-400 font-medium text-sm border-t border-gray-100">
         <div className="flex items-center justify-center gap-6 mb-4">
           <button onClick={() => setLegalType('terms')} className="hover:text-primary transition-colors">Terms & Conditions</button>
           <span>•</span>

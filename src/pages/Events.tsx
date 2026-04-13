@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '@/context/StoreContext';
 import { Plus, Calendar as CalendarIcon, Clock, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
+
+const parseLocalDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 export default function Events() {
   const { state, dispatch } = useStore();
@@ -26,9 +31,12 @@ export default function Events() {
     }
   };
 
-  const upcomingEvents = state.events.filter(e => new Date(e.date) >= new Date(new Date().setHours(0,0,0,0)));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingEvents = state.events.filter(e => parseLocalDate(e.date) >= today);
   const nearestEvent = upcomingEvents.length > 0 ? upcomingEvents[0] : null;
-  const daysUntilNearest = nearestEvent ? differenceInDays(parseISO(nearestEvent.date), new Date()) : null;
+  const daysUntilNearest = nearestEvent ? differenceInDays(parseLocalDate(nearestEvent.date), today) : null;
 
   return (
     <div className="space-y-6">
@@ -52,7 +60,7 @@ export default function Events() {
           <div className="text-6xl font-black mb-2">{daysUntilNearest === 0 ? 'TODAY' : daysUntilNearest}</div>
           <div className="text-sm font-bold uppercase tracking-widest text-primary-light mb-4">{daysUntilNearest === 0 ? '' : 'Days Left'}</div>
           <h3 className="text-2xl font-black">{nearestEvent.title}</h3>
-          <p className="text-primary-light font-bold mt-1">{format(parseISO(nearestEvent.date), 'MMMM d, yyyy')}</p>
+          <p className="text-primary-light font-bold mt-1">{format(parseLocalDate(nearestEvent.date), 'MMMM d, yyyy')}</p>
         </div>
       )}
 
@@ -90,16 +98,16 @@ export default function Events() {
           </div>
         ) : (
           state.events.map(event => {
-            const isPast = new Date(event.date) < new Date(new Date().setHours(0,0,0,0));
+            const isPast = parseLocalDate(event.date) < today;
             return (
               <div key={event.id} className={cn("clay-card p-4 flex items-center gap-4 group", isPast && "opacity-50")}>
                 <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex flex-col items-center justify-center shrink-0">
-                  <span className="text-xs font-bold uppercase">{format(parseISO(event.date), 'MMM')}</span>
-                  <span className="text-xl font-black leading-none">{format(parseISO(event.date), 'd')}</span>
+                  <span className="text-xs font-bold uppercase">{format(parseLocalDate(event.date), 'MMM')}</span>
+                  <span className="text-xl font-black leading-none">{format(parseLocalDate(event.date), 'd')}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-lg text-gray-900 dark:text-white truncate">{event.title}</h4>
-                  <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{format(parseISO(event.date), 'EEEE, yyyy')}</p>
+                  <p className="text-sm font-bold text-gray-500 dark:text-gray-400">{format(parseLocalDate(event.date), 'EEEE, yyyy')}</p>
                 </div>
                 <button 
                   onClick={() => dispatch({ type: 'DELETE_EVENT', payload: event.id })}
