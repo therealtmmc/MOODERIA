@@ -3,14 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/context/StoreContext';
 import { Camera, ArrowRight, Delete } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const CITIZENSHIPS = [
-  "American", "Argentine", "Australian", "Bangladeshi", "Brazilian", "British", "Canadian", 
-  "Chinese", "Colombian", "Filipino", "French", "German", "Indian", "Indonesian", 
-  "Italian", "Japanese", "Kenyan", "Mexican", "Nigerian", "Pakistani", "Peruvian", 
-  "Polish", "Russian", "South African", "South Korean", "Spanish", "Thai", "Turkish", 
-  "Ukrainian", "Vietnamese", "Other"
-];
+import { COUNTRIES, COUNTRIES_AND_CURRENCIES } from '@/lib/countries';
 
 export default function SignUp() {
   const { dispatch } = useStore();
@@ -19,7 +12,7 @@ export default function SignUp() {
 
   const [name, setName] = useState('');
   const [birthday, setBirthday] = useState('');
-  const [citizenship, setCitizenship] = useState(CITIZENSHIPS[0]);
+  const [citizenship, setCitizenship] = useState(COUNTRIES[0]);
   const [avatar, setAvatar] = useState('');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -46,9 +39,18 @@ export default function SignUp() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (pin.length === 6 && pin === confirmPin) {
+      const coinCurrency = COUNTRIES_AND_CURRENCIES[citizenship] || '$';
       dispatch({
         type: 'SET_PROFILE',
-        payload: { name, avatar, birthday, citizenship, pin }
+        payload: { 
+          name, 
+          avatar, 
+          birthday, 
+          citizenship, 
+          pin,
+          coinCurrency,
+          coinAppLockEnabled: false
+        }
       });
       dispatch({ type: 'SET_AUTH', payload: true });
       navigate('/');
@@ -141,13 +143,13 @@ export default function SignUp() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Citizenship</label>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Country</label>
                   <select 
                     value={citizenship}
                     onChange={e => setCitizenship(e.target.value)}
                     className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold appearance-none"
                   >
-                    {CITIZENSHIPS.map(c => <option key={c} value={c}>{c}</option>)}
+                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>

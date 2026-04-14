@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useStore } from '@/context/StoreContext';
-import { Settings, LogOut, Camera, X, Edit2, Shield, Trash2, Moon, Sun } from 'lucide-react';
+import { Settings, LogOut, Camera, X, Edit2, Shield, Trash2, Moon, Sun, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { differenceInYears, parseISO, format } from 'date-fns';
 import { LegalModal } from '@/components/LegalModal';
+import { COUNTRIES, COUNTRIES_AND_CURRENCIES } from '@/lib/countries';
 
 function getZodiacSign(dateString: string) {
   const date = new Date(dateString);
@@ -36,6 +37,8 @@ export default function Profile() {
   // Settings state
   const [editName, setEditName] = useState(state.profile?.name || '');
   const [editPin, setEditPin] = useState('');
+  const [editCitizenship, setEditCitizenship] = useState(state.profile?.citizenship || COUNTRIES[0]);
+  const [editCoinAppLock, setEditCoinAppLock] = useState(state.profile?.coinAppLockEnabled || false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = () => {
@@ -63,6 +66,13 @@ export default function Profile() {
     const payload: any = {};
     if (editName.trim() !== state.profile?.name) payload.name = editName.trim();
     if (editPin.length === 6) payload.pin = editPin;
+    if (editCitizenship !== state.profile?.citizenship) {
+      payload.citizenship = editCitizenship;
+      payload.coinCurrency = COUNTRIES_AND_CURRENCIES[editCitizenship] || '$';
+    }
+    if (editCoinAppLock !== state.profile?.coinAppLockEnabled) {
+      payload.coinAppLockEnabled = editCoinAppLock;
+    }
     
     if (Object.keys(payload).length > 0) {
       dispatch({ type: 'UPDATE_PROFILE', payload });
@@ -101,7 +111,7 @@ export default function Profile() {
           <span className="font-black text-gray-900 dark:text-white">{state.profile.name}</span>
         </div>
         <div className="clay-card p-4 col-span-2 flex items-center justify-between">
-          <span className="text-sm font-bold text-gray-400">Citizenship</span>
+          <span className="text-sm font-bold text-gray-400">Country</span>
           <span className="font-black text-primary">{state.profile.citizenship}</span>
         </div>
         <div className="clay-card p-4 flex flex-col items-center justify-center text-center">
@@ -121,10 +131,8 @@ export default function Profile() {
       {/* Ecosystem Section */}
       <section className="pt-4">
         <h2 className="text-xl font-black mb-4 dark:text-white">Ecosystem</h2>
-        <a 
-          href="https://therealtmmc.github.io/Mooderia-Coin/"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link 
+          to="/coin"
           className="clay-card p-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all group block"
         >
           <div className="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center border-2 border-gray-100 dark:border-gray-700 group-hover:border-primary/20 transition-colors">
@@ -145,7 +153,7 @@ export default function Profile() {
             <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">Mooderia Coin</h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold">Earn rewards and track coins</p>
           </div>
-        </a>
+        </Link>
       </section>
 
       <div className="text-center pt-8">
@@ -227,6 +235,36 @@ export default function Profile() {
                     className="w-full p-4 pl-12 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold tracking-widest"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Country</label>
+                <select 
+                  value={editCitizenship}
+                  onChange={e => setEditCitizenship(e.target.value)}
+                  className="w-full p-4 bg-gray-50 dark:bg-gray-800 dark:text-white rounded-2xl border-2 border-gray-200 dark:border-gray-700 focus:border-primary focus:outline-none font-bold appearance-none"
+                >
+                  {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  <Wallet className="w-5 h-5 text-primary" />
+                  <span className="font-bold text-gray-700 dark:text-gray-200">Mooderia Coin App Lock</span>
+                </div>
+                <button 
+                  onClick={() => setEditCoinAppLock(!editCoinAppLock)}
+                  className={cn(
+                    "w-12 h-6 rounded-full transition-colors relative",
+                    editCoinAppLock ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"
+                  )}
+                >
+                  <div className={cn(
+                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform",
+                    editCoinAppLock ? "translate-x-6" : "translate-x-0"
+                  )} />
+                </button>
               </div>
 
               <div className="pt-4 flex gap-4">

@@ -11,7 +11,7 @@ import Diary from './pages/Diary';
 import Routine from './pages/Routine';
 import Vault from './pages/Vault';
 import Events from './pages/Events';
-import CoinPage from './pages/CoinPage';
+import CoinApp from './coin/CoinApp';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { state } = useStore();
@@ -49,11 +49,11 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/coin" element={<CoinPage />} />
-        <Route path="*" element={
-          <StandaloneGuard>
+    <StandaloneGuard>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/coin/*" element={<CoinApp />} />
+          <Route path="*" element={
             <Routes>
               <Route path="/signup" element={state.profile ? <Navigate to="/login" replace /> : <SignUp />} />
               <Route path="/login" element={state.isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
@@ -67,9 +67,9 @@ export default function App() {
                 <Route path="profile" element={<Profile />} />
               </Route>
             </Routes>
-          </StandaloneGuard>
-        } />
-      </Routes>
-    </BrowserRouter>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </StandaloneGuard>
   );
 }

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useStore } from '@/context/StoreContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { differenceInDays, parseISO, format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const MOOD_COLORS: Record<string, string> = {
   happy: '#eab308',
@@ -84,10 +85,8 @@ export default function Home() {
       {/* Mooderia Ecosystem */}
       <section>
         <h2 className="text-xl font-black mb-4 dark:text-white">Ecosystem</h2>
-        <a 
-          href="https://therealtmmc.github.io/Mooderia-Coin/"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link 
+          to="/coin"
           className="clay-card p-4 flex items-center gap-4 hover:border-primary/30 hover:bg-primary/5 transition-all group block"
         >
           <div className="w-14 h-14 bg-gray-50 dark:bg-gray-800 rounded-2xl flex items-center justify-center border-2 border-gray-100 dark:border-gray-700 group-hover:border-primary/20 transition-colors">
@@ -108,7 +107,7 @@ export default function Home() {
             <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">Mooderia Coin</h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold">Earn rewards and track coins</p>
           </div>
-        </a>
+        </Link>
       </section>
 
       {/* Mood Graph */}

@@ -7,6 +7,8 @@ export interface UserProfile {
   birthday: string;
   citizenship: string;
   pin: string;
+  coinCurrency?: string;
+  coinAppLockEnabled?: boolean;
 }
 
 export interface MoodEntry {
