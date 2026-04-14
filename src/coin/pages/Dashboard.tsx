@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db';
-import { ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
+import { db, Transaction } from '../db';
+import { ArrowUpRight, ArrowDownRight, Wallet, ArrowLeft } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useStore } from '../../context/StoreContext';
+import { Link } from 'react-router-dom';
+import { TransactionModal } from '../components/TransactionModal';
 
 const MOOD_EMOJIS: Record<string, string> = {
   happy: '😊',
@@ -16,6 +18,8 @@ export default function Dashboard() {
   const user = state.profile;
   const accounts = useLiveQuery(() => db.accounts.toArray());
   const transactions = useLiveQuery(() => db.transactions.orderBy('date').reverse().limit(10).toArray());
+
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   const totalBalance = accounts?.reduce((sum, acc) => sum + acc.balance, 0) || 0;
   
@@ -32,6 +36,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in">
+      <div className="flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors font-bold text-sm bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full">
+          <ArrowLeft className="w-4 h-4" /> Back to Mooderia
+        </Link>
+      </div>
+
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-900 dark:text-white">Overview</h1>
@@ -83,7 +93,11 @@ export default function Dashboard() {
             </div>
           ) : (
             transactions?.map(t => (
-              <div key={t.id} className="clay-card p-4 flex items-center gap-4">
+              <div 
+                key={t.id} 
+                onClick={() => setSelectedTransaction(t)}
+                className="clay-card p-4 flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors"
+              >
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${t.type === 'income' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
                   {MOOD_EMOJIS[t.mood] || '💰'}
                 </div>
@@ -99,6 +113,13 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {selectedTransaction && (
+        <TransactionModal 
+          transaction={selectedTransaction} 
+          onClose={() => setSelectedTransaction(null)} 
+        />
+      )}
     </div>
   );
 }

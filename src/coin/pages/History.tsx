@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db';
+import { db, Transaction } from '../db';
 import { format, parseISO } from 'date-fns';
 import { useStore } from '../../context/StoreContext';
 import { Search } from 'lucide-react';
+import { TransactionModal } from '../components/TransactionModal';
 
 const MOOD_EMOJIS: Record<string, string> = {
   happy: '😊',
@@ -17,6 +18,7 @@ export default function History() {
   const currency = user?.coinCurrency || '$';
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
   const transactions = useLiveQuery(() => 
     db.transactions.orderBy('date').reverse().toArray()
@@ -53,7 +55,11 @@ export default function History() {
           </div>
         ) : (
           filteredTransactions.map(t => (
-            <div key={t.id} className="clay-card p-4 flex items-center gap-4">
+            <div 
+              key={t.id} 
+              onClick={() => setSelectedTransaction(t)}
+              className="clay-card p-4 flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors"
+            >
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl ${t.type === 'income' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
                 {MOOD_EMOJIS[t.mood] || '💰'}
               </div>
@@ -68,6 +74,13 @@ export default function History() {
           ))
         )}
       </div>
+
+      {selectedTransaction && (
+        <TransactionModal 
+          transaction={selectedTransaction} 
+          onClose={() => setSelectedTransaction(null)} 
+        />
+      )}
     </div>
   );
 }
