@@ -1,8 +1,8 @@
 {
   "name": "Mooderia",
-  "description": "Mooderia v2 - A fresh start for the cartoonish tracking app.",
+  "description": "A vibrant, Kahoot-inspired social and wellness platform featuring AI psychiatrists, zodiac insights, and mood tracking streaks.",
   "requestFramePermissions": [
-    "geolocation",
-    "notifications"
+    "camera",
+    "microphone"
   ]
 }

@@ -1,21 +1,21 @@
 {
-  "name": "Mooderia",
+  "id": "com.mooderia.app",
   "short_name": "Mooderia",
-  "description": "Your personal mood tracker and diary vault.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#8b5cf6",
+  "name": "Mooderia",
   "icons": [
     {
       "src": "/logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/logo.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png"
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#46178f",
+  "background_color": "#46178f",
+  "orientation": "portrait",
+  "categories": ["lifestyle", "health", "productivity"],
+  "description": "A vibrant social and wellness platform where your moods shape the skyline."
 }
