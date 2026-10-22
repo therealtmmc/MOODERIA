@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, Globe, Shield, Check, AlertTriangle, BellRing, Heart, Download, Upload, FileJson, Trash2, X, Volume2, VolumeX, Vibrate, Layers, Bell, Smartphone, Tablet, Package, ExternalLink, Code } from 'lucide-react';
+import { Moon, Sun, Globe, Shield, Check, AlertTriangle, Heart, Download, Upload, FileJson, Trash2, X, Volume2, VolumeX, Vibrate, Bell } from 'lucide-react';
 import { User } from '../types';
 import { COUNTRIES, t } from '../constants';
 import { exportUserDataJson, importUserDataJson, resetAllData } from '../services/supabaseService';
@@ -12,7 +12,6 @@ interface SettingsSectionProps {
   onToggleLanguage: () => void;
   user: User;
   onUpdate?: (updates: Partial<User>) => void;
-  onTestNotification?: () => void;
   onTriggerTestAlarm?: () => void;
   onResetData?: () => void;
   onImportData?: (user: User) => void;
@@ -25,36 +24,13 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
   onToggleLanguage, 
   user, 
   onUpdate,
-  onTestNotification,
   onTriggerTestAlarm,
   onResetData,
   onImportData
 }) => {
-  const [notifStatus, setNotifStatus] = useState<string>(() => {
-    return typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported';
-  });
-
   const [importStatus, setImportStatus] = useState<string | null>(null);
   const [showResetConfirmModal, setShowResetConfirmModal] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleTestNotification = async () => {
-    if ('Notification' in window) {
-      if (Notification.permission !== 'granted') {
-        try {
-          const res = await Notification.requestPermission();
-          setNotifStatus(res);
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        setNotifStatus('granted');
-      }
-    }
-    if (onTestNotification) {
-      onTestNotification();
-    }
-  };
 
   const handleExportData = () => {
     exportUserDataJson(user);
@@ -268,35 +244,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
           </div>
         )}
 
-        {/* Device Notifications Test & Enable */}
-        <div className={`flex items-center justify-between p-5 rounded-3xl transition-all border-2 border-transparent ${isDarkMode ? 'bg-white/5' : 'bg-amber-50/70'}`}>
-          <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-amber-500 text-white' : 'bg-white text-amber-600 shadow-sm'}`}>
-              <BellRing size={22}/>
-            </div>
-            <div className="text-left">
-              <p className="font-black italic uppercase text-xs md:text-sm">
-                {language === 'English' ? 'Device Notifications' : 'Mga Abiso sa Device'}
-              </p>
-              <p className="text-[10px] font-black opacity-50 uppercase tracking-widest">
-                {notifStatus === 'granted' 
-                  ? (language === 'English' ? '✅ Active on Device' : '✅ Aktibo sa Device') 
-                  : notifStatus === 'denied' 
-                  ? (language === 'English' ? '❌ Blocked in Device Settings' : '❌ Naka-block sa Settings') 
-                  : (language === 'English' ? '🔔 Tap icon to test' : '🔔 Pindutin ang icon')}
-              </p>
-            </div>
-          </div>
-          {/* ICON-ONLY ACTION BUTTON */}
-          <button
-            onClick={handleTestNotification}
-            title={language === 'English' ? 'Test Device Notification' : 'Subukan ang Abiso'}
-            aria-label="Test Notification"
-            className="p-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white shadow-md active:scale-95 transition-all flex items-center justify-center shrink-0"
-          >
-            <BellRing size={20} />
-          </button>
-        </div>
+
 
         {/* Dark / Light Mode */}
         <div className={`flex items-center justify-between p-5 rounded-3xl transition-all border-2 border-transparent ${isDarkMode ? 'bg-white/5' : 'bg-gray-50'}`}>
@@ -350,77 +298,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
           </button>
         </div>
 
-        {/* ========================================================
-            ANDROID: DISPLAY OVER OTHER APPS PERMISSION ACCESS
-           ======================================================== */}
-        <div className={`p-6 rounded-3xl transition-all border-2 ${user.overlayPermissionGranted ? 'border-indigo-500/30 bg-indigo-500/5' : isDarkMode ? 'border-white/5 bg-white/5' : 'border-black/5 bg-gray-50'}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-2xl ${user.overlayPermissionGranted ? 'bg-indigo-600 text-white' : 'bg-black/10 dark:bg-white/10 text-slate-500'} shadow-sm shrink-0`}>
-                <Layers size={22}/>
-              </div>
-              <div className="text-left">
-                <div className="flex items-center gap-2">
-                  <p className="font-black italic uppercase text-xs md:text-sm">
-                    {language === 'English' ? 'Display Over Other Apps' : 'Ipakita sa Ibabaw ng Ibang Apps'}
-                  </p>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${user.overlayPermissionGranted ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500'}`}>
-                    {user.overlayPermissionGranted ? 'Active' : 'Permission Required'}
-                  </span>
-                </div>
-                <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mt-0.5">
-                  {user.overlayPermissionGranted 
-                    ? (language === 'English' ? 'Full-screen alarm overlays can popup over any app' : 'Maaaring lumabas ang alarma sa ibabaw ng anumang app')
-                    : (language === 'English' ? 'Allows alarms & routine notifications over lock screen and other apps' : 'Pinapayagan ang mga alarma na lumabas sa ibabaw ng ibang apps')}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-              <button
-                onClick={() => {
-                  // Trigger Android Native Bridge if available
-                  if (typeof window !== 'undefined' && (window as any).AndroidBridge?.requestOverlayPermission) {
-                    try {
-                      (window as any).AndroidBridge.requestOverlayPermission();
-                    } catch (e) {
-                      console.warn("AndroidBridge error", e);
-                    }
-                  } else {
-                    // Deep link to Android overlay settings on mobile devices
-                    try {
-                      window.location.href = "intent:#Intent;action=android.settings.action.MANAGE_OVERLAY_PERMISSION;package=com.mooderia.app;end";
-                    } catch (e) {
-                      console.warn("Intent launch failed", e);
-                    }
-                  }
-
-                  const nextState = !user.overlayPermissionGranted;
-                  if (onUpdate) onUpdate({ overlayPermissionGranted: nextState });
-                  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-                    try { navigator.vibrate([150, 80, 150]); } catch (e) {}
-                  }
-                }}
-                className={`px-4 py-2.5 rounded-2xl font-black text-xs uppercase transition-all shadow-md active:scale-95 flex items-center gap-2 ${user.overlayPermissionGranted ? 'bg-indigo-600 text-white' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}
-                title="Grant or Configure Phone Overlay Permission"
-              >
-                {user.overlayPermissionGranted ? <Check size={16} /> : <Smartphone size={16} />}
-                <span>{user.overlayPermissionGranted ? 'Permission Granted' : 'Grant Permission'}</span>
-              </button>
-
-              {onTriggerTestAlarm && (
-                <button
-                  onClick={onTriggerTestAlarm}
-                  className="px-3.5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase shadow-md active:scale-95 transition-all flex items-center gap-1.5"
-                  title="Test Alarm Overlay popup immediately"
-                >
-                  <Bell size={14} />
-                  <span>Test</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* ========================================================
             ALARM & ALERT MODES: SILENT, VIBRATE, VIBRATE + SOUND
@@ -441,16 +319,16 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
               </div>
             </div>
 
-            {/* Test Alarm Overlay Button */}
+            {/* Test Alarm Button */}
             {onTriggerTestAlarm && (
               <button
                 type="button"
                 onClick={onTriggerTestAlarm}
                 className="kahoot-button-purple px-3.5 py-2 rounded-xl text-white font-black text-[10px] uppercase shadow-md flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all"
-                title="Test Alarm Overlay"
+                title="Test Alarm"
               >
                 <Bell size={12} />
-                <span>Test Overlay</span>
+                <span>Test Alarm</span>
               </button>
             )}
           </div>

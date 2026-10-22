@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Home, Smile, Building2, Smartphone, User as UserIcon, Settings, Wifi, WifiOff } from 'lucide-react';
+import { Home, Smile, Building2, User as UserIcon, Settings, Wifi, WifiOff } from 'lucide-react';
 import { Section, User } from '../types';
 import { t, toRomanNumeral } from '../constants';
 
@@ -31,7 +31,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onNavigate, isDarkMode
     { id: 'Home', icon: Home, labelKey: 'home', color: 'bg-indigo-600' },
     { id: 'Mood', icon: Smile, labelKey: 'mood', color: 'bg-yellow-500' },
     { id: 'CityHall', icon: Building2, labelKey: 'cityHall', color: 'bg-red-600' },
-    { id: 'Apps', icon: Smartphone, labelKey: 'apps', color: 'bg-emerald-600' },
     { id: 'Profile', icon: UserIcon, labelKey: 'profile', color: 'bg-blue-600' },
     { id: 'Settings', icon: Settings, labelKey: 'settings', color: 'bg-slate-600' },
   ];

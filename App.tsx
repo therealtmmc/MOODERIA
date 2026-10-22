@@ -8,7 +8,6 @@ import CityHallSection from './sections/CityHallSection';
 import MoodSection from './sections/MoodSection';
 import ProfileSection from './sections/ProfileSection';
 import SettingsSection from './sections/SettingsSection';
-import AppsSection from './sections/AppsSection';
 import AuthScreen from './sections/AuthScreen';
 import LoadingScreen from './components/LoadingScreen';
 import MoodCheckIn from './components/MoodCheckIn';
@@ -58,10 +57,6 @@ const App: React.FC = () => {
       setIsLoaded(true);
       setTimeout(() => setIsAppStarting(false), 2000);
 
-      // Request Notification Permission
-      if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
     };
     init();
   }, []);
@@ -81,52 +76,9 @@ const App: React.FC = () => {
     oscillator.stop(audioCtx.currentTime + 0.2); // Play for 0.2s
   };
 
-  const sendBrowserNotification = async (title: string, body: string) => {
-     playAlertSound();
-
-     if ("Notification" in window) {
-       let permission = Notification.permission;
-       if (permission === "default") {
-         try {
-           permission = await Notification.requestPermission();
-         } catch (e) {
-           console.error("Permission request error:", e);
-         }
-       }
-
-       if (permission === "granted") {
-         // Service Worker showNotification is required for mobile Android/iOS PWAs
-         if ('serviceWorker' in navigator) {
-           try {
-             const reg = await navigator.serviceWorker.ready;
-             if (reg && reg.showNotification) {
-               await reg.showNotification(title, {
-                 body,
-                 icon: '/logo.png',
-                 badge: '/logo.png',
-                 vibrate: [200, 100, 200],
-                 tag: title.toLowerCase().replace(/\s+/g, '-'),
-                 renotify: true
-               } as any);
-               return;
-             }
-           } catch (e) {
-             console.warn("SW showNotification error, falling back:", e);
-           }
-         }
-
-         // Window Notification fallback
-         try {
-           new Notification(title, { body, icon: '/logo.png' });
-           return;
-         } catch (e) {
-           console.warn("window Notification error:", e);
-         }
-       }
-     }
-
-     // In-app fallback toast
-     showToast(title, body, <Clock size={20} className="text-blue-500"/>);
+  const sendInAppAlert = (title: string, body: string) => {
+    playAlertSound();
+    showToast(title, body, <Clock size={20} className="text-blue-500" />);
   };
 
   // --- SCHEDULER & MOOD ALERT WATCHER ---
@@ -147,7 +99,7 @@ const App: React.FC = () => {
             const isToday = itemDate.toDateString() === now.toDateString();
             
             if (isToday && item.time === currentTimeString && !item.alerted) {
-                sendBrowserNotification("Calendar Alert 📅", `It's time for: ${item.title}`);
+                sendInAppAlert("Calendar Alert 📅", `It's time for: ${item.title}`);
                 triggerAnimation('alarm', item.title);
                 setActiveAlarm({ id: item.id, title: item.title, type: 'event', time: `${item.time} ${item.period}`, date: item.date });
                 return { ...item, alerted: true };
@@ -166,7 +118,7 @@ const App: React.FC = () => {
                 const routineAlertKey = `routine_${routine.id}_${now.toDateString()}_${currentTimeString}`;
                 if (!alertedRoutinesRef.current.has(routineAlertKey)) {
                   alertedRoutinesRef.current.add(routineAlertKey);
-                  sendBrowserNotification("Routine Reminder ⏰", `Habit Time: ${routine.title}`);
+                  sendInAppAlert("Routine Reminder ⏰", `Habit Time: ${routine.title}`);
                   triggerAnimation('routine', routine.title);
                   setActiveAlarm({ id: routine.id, title: routine.title, type: 'task', time: `${routine.startTime} ${routine.startPeriod}` });
                 }
@@ -196,7 +148,7 @@ const App: React.FC = () => {
         // 4. Daily Mood Check (9AM, 1PM, 8PM)
         const checkInTimes = ["09:00", "13:00", "20:00"];
         if (checkInTimes.includes(currentTimeString) && currentUser.lastMoodDate !== now.toDateString()) {
-             sendBrowserNotification("Mood Check-In 🌟", "How is your frequency vibrating right now?");
+             sendInAppAlert("Mood Check-In 🌟", "How is your frequency vibrating right now?");
         }
 
         // 5. Mood Pet Check - Alert if streak is downcast
@@ -204,7 +156,7 @@ const App: React.FC = () => {
         const timeSincePetAlert = lastPetAlertStr ? Date.now() - parseInt(lastPetAlertStr, 10) : Infinity;
         if (timeSincePetAlert > 2 * 60 * 60 * 1000) { // Every 2 hours
           if ((currentUser.moodStreak || 0) === 0) {
-              sendBrowserNotification("Guardian Alert 💔", `${currentUser.petName || 'Mood Guardian'} is downcast! Revive your streak to restore its spirits.`);
+              sendInAppAlert("Guardian Alert 💔", `${currentUser.petName || 'Mood Guardian'} is downcast! Revive your streak to restore its spirits.`);
               localStorage.setItem('mooderia_last_pet_alert', Date.now().toString());
           }
         }
@@ -454,7 +406,6 @@ const App: React.FC = () => {
                   )}
                   {activeSection === 'Mood' && <motion.div key="mood" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="h-full"><MoodSection user={currentUser} onUpdate={handleUpdateUser} isDarkMode={isDarkMode} language={language} onReward={() => handleGainReward(1, 10)} triggerAnimation={triggerAnimation} /></motion.div>}
                   {activeSection === 'CityHall' && <motion.div key="cityhall" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="h-full"><CityHallSection user={currentUser} onUpdate={handleUpdateUser} isDarkMode={isDarkMode} language={language} onReward={() => handleGainReward(1, 20)} triggerAnimation={triggerAnimation} /></motion.div>}
-                  {activeSection === 'Apps' && <motion.div key="apps" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="h-full"><AppsSection user={currentUser} onUpdate={handleUpdateUser} isDarkMode={isDarkMode} language={language} onTriggerAlarm={setActiveAlarm} onSendNotification={sendBrowserNotification} /></motion.div>}
                   {activeSection === 'Profile' && (
                     <motion.div key="profile" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0}}>
                       <ProfileSection 
@@ -474,7 +425,6 @@ const App: React.FC = () => {
                       user={currentUser}
                       onUpdate={handleUpdateUser}
                       onTriggerTestAlarm={() => setActiveAlarm({ id: 'test_sample', title: 'Daily Focus & Mindfulness', type: 'task', time: '10:00 AM' })}
-                      onTestNotification={() => sendBrowserNotification("Mooderia Device Alert 🔔", "Device alerts are active! Routine, Mood Pet, and Schedule reminders will appear in your device notification tray.")}
                       onResetData={() => {
                         resetAllData();
                         setCurrentUser(null);

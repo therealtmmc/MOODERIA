@@ -106,13 +106,22 @@ const AlarmOverlay: React.FC<AlarmOverlayProps> = ({
   }, [alarmMode]);
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
       <motion.div
-        initial={{ scale: 0.85, opacity: 0, y: 30 }}
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.85, opacity: 0, y: 30 }}
-        className="w-full max-w-lg rounded-[3.5rem] bg-gradient-to-b from-[#2a0e5b] via-[#1d0940] to-[#120529] text-white p-8 md:p-12 shadow-[0_0_80px_rgba(124,58,237,0.5)] border-4 border-purple-500/30 text-center relative overflow-hidden"
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="w-full max-w-lg rounded-[3rem] bg-gradient-to-b from-[#2a0e5b] via-[#1d0940] to-[#120529] text-white p-8 md:p-10 shadow-2xl border-4 border-purple-500/30 text-center relative overflow-hidden"
       >
+        {/* Top-right close button */}
+        <button
+          onClick={onDismiss}
+          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+          aria-label="Close Alert"
+        >
+          <X size={18} />
+        </button>
+
         {/* Animated Background Pulse Waves */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
           <div className="w-96 h-96 rounded-full border-4 border-purple-400 animate-ping" />

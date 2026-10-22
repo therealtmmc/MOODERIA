@@ -83,9 +83,8 @@ export interface User {
     budget?: '4x2' | '2x2';
   };
 
-  // Alarm & Overlay Settings
+  // Alarm & Alert Settings
   alarmMode?: 'silent' | 'vibrate' | 'vibrate_sound';
-  overlayPermissionGranted?: boolean;
   
   // Navigation Taskbar Layout: 'auto' | 'bottom' | 'side'
   taskbarLayout?: 'auto' | 'bottom' | 'side';
@@ -130,5 +129,5 @@ export interface AppNotification {
   read: boolean;
 }
 
-export type Section = 'Home' | 'Mood' | 'CityHall' | 'Apps' | 'Profile' | 'Settings';
+export type Section = 'Home' | 'Mood' | 'CityHall' | 'Profile' | 'Settings';
 export type Notification = AppNotification;
